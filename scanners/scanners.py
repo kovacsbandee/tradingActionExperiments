@@ -41,11 +41,16 @@ class andrewAzizRecommendedScanner:
                     'price_range_perc': (sticker_data['High'].max() - sticker_data['Low'].min()) / sticker_data['Close'].mean() * 100,
                     'volume_range_ratio': (sticker_data['Volume'].max() - sticker_data['Volume'].min()) / sticker_data['Volume'].mean()}
         else:
-            pass
+            return {'sticker': sticker,
+                    'avg_close': 0,
+                    'avg_volume': 0,
+                    'price_range_perc': 0,
+                    'volume_range_ratio':0}
 
-    def get_filtering_stats_for_experiments(self, save_csv: bool = False, proj_path='F:/tradingActionExperiments'):
+    def get_filtering_stats(self, save_csv: bool = False, proj_path='F:/tradingActionExperiments'):
         pre_market_sticker_stats = \
             Parallel(n_jobs=16)(delayed(self.get_pre_market_stats)(sticker) for sticker in self.stickers)
+
         self.pre_market_stats = pd.DataFrame.from_records(pre_market_sticker_stats)
         save_date = self.scanning_day.strftime('%Y-%m-%d')
         if save_csv:
@@ -57,16 +62,12 @@ class andrewAzizRecommendedScanner:
             else:
                 pass
             self.pre_market_stats.to_csv(path_or_buf=f'{proj_path}/data_store/pre_market_stats_{save_date}', index=False)
-        create_histograms(plot_df=self.pre_market_stats,
-                          plot_name=f'pre_market_stats_hist_{save_date}',
-                          excluded_cols=['sticker'])
+        create_histograms(plot_df=self.pre_market_stats[[c for c in self.pre_market_stats.columns if c != 'sticker']],
+                          plot_name=f'pre_market_stats_hist_{save_date}')
         print('Pre market statistics histograms can be found in the plots/plot_store directory, '
               'please check for avg_volume, price_range_perc as further constraints')
 
     def recommend_premarket_watchlist(self, price_range_perc_cond: int = 10, avg_volume_cond: int = 25000):
-        # TODO: check for price intervals; use max_volume!
         self.recommended_stickers = self.pre_market_stats[(price_range_perc_cond < self.pre_market_stats['price_range_perc']) & \
-                                                          (avg_volume_cond < self.pre_market_stats['avg_volume'])][['sticker', 'avg_volume']]
+                                                          (avg_volume_cond < self.pre_market_stats['avg_volume'])]['sticker'].to_list()
         print(f'The recommended watchlist for {self.trading_day} is the following list:')
-        print(self.recommended_stickers)
-        return self.recommended_stickers
