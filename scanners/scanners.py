@@ -4,6 +4,8 @@ import pandas as pd
 import yfinance as yf
 from joblib import Parallel, delayed
 from plots.plots import create_histograms
+import logging
+logging.getLogger('yfinance').setLevel(logging.CRITICAL)
 
 def get_nasdaq_stickers(path: str='F:/tradingActionExperiments'):
     daily_nasdaq_stickers = pd.read_csv(f'{path}/data_store/daily_nasdaq_stickers.csv')
@@ -35,8 +37,7 @@ class andrewAzizRecommendedScanner:
                                        start=self.scanning_day,
                                        end=self.scanning_day + timedelta(1),
                                        interval='1m',
-                                       progress=False,
-                                       show_errors=False)
+                                       progress=False)
         except:
             pass
         if sticker_data is not None:

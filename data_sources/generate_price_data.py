@@ -2,7 +2,8 @@ import pandas as pd
 from datetime import datetime, timedelta
 import yfinance as yf
 from joblib import Parallel, delayed
-
+import logging
+logging.getLogger('yfinance').setLevel(logging.CRITICAL)
 
 class generatePriceData:
 
@@ -17,34 +18,35 @@ class generatePriceData:
                                        start=self.date - timedelta(1),
                                        end=self.date + timedelta(1),
                                        interval='1m',
-                                       progress=False,
-                                       show_errors=False)
+                                       progress=False)
         except:
             pass
         sticker_data.columns = [c.lower() for c in sticker_data.columns]
-        # TODO: sticker stats has to be revised and enhanced based on general price plots
-        sticker_stats = \
-            {'avg_close': sticker_data['close'].mean(),
-             'avg_volume': sticker_data['volume'].mean(),
-             'price_range_perc': (sticker_data['high'].max() - sticker_data['low'].min()) / sticker_data['close'].mean() * 100,
-             'volume_range_ratio': (sticker_data['volume'].max() - sticker_data['volume'].min()) / sticker_data['volume'].mean()}
-        stat_data = sticker_data[pd.to_datetime(sticker_data.index).tz_localize(None) < pd.to_datetime(self.date)]
+        trading_day_data = sticker_data[pd.to_datetime(sticker_data.index).tz_localize(None) > pd.to_datetime(self.date-timedelta(1))]
+        # TODO for Kovi: sticker stats has to be revised and enhanced based on general price plots, comparison between stats and profitability!
+        trading_day_sticker_stats = \
+            {'avg_close': trading_day_data['close'].mean(),
+             'avg_volume': trading_day_data['volume'].mean(),
+             'price_range_perc': (trading_day_data['high'].max() - trading_day_data['low'].min()) / trading_day_data['close'].mean() * 100,
+             'volume_range_ratio': (trading_day_data['volume'].max() - trading_day_data['volume'].min()) / trading_day_data['volume'].mean()}
+        prev_day_data = sticker_data[pd.to_datetime(sticker_data.index).tz_localize(None) < pd.to_datetime(self.date)]
         prev_sticker_stats = \
-            {'avg_close': stat_data['close'].mean(),
-             'avg_volume': stat_data['volume'].mean(),
-             'price_range_perc': (stat_data['high'].max() - stat_data['low'].min()) / stat_data['close'].mean() * 100,
-             'volume_range_ratio': (stat_data['volume'].max() - stat_data['volume'].min()) / stat_data['volume'].mean()}
-        return (sticker, sticker_data, sticker_stats, prev_sticker_stats)
+            {'avg_close': prev_day_data['close'].mean(),
+             'avg_volume': prev_day_data['volume'].mean(),
+             'price_range_perc': (prev_day_data['high'].max() - prev_day_data['low'].min()) / prev_day_data['close'].mean() * 100,
+             'volume_range_ratio': (prev_day_data['volume'].max() - prev_day_data['volume'].min()) / prev_day_data['volume'].mean()}
+        ''' Here is a place, where a-priori constraints like price boundaries could be applied! '''
+        return (sticker, trading_day_data, trading_day_sticker_stats, prev_day_data, prev_sticker_stats)
 
     def load_watchlist_daily_price_data(self):
         stickers = [s for s in self.exp_dict['stickers'].keys()]
-        data = Parallel(n_jobs=16)(delayed(self.load_individual_sticker_data)(sticker) for sticker in stickers)
-        for i, sticker in enumerate(data):
+        all_sticker_data = Parallel(n_jobs=16)(delayed(self.load_individual_sticker_data)(sticker) for sticker in stickers)
+        for i, sticker in enumerate(all_sticker_data):
             if sticker is not None:
-                df = sticker[1]
-                self.exp_dict['stickers'][sticker[0]]['data'] = df[pd.to_datetime(df.index).tz_localize(None) > pd.to_datetime(self.date-timedelta(1))]
-                self.exp_dict['stickers'][sticker[0]]['trading_day_stats'] = sticker[2]
-                self.exp_dict['stickers'][sticker[0]]['prev_day_stats'] = sticker[3]
+                self.exp_dict['stickers'][sticker[0]]['trading_day_data'] = sticker[1]
+                self.exp_dict['stickers'][sticker[0]]['trading_day_sticker_stats'] = sticker[2]
+                self.exp_dict['stickers'][sticker[0]]['prev_day_data'] = sticker[3]
+                self.exp_dict['stickers'][sticker[0]]['prev_day_stats'] = sticker[4]
 
 
 

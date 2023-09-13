@@ -100,3 +100,13 @@ def relative_volume_in_time_for_all_stock():
     This method should plot on a bar chart the relative volume in each minute averaged over all the stocks in the experiment data.
     :return:
     '''
+
+
+def compare_prev_and_trading_day_stats():
+    '''
+    Most még nem tudom megfogalmazni, hogy mit kell csinálni, csak tudom, hogy majd kell!
+    Valahogyan a profitalbilitással össze kell vetni!
+    :return:
+    '''
+    pass
+
