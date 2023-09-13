@@ -31,7 +31,12 @@ class andrewAzizRecommendedScanner:
     def get_pre_market_stats(self, sticker: str):
         sticker_data = None
         try:
-            sticker_data = yf.download(sticker, start=self.scanning_day, end=self.scanning_day + timedelta(1), interval='1m')
+            sticker_data = yf.download(sticker,
+                                       start=self.scanning_day,
+                                       end=self.scanning_day + timedelta(1),
+                                       interval='1m',
+                                       progress=False,
+                                       show_errors=False)
         except:
             pass
         if sticker_data is not None:
@@ -46,6 +51,7 @@ class andrewAzizRecommendedScanner:
                     'avg_volume': 0,
                     'price_range_perc': 0,
                     'volume_range_ratio':0}
+
 
     def get_filtering_stats(self, save_csv: bool = False, proj_path='F:/tradingActionExperiments'):
         pre_market_sticker_stats = \
@@ -68,6 +74,9 @@ class andrewAzizRecommendedScanner:
               'please check for avg_volume, price_range_perc as further constraints')
 
     def recommend_premarket_watchlist(self, price_range_perc_cond: int = 10, avg_volume_cond: int = 25000):
+        # TODO a filter here could be applied based on the other statistics: e.g. prica range between 10 and 100$
         self.recommended_stickers = self.pre_market_stats[(price_range_perc_cond < self.pre_market_stats['price_range_perc']) & \
                                                           (avg_volume_cond < self.pre_market_stats['avg_volume'])]['sticker'].to_list()
-        print(f'The recommended watchlist for {self.trading_day} is the following list:')
+        print(f'The recommended watchlist for {self.trading_day} is the following list: {self.recommended_stickers}')
+
+

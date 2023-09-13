@@ -15,6 +15,7 @@ def create_histograms(plot_df: pd.DataFrame,
         plot_vars = cols
     fig = make_subplots(rows=len(plot_vars) if column_vars==None else round(len(plot_vars)/len(column_vars)),
                         cols=1 if column_vars==None else len(column_vars),
+                        subplot_titles=plot_vars,
                         vertical_spacing=0.07)
     if column_vars is None:
         for i, c in enumerate(plot_vars):
@@ -28,7 +29,7 @@ def create_histograms(plot_df: pd.DataFrame,
                 fig.add_trace(go.Histogram(x=plot_df[c],
                                            showlegend=False,
                                            nbinsx=100), row=i+1, col=1+j)
-                fig.update_xaxes(title = c,row=i+1, col=1+j)
+                #fig.update_xaxes(title = c,row=i+1, col=1+j)
     fig.update_layout(height=len(plot_vars)*100 if column_vars is None else int(len(plot_vars)/2)*150)
     fig.write_html(f'{PROJ_PATH}/plots/plot_store/{plot_name}_hist.html')
 
@@ -52,8 +53,11 @@ def create_time_series_plots(plot_df: pd.DataFrame,
     print('plot is ready')
 
 
-def create_candle_stick_chart_w_indicators_for_trendscalping(plot_df, sticker_name, indicators=['close_ma5', 'close_ma9']):
-    fig = make_subplots(rows=3+2*len(indicators), cols=1, shared_xaxes=True)#, row_width=[0.17, 0.17, 0.17, 0.14, 0.35])
+def create_candle_stick_chart_w_indicators_for_trendscalping(plot_df, sticker_name, averaged_cols=['close', 'volume'], indicators=['close_ma5', 'close_ma9']):
+    for c in averaged_cols:
+        if c in indicators:
+            indicators.remove(c)
+    fig = make_subplots(rows=3+len(indicators), cols=1, shared_xaxes=True)
     fig.add_trace(go.Candlestick(x=plot_df.index,
                                  open=plot_df['open'],
                                  high=plot_df['high'],
@@ -80,14 +84,19 @@ def create_candle_stick_chart_w_indicators_for_trendscalping(plot_df, sticker_na
     fig.add_trace(go.Scatter(x=plot_df.index,
                              y=add_gradient(plot_df, col='volume'),
                              name='Volume gradient'), row=3, col=1)
-    for i, indicator in enumerate(indicators):
+    for i, indicator in enumerate([col for col in indicators if col not in averaged_cols]):
         fig.add_trace(go.Scatter(x=plot_df.index,
                                  y=plot_df[f'{indicator}'],
-                                 name=f'{indicator}'), row=4+i*2, col=1)
-        fig.add_trace(go.Scatter(x=plot_df.index,
-                                 y=plot_df[f'{indicator}_grad'],
-                                 name=f'{indicator}'), row=5+i*2, col=1)
+                                 name=f'{indicator}'), row=4+i, col=1)
     fig.update_layout(xaxis_rangeslider_visible=False,
-                      height=1000)
+                      height=1500)
     date = plot_df.index[-1].date().strftime('%Y-%m-%d')
     fig.write_html(f'{PROJ_PATH}/plots/plot_store/candle_stick_chart_{sticker_name}_{date}.html')
+
+
+# TODO:
+def relative_volume_in_time_for_all_stock():
+    '''
+    This method should plot on a bar chart the relative volume in each minute averaged over all the stocks in the experiment data.
+    :return:
+    '''

@@ -10,15 +10,16 @@ from data_sources.add_indicators import add_gradient, add_rolling_average
 from plots.plots import create_histograms, create_candle_stick_chart_w_indicators_for_trendscalping
 
 strategy_name = 'trendScalping'
-exp_data = experiment_data
+#exp_data = experiment_data
 sticker = 'COMP'
-sticker_df = exp_data['stickers'][sticker]['data']
+#sticker_df = exp_data['stickers'][sticker]['data']
 indicators =  []
 
 
-def add_strategy_specific_indicators(averaged_cols=['close', 'volume'], rolling_average_win_lens=[5,9,10], plot_strategy_indicators = False):
+def add_strategy_specific_indicators(exp_data, averaged_cols=['close', 'volume'], rolling_average_win_lens=[5,9,10], plot_strategy_indicators = False):
     for sticker in exp_data['stickers'].keys():
         sticker_df = exp_data['stickers'][sticker]['data']
+        indicators = list()
         for col in averaged_cols:
             indicators.append(col)
             for win_len in rolling_average_win_lens:
@@ -35,7 +36,8 @@ def add_strategy_specific_indicators(averaged_cols=['close', 'volume'], rolling_
                               plot_name=f'{sticker}_indicators')
             create_candle_stick_chart_w_indicators_for_trendscalping(
                 plot_df=prev_day_sticker_df,
-                sticker_name=sticker)
+                sticker_name=sticker,
+                indicators=indicators)
 
 
 def apply_strategy():

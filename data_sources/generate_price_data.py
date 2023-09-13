@@ -13,9 +13,12 @@ class generatePriceData:
 
     def load_individual_sticker_data(self, sticker):
         try:
-            sticker_data = yf.download(sticker, start=self.date - timedelta(1),
-                                                end=self.date + timedelta(1),
-                                                interval='1m')
+            sticker_data = yf.download(sticker,
+                                       start=self.date - timedelta(1),
+                                       end=self.date + timedelta(1),
+                                       interval='1m',
+                                       progress=False,
+                                       show_errors=False)
         except:
             pass
         sticker_data.columns = [c.lower() for c in sticker_data.columns]
