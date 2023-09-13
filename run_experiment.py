@@ -72,42 +72,77 @@ def add_strategy_specific_indicators(exp_data, averaged_cols=['close', 'volume']
 add_strategy_specific_indicators(exp_data=experiment_data, averaged_cols=['close', 'volume'], ma_short=5, ma_long=12, plot_strategy_indicators = True)
 
 
-import numpy as np
-exp_data = experiment_data
-ma_short=5
-ma_long=12
-num_stocks=1
-sticker_df = exp_data['stickers']['AMC']['trading_day_data']
 
 
-def apply_single_long_strategy():
+def apply_single_long_strategy(exp_data, data='trading_day_data', ma_short=5, ma_long=12, num_stocks=1):
     for sticker in exp_data['stickers'].keys():
-        sticker_df = exp_data['stickers'][sticker]['data']
-
-        sticker_df = exp_data['stickers']['AMC']['trading_day_data']
+        sticker_df = exp_data['stickers'][sticker][data]
         sticker_df['position'] = 'out'
         #TODO epsiolon has to be optimized!!!
-        sticker_df.loc[(0.01 < sticker_df[f'close_ma{ma_long}_grad']) & (0.1 < sticker_df[f'close_ma{ma_short}_grad']), 'position'] = 'long_buy'
-        sticker_df.loc[(0.01 < sticker_df[f'close_ma{ma_long}_grad']) | (0.01 < sticker_df[f'close_ma{ma_short}_grad']), 'position'] = 'long_buy'
+        sticker_df.loc[(0.001 < sticker_df[f'close_ma{ma_long}_grad']) & (0.001 < sticker_df[f'close_ma{ma_short}_grad']), 'position'] = 'long_buy'
+        sticker_df.loc[(0.001 < sticker_df[f'close_ma{ma_long}_grad']) | (0.001 < sticker_df[f'close_ma{ma_short}_grad']), 'position'] = 'long_buy'
         sticker_df['trading_action'] = ''
         sticker_df['prev_position_lagged'] = sticker_df['position'].shift(1)
         sticker_df.loc[(sticker_df['position'] == 'long_buy') & (sticker_df['prev_position_lagged'] == 'out'), 'trading_action'] = 'buy next long position'
         sticker_df.loc[(sticker_df['position'] == 'out') & (sticker_df['prev_position_lagged'] == 'long_buy'), 'trading_action'] = 'sell previous long position'
-        sticker_df.loc[sticker_df.index > max(trading_action_df[trading_action_df['trading_action'] == 'sell previous long position'].index), 'trading_action'] = ''
+        sticker_df.drop('prev_position_lagged', axis=1, inplace=True)
         trading_action_df = sticker_df[sticker_df['trading_action'] != ''].copy()
-        trading_action_df['gain'] = 0
-        prev_buy_position_index = trading_action_df[trading_action_df['trading_action'] == 'buy next long position'].index[0]
-        for i, row in trading_action_df.iterrows():
-            if row['trading_action'] == 'sell previous long position':
-                trading_action_df.loc[i, 'gain'] = trading_action_df.loc[i, 'close'] - trading_action_df.loc[prev_buy_position_index, 'close'] * num_stocks
-            if row['trading_action'] == 'buy next long position':
-                prev_buy_position_index = i
+        if trading_action_df.shape[0] > 0:
+            sticker_df.loc[sticker_df.index > max(trading_action_df[trading_action_df['trading_action'] == 'sell previous long position'].index), 'trading_action'] = ''
+            trading_action_df['gain'] = 0
+            prev_buy_position_index = trading_action_df[trading_action_df['trading_action'] == 'buy next long position'].index[0]
+            for i, row in trading_action_df.iterrows():
+                if row['trading_action'] == 'sell previous long position':
+                    trading_action_df.loc[i, 'gain'] = trading_action_df.loc[i, 'close'] - trading_action_df.loc[prev_buy_position_index, 'close'] * num_stocks
+                if row['trading_action'] == 'buy next long position':
+                    prev_buy_position_index = i
+            print(f'Gain on {sticker} with simple long strategy', trading_action_df.gain.sum())
+            sticker_df = pd.merge(sticker_df, trading_action_df['gain'],
+                                  how='left',
+                                  left_index=True,
+                                  right_index=True)
+            sticker_df['gain'].fillna(0.0, inplace=True)
+        else:
+            sticker_df['gain'] = 0
+            exp_data['stickers'][sticker]['trading_day_data'] = sticker_df
 
-        print(trading_action_df.gain.sum())
+apply_single_long_strategy(exp_data=experiment_data)
 
 
+def apply_single_short_strategy(exp_data, data='trading_day_data', ma_short=5, ma_long=12, num_stocks=1):
+    for sticker in exp_data['stickers'].keys():
+        sticker_df = exp_data['stickers'][sticker][data]
+        sticker_df['position'] = 'out'
+        #TODO epsiolon has to be optimized!!!
+        sticker_df.loc[(-0.001 > sticker_df[f'close_ma{ma_long}_grad']) & (-0.001 > sticker_df[f'close_ma{ma_short}_grad']), 'position'] = 'short_sell'
+        sticker_df.loc[(-0.001 > sticker_df[f'close_ma{ma_long}_grad']) | (-0.001 > sticker_df[f'close_ma{ma_short}_grad']), 'position'] = 'short_sell'
+        sticker_df['trading_action'] = ''
+        sticker_df['prev_position_lagged'] = sticker_df['position'].shift(1)
+        sticker_df.loc[(sticker_df['position'] == 'short_sell') & (sticker_df['prev_position_lagged'] == 'out'), 'trading_action'] = 'sell next short position'
+        sticker_df.loc[(sticker_df['position'] == 'out') & (sticker_df['prev_position_lagged'] == 'short_sell'), 'trading_action'] = 'buy previous short position'
+        sticker_df.drop('prev_position_lagged', axis=1, inplace=True)
+        trading_action_df = sticker_df[sticker_df['trading_action'] != ''].copy()
+        if trading_action_df.shape[0] > 0:
+            sticker_df.loc[sticker_df.index > max(trading_action_df[trading_action_df['trading_action'] == 'buy previous short position'].index), 'trading_action'] = ''
+            trading_action_df['gain'] = 0
+            prev_short_sell_position_index = trading_action_df[trading_action_df['trading_action'] == 'sell next short position'].index[0]
+            for i, row in trading_action_df.iterrows():
+                if row['trading_action'] == 'buy previous short position':
+                    trading_action_df.loc[i, 'gain'] = trading_action_df.loc[prev_short_sell_position_index, 'close'] - trading_action_df.loc[i, 'close']  * num_stocks
+                if row['trading_action'] == 'sell next short position':
+                    prev_short_sell_position_index = i
+            print(f'Gain on {sticker} with simple short strategy', trading_action_df.gain.sum())
+            sticker_df = pd.merge(sticker_df, trading_action_df['gain'],
+                                  how='left',
+                                  left_index=True,
+                                  right_index=True)
+            sticker_df['gain'].fillna(0.0, inplace=True)
+        else:
+            sticker_df['gain'] = 0
+            exp_data['stickers'][sticker]['trading_day_data'] = sticker_df
 
-    exp_data['trading_day_data'][sticker] = sticker_df
+apply_single_short_strategy(exp_data=experiment_data)
+
 
 
 

@@ -17,7 +17,12 @@ def get_nasdaq_stickers(path: str='F:/tradingActionExperiments'):
 
 class andrewAzizRecommendedScanner:
 
-    def __init__(self, trading_day: datetime, stickers: list = None):
+    def __init__(self, trading_day: datetime,
+                 stickers: list = None,
+                 lower_price_boundary: float=10,
+                 upper_price_boundary: float=100,
+                 price_range_perc_cond: int = 10,
+                 avg_volume_cond: int = 25000):
         self.trading_day = datetime.strptime(trading_day, '%Y-%m-%d')
         if self.trading_day.strftime('%A') == 'Sunday' or self.trading_day.strftime('%A') == 'Saturday':
             raise ValueError(f'{self.trading_day} is not a valid trading day, because it is on a weekend. Choose a weekday!')
@@ -26,6 +31,10 @@ class andrewAzizRecommendedScanner:
         else:
             self.scanning_day = self.trading_day - timedelta(1)
         self.stickers = get_nasdaq_stickers() if stickers is None else stickers
+        self.lower_price_boundary = lower_price_boundary
+        self.upper_price_boundary = upper_price_boundary
+        self.price_range_perc_cond = price_range_perc_cond
+        self.avg_volume_cond = 25000
         self.pre_market_stats = None
         self.recommended_stickers = []
         self.name = 'andrewAzizRecommendedScanner'
@@ -74,10 +83,13 @@ class andrewAzizRecommendedScanner:
         print('Pre market statistics histograms can be found in the plots/plot_store directory, '
               'please check for avg_volume, price_range_perc as further constraints')
 
-    def recommend_premarket_watchlist(self, price_range_perc_cond: int = 10, avg_volume_cond: int = 25000):
+    def recommend_premarket_watchlist(self):
         # TODO a filter here could be applied based on the other statistics: e.g. prica range between 10 and 100$
-        self.recommended_stickers = self.pre_market_stats[(price_range_perc_cond < self.pre_market_stats['price_range_perc']) & \
-                                                          (avg_volume_cond < self.pre_market_stats['avg_volume'])]['sticker'].to_list()
+        self.recommended_stickers = self.pre_market_stats[
+            (self.lower_price_boundary < self.pre_market_stats['avg_close']) & \
+            (self.pre_market_stats['avg_close'] < self.upper_price_boundary) & \
+            (self.price_range_perc_cond < self.pre_market_stats['price_range_perc']) & \
+            (self.avg_volume_cond < self.pre_market_stats['avg_volume'])]['sticker'].to_list()
         print(f'The recommended watchlist for {self.trading_day} is the following list: {self.recommended_stickers}')
 
 
