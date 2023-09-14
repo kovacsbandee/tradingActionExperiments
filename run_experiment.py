@@ -68,6 +68,7 @@ def add_strategy_specific_indicators(exp_data, averaged_cols=['close', 'volume']
                 sticker_name=sticker,
                 averaged_cols=averaged_cols,
                 indicators=indicators)
+            #todo el kell készíteni a fenti két plot-ot is a trading day-re!
 
 add_strategy_specific_indicators(exp_data=experiment_data, averaged_cols=['close', 'volume'], ma_short=5, ma_long=12, plot_strategy_indicators = True)
 
