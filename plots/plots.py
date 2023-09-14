@@ -31,6 +31,7 @@ def create_histograms(plot_df: pd.DataFrame,
                                            nbinsx=100), row=i+1, col=1+j)
                 #fig.update_xaxes(title = c,row=i+1, col=1+j)
     fig.update_layout(height=len(plot_vars)*100 if column_vars is None else int(len(plot_vars)/2)*150)
+    #todo bele kell tenni a dátumot a kimenet nevébe!
     fig.write_html(f'{PROJ_PATH}/plots/plot_store/{plot_name}_hist.html')
 
 
