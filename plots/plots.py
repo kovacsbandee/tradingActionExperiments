@@ -1,9 +1,13 @@
+import os
+from dotenv import load_dotenv
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from data_sources.add_indicators import add_gradient
 
-PROJ_PATH = 'F:/tradingActionExperiments'
+load_dotenv()
+
+PROJ_PATH = os.environ["PROJECT_PATH"]
 
 def create_histograms(plot_df: pd.DataFrame,
                       cols: list=None,

@@ -1,13 +1,19 @@
 from datetime import datetime, timedelta
 import os
+from dotenv import load_dotenv
 import pandas as pd
 import yfinance as yf
 from joblib import Parallel, delayed
 from plots.plots import create_histograms
 import logging
+
 logging.getLogger('yfinance').setLevel(logging.CRITICAL)
 
-def get_nasdaq_stickers(path: str='F:/tradingActionExperiments'):
+load_dotenv()
+
+PROJ_PATH = os.environ["PROJECT_PATH"]
+
+def get_nasdaq_stickers(path: str=PROJ_PATH):
     daily_nasdaq_stickers = pd.read_csv(f'{path}/data_store/daily_nasdaq_stickers.csv')
     daily_nasdaq_stickers['Last Sale'] = daily_nasdaq_stickers['Last Sale'].str.lstrip('$').astype(float)
     daily_nasdaq_stickers = daily_nasdaq_stickers[(~daily_nasdaq_stickers['Market Cap'].isna()) & \
@@ -63,7 +69,7 @@ class andrewAzizRecommendedScanner:
                     'volume_range_ratio':0}
 
 
-    def get_filtering_stats(self, save_csv: bool = False, proj_path='F:/tradingActionExperiments'):
+    def get_filtering_stats(self, save_csv: bool = False, proj_path=PROJ_PATH):
         pre_market_sticker_stats = \
             Parallel(n_jobs=16)(delayed(self.get_pre_market_stats)(sticker) for sticker in self.stickers)
 
