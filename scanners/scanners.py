@@ -13,6 +13,7 @@ load_dotenv()
 
 PROJ_PATH = os.environ["PROJECT_PATH"]
 
+# TODO: érdemes lenne kiszervezni a dataframe-előkészítést és a sticker-lista visszaadást külön-külön függvényekbe
 def get_nasdaq_stickers(path: str=PROJ_PATH):
     daily_nasdaq_stickers = pd.read_csv(f'{path}/data_store/daily_nasdaq_stickers.csv')
     daily_nasdaq_stickers['Last Sale'] = daily_nasdaq_stickers['Last Sale'].str.lstrip('$').astype(float)
@@ -20,42 +21,62 @@ def get_nasdaq_stickers(path: str=PROJ_PATH):
                                                   (daily_nasdaq_stickers['Market Cap'] != 0.0)]
     return list(daily_nasdaq_stickers['Symbol'].unique())
 
+"""
+    Érdemes lenne létrehozni egy Scanner ősosztályt és egy ScannerFactory-t, 
+    ami a különböző scannerek létrehozását végzi. 
+    
+    A ScannerFactory-ba kerülnének a következő metódusok 
+    (vagy valami nagy alg, ami az adatfeldolgozást megcsinálja):
+    - get_nasdaq_stickers
+    - get_pre_market_stats
+    - get_filtering_stats
+    - recommend_premarket_watchlist
+    
+    Az alosztályok pedig dataclassok* lennének, csak a feldolgozott adatokat kapnák meg,
+    jelen esetben pl. csak a recommended_stickers-t használjuk kívülről is.
+    
+    *Kivéve, ha pl. hozzájuk kapcsolódik a create_histograms() metódus,
+    mert akkor az specifikusan hívandó az alosztályon.
+"""
 
 class andrewAzizRecommendedScanner:
-
+    
     def __init__(self, trading_day: datetime,
                  stickers: list = None,
                  lower_price_boundary: float=10,
                  upper_price_boundary: float=100,
                  price_range_perc_cond: int = 10,
-                 avg_volume_cond: int = 25000):
+                 avg_volume_cond: int = 25000): # TODO: ez itt fura, hogy megadjuk, de belül felüldefiniáljuk - konstans az érték?
         self.trading_day = datetime.strptime(trading_day, '%Y-%m-%d')
+        # TODO: a trading day ellenőrzése máshol történjen, ne az __init__ feladata legyen
         if self.trading_day.strftime('%A') == 'Sunday' or self.trading_day.strftime('%A') == 'Saturday':
             raise ValueError(f'{self.trading_day} is not a valid trading day, because it is on a weekend. Choose a weekday!')
         if (self.trading_day - timedelta(1)).strftime('%A') == 'Sunday':
-            self.scanning_day = self.trading_day - timedelta(2)
+            self.scanning_day = self.trading_day - timedelta(days=2)
         else:
-            self.scanning_day = self.trading_day - timedelta(1)
+            self.scanning_day = self.trading_day - timedelta(days=1)
+        # TODO: a nasdaq stickereket mindenképp kívülről kapja meg
         self.stickers = get_nasdaq_stickers() if stickers is None else stickers
         self.lower_price_boundary = lower_price_boundary
         self.upper_price_boundary = upper_price_boundary
         self.price_range_perc_cond = price_range_perc_cond
-        self.avg_volume_cond = 25000
+        self.avg_volume_cond = 25000 # TODO: kapjon argumentumot, ha nem konstans
         self.pre_market_stats = None
-        self.recommended_stickers = []
-        self.name = 'andrewAzizRecommendedScanner'
+        self.recommended_stickers = [] # TODO: veszélyes!!!
+        self.name = 'andrewAzizRecommendedScanner' # TODO: jöhet ez is param-ból, de ha konstans, akkor legyen konstans :V
 
     def get_pre_market_stats(self, sticker: str):
         sticker_data = None
+        # TODO: a yf.download ha nem talál adatot, akkor a data.empty()-vel lehet csekkolni [pandas metódus]
         try:
             sticker_data = yf.download(sticker,
                                        start=self.scanning_day,
-                                       end=self.scanning_day + timedelta(1),
+                                       end=self.scanning_day + timedelta(days=1),
                                        interval='1m',
                                        progress=False)
         except:
             pass
-        if sticker_data is not None:
+        if sticker_data is not None: # TODO: ehelyett kell a data.empty()-t használni
             return {'sticker': sticker,
                     'avg_close': sticker_data['Close'].mean(),
                     'avg_volume': sticker_data['Volume'].mean(),

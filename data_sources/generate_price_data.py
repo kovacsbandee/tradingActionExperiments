@@ -5,18 +5,30 @@ from joblib import Parallel, delayed
 import logging
 logging.getLogger('yfinance').setLevel(logging.CRITICAL)
 
+"""
+    Ha többféle priceData generálásra is lehet szükség, akkor itt is lehet öröklést alkalmazni.
+    Ha csak egy kalkulációs modul, akkor lehet, hogy nem kell osztályba szervezni.
+"""
+
 class generatePriceData:
 
+    # TODO: a date (lehetne trading_day) benne van az exp_dict arg-ban elvileg
     def __init__(self, date, exp_dict, lower_price_boundary=10, upper_price_boundary=100, lower_volume_boundary=10000):
         self.date = date
         self.date = datetime.strptime(date, '%Y-%m-%d')
         self.exp_dict = exp_dict
 
-    def load_individual_sticker_data(self, sticker):
+    def load_individual_sticker_data(self, sticker): # TODO: a sticker mindig string?
+        """
+        TODO: itt is jöhet a pandas data.empty() csekkolás, illetve
+        a yf.download() helyett lehetne a yf.Ticker().history() metódust használni [ezt a GitHub Copilot dobta fel]
+        illetve ha a sticker data egyszer kerül letöltésre, akkor egy központi helyen hívhatnánk/konstansba tárolhatnánk
+        tovább dobálhatnánk a scannereknek, vagy bárminek, ami használja (STICKER_DATA)
+        """
         try:
             sticker_data = yf.download(sticker,
-                                       start=self.date - timedelta(1),
-                                       end=self.date + timedelta(1),
+                                       start=self.date - timedelta(days=1),
+                                       end=self.date + timedelta(days=1),
                                        interval='1m',
                                        progress=False)
         except:
@@ -41,12 +53,11 @@ class generatePriceData:
     def load_watchlist_daily_price_data(self):
         stickers = [s for s in self.exp_dict['stickers'].keys()]
         all_sticker_data = Parallel(n_jobs=16)(delayed(self.load_individual_sticker_data)(sticker) for sticker in stickers)
+        # TODO: kell itt az enumerate? az indexet nem használjuk
         for i, sticker in enumerate(all_sticker_data):
             if sticker is not None:
                 self.exp_dict['stickers'][sticker[0]]['trading_day_data'] = sticker[1]
                 self.exp_dict['stickers'][sticker[0]]['trading_day_sticker_stats'] = sticker[2]
                 self.exp_dict['stickers'][sticker[0]]['prev_day_data'] = sticker[3]
                 self.exp_dict['stickers'][sticker[0]]['prev_day_stats'] = sticker[4]
-
-
-
+        # TODO: kellene egy return all_sticker_data, hogy a hívásnál látszódjon, hogy transzformáljuk a bejövő adatot

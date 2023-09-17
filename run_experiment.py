@@ -22,8 +22,11 @@ for sticker in stickers:
     experiment_data['stickers'][sticker] = dict()
 
 # 2) load trading day data
+# TODO: ha átadjuk az exp_dict-ben a trading_dayt, akkor nem feltétlen kell még egy param
 get_price_data = generatePriceData(date=TRADING_DAY, exp_dict=experiment_data)
-get_price_data.load_watchlist_daily_price_data()
+# TODO: jobb lenne láthatóbban módosítani az experiment_data-t (pl. valami return értékkel)
+# pl. experiment_data = get_price_data.load_watchlist_daily_price_data(exp_dict=experiment_data)
+get_price_data.load_watchlist_daily_price_data() 
 
 
 from plots.plots import create_histograms, create_candle_stick_chart_w_indicators_for_trendscalping
