@@ -75,7 +75,7 @@ add_strategy_specific_indicators(exp_data=experiment_data, averaged_cols=['close
 
 
 
-def apply_single_long_strategy(exp_data, data='trading_day_data', ma_short=5, ma_long=12, num_stocks=1):
+def apply_trend_following_long_strategy(exp_data, data='trading_day_data', ma_short=5, ma_long=12, num_stocks=1):
     for sticker in exp_data['stickers'].keys():
         sticker_df = exp_data['stickers'][sticker][data]
         sticker_df['position'] = 'out'
@@ -84,7 +84,8 @@ def apply_single_long_strategy(exp_data, data='trading_day_data', ma_short=5, ma
         sticker_df.loc[(0.001 < sticker_df[f'close_ma{ma_long}_grad']) | (0.001 < sticker_df[f'close_ma{ma_short}_grad']), 'position'] = 'long_buy'
         sticker_df['trading_action'] = ''
         sticker_df['prev_position_lagged'] = sticker_df['position'].shift(1)
-        #todo ki kell próbálni a 2. feltétel nélkül is, illetve meg kell nézni ha benne van, akkor van-e olyan trade, ami csak emiatt kerül bele, ugy kene mukodnie, hogy osszefuggo poziciokat alkossan az elso feltetellel
+        #todo ki kell próbálni a 2. feltétel nélkül is, illetve meg kell nézni ha benne van, akkor van-e olyan önálló trade, ami csak emiatt kerül bele, 
+        # illetve ugy kene mukodnie, hogy osszefuggo poziciokat alkossan az elso feltetellel, ezt ellenorizninkell es ha nem igy mukodik javitani
         sticker_df.loc[(sticker_df['position'] == 'long_buy') & (sticker_df['prev_position_lagged'] == 'out'), 'trading_action'] = 'buy next long position'
         sticker_df.loc[(sticker_df['position'] == 'out') & (sticker_df['prev_position_lagged'] == 'long_buy'), 'trading_action'] = 'sell previous long position'
         sticker_df.drop('prev_position_lagged', axis=1, inplace=True)
@@ -108,10 +109,10 @@ def apply_single_long_strategy(exp_data, data='trading_day_data', ma_short=5, ma
             sticker_df['gain'] = 0
             exp_data['stickers'][sticker]['trading_day_data'] = sticker_df
 
-apply_single_long_strategy(exp_data=experiment_data)
+apply_trend_following_long_strategy(exp_data=experiment_data)
 
 
-def apply_single_short_strategy(exp_data, data='trading_day_data', ma_short=5, ma_long=12, num_stocks=1):
+def apply_trend_following_short_strategy(exp_data, data='trading_day_data', ma_short=5, ma_long=12, num_stocks=1):
     for sticker in exp_data['stickers'].keys():
         sticker_df = exp_data['stickers'][sticker][data]
         sticker_df['position'] = 'out'
@@ -143,7 +144,7 @@ def apply_single_short_strategy(exp_data, data='trading_day_data', ma_short=5, m
             sticker_df['gain'] = 0
             exp_data['stickers'][sticker]['trading_day_data'] = sticker_df
 
-apply_single_short_strategy(exp_data=experiment_data)
+apply_trend_following_short_strategy(exp_data=experiment_data)
 
 
 
