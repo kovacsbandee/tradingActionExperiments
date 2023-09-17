@@ -75,7 +75,7 @@ add_strategy_specific_indicators(exp_data=experiment_data, averaged_cols=['close
 
 
 
-def apply_single_long_strategy(exp_data, data='trading_day_data', ma_short=5, ma_long=12, num_stocks=1):
+def apply_trend_following_long_strategy(exp_data, data='trading_day_data', ma_short=5, ma_long=12, num_stocks=1):
     for sticker in exp_data['stickers'].keys():
         sticker_df = exp_data['stickers'][sticker][data]
         sticker_df['position'] = 'out'
@@ -109,10 +109,10 @@ def apply_single_long_strategy(exp_data, data='trading_day_data', ma_short=5, ma
             sticker_df['gain'] = 0
             exp_data['stickers'][sticker]['trading_day_data'] = sticker_df
 
-apply_single_long_strategy(exp_data=experiment_data)
+apply_trend_following_long_strategy(exp_data=experiment_data)
 
 
-def apply_single_short_strategy(exp_data, data='trading_day_data', ma_short=5, ma_long=12, num_stocks=1):
+def apply_trend_following_short_strategy(exp_data, data='trading_day_data', ma_short=5, ma_long=12, num_stocks=1):
     for sticker in exp_data['stickers'].keys():
         sticker_df = exp_data['stickers'][sticker][data]
         sticker_df['position'] = 'out'
@@ -144,7 +144,7 @@ def apply_single_short_strategy(exp_data, data='trading_day_data', ma_short=5, m
             sticker_df['gain'] = 0
             exp_data['stickers'][sticker]['trading_day_data'] = sticker_df
 
-apply_single_short_strategy(exp_data=experiment_data)
+apply_trend_following_short_strategy(exp_data=experiment_data)
 
 
 
