@@ -98,7 +98,9 @@ def create_candle_stick_chart_w_indicators_for_trendscalping(plot_df,
     date = plot_df.index[-1].date().strftime('%Y-%m-%d')
     fig.write_html(f'{PROJ_PATH}/plots/plot_store/candle_stick_chart_{sticker_name}_{date}_{plot_name}.html')
 
-
+'''
+ezeknek majd az analyzers-ben lesz a helye
+'''
 # TODO:
 def relative_volume_in_time_for_all_stock():
     '''
@@ -112,6 +114,13 @@ def compare_prev_and_trading_day_stats():
     Most még nem tudom megfogalmazni, hogy mit kell csinálni, csak tudom, hogy majd kell!
     Valahogyan a profitalbilitással össze kell vetni!
     :return:
+    '''
+    pass
+    
+def create_histogram_for_derivatives():
+    '''
+    Az epsilon jó beállításához, legalább arra van szükseg, hogy a long és short MA deriváltjainak
+    eloszlását egy hisztogramon ábrázolni kell az összes stock-ra ami a scan-ből kijön amíg ad adatot a yf(last month)
     '''
     pass
 
