@@ -35,7 +35,7 @@ from data_sources.add_indicators import add_gradient,add_rolling_average
 
 import pandas as pd
 
-
+# TODO: ez a függvény létrehoz-e olyan adatot, amivel később dolgozni kell, vagy csak a plotokhoz kell?
 def add_strategy_specific_indicators(exp_data, averaged_cols=['close', 'volume'], ma_short=5, ma_long=12,
                                      plot_strategy_indicators=True):
     for sticker in exp_data['stickers'].keys():
@@ -78,6 +78,7 @@ add_strategy_specific_indicators(exp_data=experiment_data, averaged_cols=['close
 
 
 
+# TODO: lehet egy enum osztályt csinálni a string konstansoknak (pl. sell previous long position, buy next long position, etc. a biztonság kedvéért)
 def apply_trend_following_long_strategy(exp_data, data='trading_day_data', ma_short=5, ma_long=12, num_stocks=1):
     for sticker in exp_data['stickers'].keys():
         sticker_df = exp_data['stickers'][sticker][data]
