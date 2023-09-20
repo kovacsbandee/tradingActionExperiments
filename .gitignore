@@ -1,2 +1,4 @@
 /data_store/
 /plots/plot_store/
+.env
+__pycache__/
