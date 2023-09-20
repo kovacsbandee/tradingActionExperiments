@@ -13,6 +13,7 @@ def create_histograms(plot_df: pd.DataFrame,
                       cols: list=None,
                       column_vars: list=None,
                       plot_name: str = ''):
+    date = 'place_for_DATE'#plot_df.index[-1].date().strftime('%Y-%m-%d')
     if cols is None:
         plot_vars = plot_df.columns
     else:
@@ -35,8 +36,7 @@ def create_histograms(plot_df: pd.DataFrame,
                                            nbinsx=100), row=i+1, col=1+j)
                 #fig.update_xaxes(title = c,row=i+1, col=1+j)
     fig.update_layout(height=len(plot_vars)*100 if column_vars is None else int(len(plot_vars)/2)*150)
-    #todo bele kell tenni a dátumot a kimenet nevébe!
-    fig.write_html(f'{PROJ_PATH}/plots/plot_store/{plot_name}_hist.html')
+    fig.write_html(f'{PROJ_PATH}/plots/plot_store/{plot_name}_{date}_hist.html')
 
 
 def create_time_series_plots(plot_df: pd.DataFrame,
@@ -58,7 +58,11 @@ def create_time_series_plots(plot_df: pd.DataFrame,
     print('plot is ready')
 
 
-def create_candle_stick_chart_w_indicators_for_trendscalping(plot_df, sticker_name, averaged_cols=['close', 'volume'], indicators=['close_ma5', 'close_ma9']):
+def create_candle_stick_chart_w_indicators_for_trendscalping(plot_df,
+                                                             sticker_name,
+                                                             averaged_cols=['close', 'volume'],
+                                                             indicators=['close_ma5', 'close_ma9'],
+                                                             plot_name=''):
     for c in averaged_cols:
         if c in indicators:
             indicators.remove(c)
@@ -96,7 +100,7 @@ def create_candle_stick_chart_w_indicators_for_trendscalping(plot_df, sticker_na
     fig.update_layout(xaxis_rangeslider_visible=False,
                       height=1500)
     date = plot_df.index[-1].date().strftime('%Y-%m-%d')
-    fig.write_html(f'{PROJ_PATH}/plots/plot_store/candle_stick_chart_{sticker_name}_{date}.html')
+    fig.write_html(f'{PROJ_PATH}/plots/plot_store/candle_stick_chart_{sticker_name}_{date}_{plot_name}.html')
 
 '''
 ezeknek majd az analyzers-ben lesz a helye
@@ -124,3 +128,14 @@ def create_histogram_for_derivatives():
     '''
     pass
 
+
+def create_gain_histograms(gain_file = 'gains_from_0815.csv'):
+    plot_df = pd.read_csv(f'{PROJ_PATH}/data_store/{gain_file}')
+    pos_types = plot_df['position_type'].unique()
+    fig = make_subplots(cols=1, rows=len(pos_types))
+    for i, position_type in enumerate(pos_types):
+            fig.add_trace(go.Histogram(x=plot_df[plot_df['position_type'] == position_type]['gain_per_stock'],
+                                       name=position_type,
+                                       nbinsx=40,
+                                       histnorm='probability'), col=1,  row=i+1)
+    fig.write_html(f'{PROJ_PATH}/plots/plot_store/gain_histograms_for_{gain_file[:-4]}.html')
