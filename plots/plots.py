@@ -124,3 +124,14 @@ def create_histogram_for_derivatives():
     '''
     pass
 
+
+def create_gain_histograms(gain_file = 'gains_from_0815.csv'):
+    plot_df = pd.read_csv(f'{PROJ_PATH}/data_store/{gain_file}')
+    pos_types = plot_df['position_type'].unique()
+    fig = make_subplots(cols=1, rows=len(pos_types))
+    for i, position_type in enumerate(pos_types):
+            fig.add_trace(go.Histogram(x=plot_df[plot_df['position_type'] == position_type]['gain_per_stock'],
+                                       name=position_type,
+                                       nbinsx=40,
+                                       histnorm='probability'), col=1,  row=i+1)
+    fig.write_html(f'{PROJ_PATH}/plots/plot_store/gain_histograms_for_{gain_file[:-4]}.html')

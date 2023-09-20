@@ -18,10 +18,12 @@ def add_strategy_specific_indicators(exp_data, averaged_cols=['close', 'volume']
         for col in averaged_cols:
             indicators.append(col)
             short_ind_col = f'{col}_ma{ma_short}'
-            sticker_df[short_ind_col] = add_rolling_average(price_time_series=sticker_df, col=col,
+            sticker_df[short_ind_col] = add_rolling_average(price_time_series=sticker_df,
+                                                            col=col,
                                                             window_length=ma_short)
             indicators.append(short_ind_col)
-            sticker_df[f'{short_ind_col}_grad'] = add_gradient(price_time_series=sticker_df, col=short_ind_col)
+            sticker_df[f'{short_ind_col}_grad'] = add_gradient(price_time_series=sticker_df,
+                                                               col=short_ind_col)
             indicators.append(f'{short_ind_col}_grad')
             sticker_df[f'{short_ind_col}_grad2'] = add_gradient(price_time_series=sticker_df,
                                                                 col=f'{short_ind_col}_grad')
@@ -70,7 +72,7 @@ def apply_single_long_strategy(exp_data, day, data='trading_day_data', ma_short=
         sticker_df['prev_position_lagged'] = sticker_df['position'].shift(1)
         #todo ki kell próbálni a 2. feltétel nélkül is, illetve meg kell nézni ha benne van, akkor van-e olyan trade, ami csak emiatt kerül bele, ugy kene mukodnie, hogy osszefuggo poziciokat alkossan az elso feltetellel
         sticker_df.loc[(sticker_df['position'] == 'long_buy') & (sticker_df['prev_position_lagged'] == 'out'), 'trading_action'] = 'buy next long position'
-        sticker_df.loc[(sticker_df['position'] == 'out') & (sticker_df['prev_position_lagged'] == 'long_buy'), 'trading_action'] = 'sell previous long position'
+        #sticker_df.loc[(sticker_df['position'] == 'out') & (sticker_df['prev_position_lagged'] == 'long_buy'), 'trading_action'] = 'sell previous long position'
         sticker_df.drop('prev_position_lagged', axis=1, inplace=True)
         trading_action_df = sticker_df[sticker_df['trading_action'] != ''].copy()
         if trading_action_df.shape[0] > 0:
@@ -83,7 +85,7 @@ def apply_single_long_strategy(exp_data, day, data='trading_day_data', ma_short=
                 if row['trading_action'] == 'buy next long position':
                     prev_long_buy_position_index = i
             print(f'Gain on {sticker} with simple long strategy', trading_action_df.gain.sum())
-            results.append((day, 'combined', sticker, trading_action_df.gain.sum()))
+            results.append((day, 'long', sticker, trading_action_df.gain.sum()))
             sticker_df = pd.merge(sticker_df, trading_action_df['gain'],
                                   how='left',
                                   left_index=True,
@@ -101,7 +103,7 @@ def apply_single_short_strategy(exp_data, day, data='trading_day_data', ma_short
         sticker_df['position'] = 'out'
         #TODO epsiolon has to be optimized!!!
         sticker_df.loc[(-0.001 > sticker_df[f'close_ma{ma_long}_grad']) & (-0.001 > sticker_df[f'close_ma{ma_short}_grad']), 'position'] = 'short_sell'
-        sticker_df.loc[(-0.001 > sticker_df[f'close_ma{ma_long}_grad']) | (-0.001 > sticker_df[f'close_ma{ma_short}_grad']), 'position'] = 'short_sell'
+        #sticker_df.loc[(-0.001 > sticker_df[f'close_ma{ma_long}_grad']) | (-0.001 > sticker_df[f'close_ma{ma_short}_grad']), 'position'] = 'short_sell'
         sticker_df['trading_action'] = ''
         sticker_df['prev_position_lagged'] = sticker_df['position'].shift(1)
         sticker_df.loc[(sticker_df['position'] == 'short_sell') & (sticker_df['prev_position_lagged'] == 'out'), 'trading_action'] = 'sell next short position'
@@ -118,7 +120,7 @@ def apply_single_short_strategy(exp_data, day, data='trading_day_data', ma_short
                 if row['trading_action'] == 'sell next short position':
                     prev_short_sell_position_index = i
             print(f'Gain on {sticker} with simple short strategy', trading_action_df.gain.sum())
-            results.append((day, 'combined', sticker, trading_action_df.gain.sum()))
+            results.append((day, 'short', sticker, trading_action_df.gain.sum()))
             sticker_df = pd.merge(sticker_df, trading_action_df['gain'],
                                   how='left',
                                   left_index=True,
@@ -129,7 +131,8 @@ def apply_single_short_strategy(exp_data, day, data='trading_day_data', ma_short
             exp_data['stickers'][sticker]['trading_day_data'] = sticker_df
     return results
 
-def apply_simple_combined_trend_following_strategy(exp_data, day, data='trading_day_data', ma_short=5, ma_long=12, num_stocks=1):
+def apply_simple_combined_trend_following_strategy(exp_data, day, data='trading_day_data', ma_short=5, ma_long=12, set_num_stocks=1):
+    initial_capital = 3000
     results = list()
     for sticker in exp_data['stickers'].keys():
         sticker_df = exp_data['stickers'][sticker][data]
@@ -140,7 +143,6 @@ def apply_simple_combined_trend_following_strategy(exp_data, day, data='trading_
         sticker_df.loc[(-epsilon > sticker_df[f'close_ma{ma_long}_grad']) & (-epsilon > sticker_df[f'close_ma{ma_short}_grad']), 'position'] = 'short_sell'
         sticker_df['trading_action'] = ''
         sticker_df['prev_position_lagged'] = sticker_df['position'].shift(1)
-
         sticker_df.loc[
             ((sticker_df['position'] == 'long_buy') & (sticker_df['prev_position_lagged'] == 'out')) | \
             ((sticker_df['position'] == 'long_buy') & (sticker_df['prev_position_lagged'] == 'short_sell')),
@@ -166,15 +168,25 @@ def apply_simple_combined_trend_following_strategy(exp_data, day, data='trading_
                 [max(trading_action_df[trading_action_df['trading_action'] == 'buy previous short position'].index), \
                  max(trading_action_df[trading_action_df['trading_action'] == 'sell previous long position'].index)]), 'trading_action'] = ''
             trading_action_df['gain'] = 0
+            trading_action_df['current_capital'] = 0
             prev_short_sell_position_index = trading_action_df[trading_action_df['trading_action'] == 'sell next short position'].index[0]
             prev_long_buy_position_index = trading_action_df[trading_action_df['trading_action'] == 'buy next long position'].index[0]
+            prev_capital = initial_capital
             for i, row in trading_action_df.iterrows():
                 if row['trading_action'] == 'buy previous short position':
-                    trading_action_df.loc[i, 'gain'] = trading_action_df.loc[prev_short_sell_position_index, 'close'] - trading_action_df.loc[i, 'close']  * num_stocks
+                    trading_action_df.loc[i, 'gain'] = trading_action_df.loc[prev_short_sell_position_index, 'close'] - trading_action_df.loc[i, 'close']  * set_num_stocks
+                    # num_stocks = prev_capital / trading_action_df.loc[prev_short_sell_position_index, 'close']
+                    # gain_per_stock:
+                    # trading_action_df.loc[i, 'current_capital'] = trading_action_df.loc[prev_short_sell_position_index, 'close'] - trading_action_df.loc[i, 'close']  * num_stocks
+                    # prev_capital = trading_action_df.loc[i, 'current_capital']
                 if row['trading_action'] == 'sell next short position':
                     prev_short_sell_position_index = i
                 if row['trading_action'] == 'sell previous long position':
-                    trading_action_df.loc[i, 'gain'] = trading_action_df.loc[i, 'close'] - trading_action_df.loc[prev_long_buy_position_index, 'close'] * num_stocks
+                    trading_action_df.loc[i, 'gain'] = trading_action_df.loc[i, 'close'] - trading_action_df.loc[prev_long_buy_position_index, 'close'] * set_num_stocks
+                    # num_stocks = prev_capital / trading_action_df.loc[prev_long_buy_position_index, 'close']
+                    # gain_per_stock:
+                    # trading_action_df.loc[i, 'current_capital'] = trading_action_df.loc[i, 'close'] - trading_action_df.loc[prev_long_buy_position_index, 'close'] * num_stocks
+                    # prev_capital = trading_action_df.loc[i, 'current_capital']
                 if row['trading_action'] == 'buy next long position':
                     prev_long_buy_position_index = i
 

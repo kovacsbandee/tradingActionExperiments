@@ -34,7 +34,7 @@ class andrewAzizRecommendedScanner:
         self.lower_price_boundary = lower_price_boundary
         self.upper_price_boundary = upper_price_boundary
         self.price_range_perc_cond = price_range_perc_cond
-        self.avg_volume_cond = 25000
+        self.avg_volume_cond = avg_volume_cond
         self.pre_market_stats = None
         self.recommended_stickers = []
         self.name = 'andrewAzizRecommendedScanner'
@@ -84,7 +84,6 @@ class andrewAzizRecommendedScanner:
               'please check for avg_volume, price_range_perc as further constraints')
 
     def recommend_premarket_watchlist(self):
-        # TODO a filter here could be applied based on the other statistics: e.g. prica range between 10 and 100$
         self.recommended_stickers = self.pre_market_stats[
             (self.lower_price_boundary < self.pre_market_stats['avg_close']) & \
             (self.pre_market_stats['avg_close'] < self.upper_price_boundary) & \
