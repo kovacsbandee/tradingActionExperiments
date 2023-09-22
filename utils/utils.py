@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 # TODO:
 def save_experiment_data():
     '''
@@ -13,3 +15,9 @@ def load_experiment_data():
     :return: experiment_data
     '''
     pass
+
+def calculate_scanning_day(trading_day: datetime) -> datetime:
+    if (trading_day - timedelta(days=1)).strftime('%A') == 'Sunday':
+        return trading_day - timedelta(days=3)
+    else:
+        return trading_day - timedelta(days=1)

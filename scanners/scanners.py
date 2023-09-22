@@ -65,7 +65,7 @@ class andrewAzizRecommendedScanner:
         self.recommended_stickers = [] # TODO: veszélyes!!!
         self.name = 'andrewAzizRecommendedScanner' # TODO: jöhet ez is param-ból, de ha konstans, akkor legyen konstans :V
 
-    def get_pre_market_stats(self, sticker: str):
+    def get_pre_market_stats(self, sticker: str) -> dict:
         sticker_data = None
         # TODO: a yf.download ha nem talál adatot, akkor a data.empty()-vel lehet csekkolni [pandas metódus]
         try:

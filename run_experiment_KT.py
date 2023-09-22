@@ -2,34 +2,41 @@ import os
 from dotenv import load_dotenv
 import pandas as pd
 from random import sample
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from scanners.scanners import get_nasdaq_stickers, andrewAzizRecommendedScanner
+from scanners.AndrewAzizRecommendedScanner import AndrewAzizRecommendedScanner
 from data_sources.generate_price_data import generatePriceData
 from strategies.strategies import add_strategy_specific_indicators
 from strategies.strategies import apply_single_long_strategy, apply_single_short_strategy, apply_simple_combined_trend_following_strategy
+from checks.checks import check_trading_day
+from utils.utils import calculate_scanning_day
 
 load_dotenv()
 PROJECT_PATH = os.environ["PROJECT_PATH"]
 
 # initial variables:
 final_results = list()
-tr_day_list = [TRADING_DAY.strftime('%Y-%m-%d') for TRADING_DAY in pd.bdate_range(pd.to_datetime('2023-08-09', format='%Y-%m-%d'), periods=20).to_list()]
+tr_day_list = [trd.strftime('%Y-%m-%d') for trd in pd.bdate_range(pd.to_datetime('2023-09-09', format='%Y-%m-%d'), periods=20).to_list()]
+
+stickers = get_nasdaq_stickers(PROJECT_PATH)
 
 for TRADING_DAY in tr_day_list:
-    # ELVILEG A BDATE_RANGE CSAK MUNKANAPOT AD VISSZA
     if datetime.strptime(TRADING_DAY, '%Y-%m-%d').strftime('%A') != 'Sunday' or datetime.strptime(TRADING_DAY, '%Y-%m-%d').strftime('%A') != 'Saturday':
         # 0) initializations
         experiment_data = dict()
         experiment_data['trading_day'] = TRADING_DAY
         experiment_data['stickers'] = dict()
         # 1) Get watchlist
-        azis_scanner = andrewAzizRecommendedScanner(trading_day=TRADING_DAY)
+        temp_trading_day: datetime = check_trading_day(TRADING_DAY)
+        temp_scanning_day: datetime = calculate_scanning_day(temp_trading_day)
+        azis_scanner = AndrewAzizRecommendedScanner(PROJECT_PATH, 'KTAZIZ', temp_trading_day, temp_scanning_day, stickers, 10, 100, 10, 25000)
         azis_scanner.get_filtering_stats()
-        azis_scanner.recommend_premarket_watchlist()
+        recommended_stickers = azis_scanner.recommend_premarket_watchlist()
         
-        stickers =  azis_scanner.recommended_stickers # TODO: a recommended_stickers itt még []
+        stickers = recommended_stickers
         # TODO Tamas: debug!
+        # probléma oka: A NASDAQ-os stickerek között van olyan, amihez a yfinance nem talál adatot
         #stickers = get_nasdaq_stickers()
         for sticker in stickers: # TODO: a stickers itt még []
             experiment_data['stickers'][sticker] = dict()
