@@ -13,11 +13,11 @@ class AndrewAzizRecommendedScanner(ScannerBase):
     
     def get_pre_market_stats(self, sticker: str) -> dict:
         start_date = self.scanning_day
-        end_date = self.scanning_day + timedelta(days=1) if self.scanning_day.strftime('%A') != 'Friday' else self.scanning_day
+        end_date = self.trading_day
         
         try:
             ticker = yf.Ticker(sticker)
-            ticker_history = ticker.history(start=start_date, end=end_date, interval='1m') if ticker else None
+            ticker_history = ticker.history(start=start_date, end=end_date, interval='1h', period='1d') if ticker else None
             
             if ticker_history is not None and not ticker_history.empty:
             
@@ -35,36 +35,17 @@ class AndrewAzizRecommendedScanner(ScannerBase):
                     volume_range_ratio = (volume_max - volume_min) / avg_volume
                     
                 return {
-                    'sticker': sticker,
+                    'sticker': sticker, # TODO: ref -> generate_price_data -> továbbadhatnánk az oda kellő adatokat is
                     'avg_close': avg_close,
                     'avg_volume': avg_volume,
                     'price_range_perc': price_range_perc,
                     'volume_range_ratio': volume_range_ratio
                     }
-            #else:
-            #    return None
+            else:
+                return None
         except Exception as e:
             print(f"No data available for sticker: {sticker}")
-            #return None
-        #try:
-        #    sticker_data: DataFrame = yf.download(sticker,
-        #                                start=start_date,
-        #                                #end=end_date,
-        #                                end=self.scanning_day + timedelta(days=1), #TODO: ha péntekre esik a scanning_day, akkor ez nem jó?
-        #                                interval='1m', # TODO: ha '1m', akkor hibát dob - ['BLDEW']: Exception("%ticker%: Period 'max' is invalid, must be one of ['1d', '5d']")
-        #                                               # nem minden tickert enged percenként frissíteni, erre is kéne valami check
-        #                                progress=False)
-        #    if not sticker_data.empty:
-        #        return {'sticker': sticker,
-        #                'avg_close': sticker_data['Close'].mean(),
-        #                'avg_volume': sticker_data['Volume'].mean(),
-        #                'price_range_perc': (sticker_data['High'].max() - sticker_data['Low'].min()) / sticker_data['Close'].mean() * 100,
-        #                'volume_range_ratio': (sticker_data['Volume'].max() - sticker_data['Volume'].min()) / sticker_data['Volume'].mean()}
-        #                #TODO: RuntimeWarning: invalid value encountered in scalar divide
-        #                #'volume_range_ratio': (sticker_data['Volume'].max() - sticker_data['Volume'].min()) / sticker_data['Volume'].mean()}
-        #except Exception as e:
-        #    print(f"Failed to retrieve data for {sticker}: {str(e)}")
-        #return None
+            return None
 
     def get_filtering_stats(self, save_csv: bool = False) -> List:
         self.pre_market_stats = self._create_pre_market_stats()
@@ -72,28 +53,24 @@ class AndrewAzizRecommendedScanner(ScannerBase):
         if save_csv:
             self.save_stats_to_csv(save_date) 
 
-        create_histograms(plot_df=self.pre_market_stats[[c for c in self.pre_market_stats.columns if c != 'sticker']],
-                          plot_name=f'pre_market_stats_hist_{save_date}')
-        print('Pre market statistics histograms can be found in the plots/plot_store directory, '
-              'please check for avg_volume, price_range_perc as further constraints')
+        if self.pre_market_stats is not None:
+            create_histograms(plot_df=self.pre_market_stats[[c for c in self.pre_market_stats.columns if c != 'sticker']],
+                            plot_name=f'pre_market_stats_hist_{save_date}')
+            print('Pre market statistics histograms can be found in the plots/plot_store directory, '
+                'please check for avg_volume, price_range_perc as further constraints')
         return self.pre_market_stats
         
     def _create_pre_market_stats(self) -> DataFrame:
         pre_market_sticker_stats = \
             Parallel(n_jobs=16)(delayed(self.get_pre_market_stats)(sticker) for sticker in self.stickers)
-                  
-        #pre_market_sticker_stats = [stats for stats in pre_market_sticker_stats if stats is not None]
+                 
+        pre_market_sticker_stats = [stats for stats in pre_market_sticker_stats if stats is not None]
         
-        #pre_market_sticker_stats = []
-        #for sticker in self.stickers:
-        #    if sticker == 'BFRIW':
-        #        self.get_pre_market_stats(sticker)
-        #    stats = self.get_pre_market_stats(sticker)
-        #    if stats is not None:
-        #        pre_market_sticker_stats.append(stats)
-        
-        #TODO: kell nullcheck vagy try-except a pre_market_stats-re, mert ez itten elhasal...        
-        return pd.DataFrame.from_records(pre_market_sticker_stats)
+        try:   
+            return pd.DataFrame.from_records(pre_market_sticker_stats)
+        except Exception as e:
+            print(f'Failed to create pre_market_stats DataFrame: {str(e)}') #Exception string helyett valami beszédesebb legyen
+            return None
     
     def save_stats_to_csv(self, save_date):
         data_path = f'{self.project_path}/data_store'

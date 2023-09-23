@@ -17,7 +17,7 @@ def add_strategy_specific_indicators(exp_data, averaged_cols=['close', 'volume']
                                      plot_strategy_indicators=True):
     for sticker in exp_data['stickers'].keys():
         sticker_df = exp_data['stickers'][sticker]['trading_day_data']
-        indicators = list()
+        indicators = []
         for col in averaged_cols:
             indicators.append(col)
             short_ind_col = f'{col}_ma{ma_short}'
@@ -77,7 +77,9 @@ def apply_single_long_strategy(exp_data, day, data='trading_day_data', ma_short=
         sticker_df.loc[(sticker_df['position'] == 'long_buy') & (sticker_df['prev_position_lagged'] == 'out'), 'trading_action'] = 'buy next long position'
         #sticker_df.loc[(sticker_df['position'] == 'out') & (sticker_df['prev_position_lagged'] == 'long_buy'), 'trading_action'] = 'sell previous long position'
         sticker_df.drop('prev_position_lagged', axis=1, inplace=True)
-        trading_action_df = sticker_df[sticker_df['trading_action'] != ''].copy()
+        trading_action_df = sticker_df[sticker_df['trading_action'] != ''].copy() #NOTE: a trading_action mező Datetime típusú
+        #ERROR: ValueError: max() arg is an empty sequence
+        #NOTE: trading_action_df['trading_action'] az itt épp Datetime debug alapján
         if trading_action_df.shape[0] > 0:
             sticker_df.loc[sticker_df.index > max(trading_action_df[trading_action_df['trading_action'] == 'sell previous long position'].index), 'trading_action'] = ''
             trading_action_df['gain'] = 0
