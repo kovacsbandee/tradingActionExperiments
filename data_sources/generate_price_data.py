@@ -46,6 +46,7 @@ class generatePriceData:
             ''' Here is a place, where a-priori constraints like price boundaries could be applied! '''
             return (sticker, trading_day_data, trading_day_sticker_stats, prev_day_data, prev_sticker_stats)
         except:
+            # TODO: biztos, hogy nem jobb, ha None megy vissza és csekkolunk?
             blank_sticker_stats = \
                 {'avg_close': 0.0,
                  'avg_volume': 0.0,
@@ -60,6 +61,7 @@ class generatePriceData:
         stickers = [s for s in self.exp_dict['stickers'].keys()]
         all_sticker_data = Parallel(n_jobs=16)(delayed(self.load_individual_sticker_data)(sticker) for sticker in stickers)
         # TODO: kell itt az enumerate? az indexet nem használjuk
+        # NOTE: ez itten nagyon zagyva nekem egyelőre, valahogy egyszerűsíteni köllene
         for i, sticker in enumerate(all_sticker_data):
             if sticker is not None:
                 self.exp_dict['stickers'][sticker[0]]['trading_day_data'] = sticker[1]

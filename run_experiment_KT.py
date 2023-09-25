@@ -17,9 +17,9 @@ PROJECT_PATH = os.environ["PROJECT_PATH"]
 
 # initial variables:
 final_results = list()
-tr_day_list = [trd.strftime('%Y-%m-%d') for trd in pd.bdate_range(pd.to_datetime('2023-09-09', format='%Y-%m-%d'), periods=20).to_list()]
+tr_day_list = [trd.strftime('%Y-%m-%d') for trd in pd.bdate_range(pd.to_datetime('2023-09-12', format='%Y-%m-%d'), periods=20).to_list()]
 
-stickers = get_nasdaq_stickers(PROJECT_PATH)[:1000]
+stickers = get_nasdaq_stickers(PROJECT_PATH)
 
 #for TRADING_DAY in tr_day_list:
 if datetime.strptime(tr_day_list[0], '%Y-%m-%d').strftime('%A') != 'Sunday' or datetime.strptime(tr_day_list[0], '%Y-%m-%d').strftime('%A') != 'Saturday':
@@ -41,7 +41,6 @@ if datetime.strptime(tr_day_list[0], '%Y-%m-%d').strftime('%A') != 'Sunday' or d
     
         stickers = recommended_stickers
         # TODO Tamas: debug!
-        # probléma oka: A NASDAQ-os stickerek között van olyan, amihez a yfinance nem talál adatot
         #stickers = get_nasdaq_stickers()
         for sticker in stickers: # TODO: a generatePriceData-ban listát használunk, oda mehetne a recommended_stickers is, ne legyen oda-vissza
             experiment_data['stickers'][sticker] = dict()

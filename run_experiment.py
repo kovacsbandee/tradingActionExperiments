@@ -14,36 +14,39 @@ PROJECT_PATH = os.environ["PROJECT_PATH"]
 
 # initial variables:
 final_results = list()
-tr_day_list = [TRADING_DAY.strftime('%Y-%m-%d') for TRADING_DAY in pd.bdate_range(pd.to_datetime('2023-08-09', format='%Y-%m-%d'), periods=20).to_list()]
+#tr_day_list = [TRADING_DAY.strftime('%Y-%m-%d') for TRADING_DAY in pd.bdate_range(pd.to_datetime('2023-08-09', format='%Y-%m-%d'), periods=20).to_list()]
 
-for TRADING_DAY in tr_day_list:
+tr_day_list = [trd.strftime('%Y-%m-%d') for trd in pd.bdate_range(pd.to_datetime('2023-09-12', format='%Y-%m-%d'), periods=20).to_list()]
+tr_day = tr_day_list[0]
+
+#for TRADING_DAY in tr_day_list:
     # ELVILEG A BDATE_RANGE CSAK MUNKANAPOT AD VISSZA
-    if datetime.strptime(TRADING_DAY, '%Y-%m-%d').strftime('%A') != 'Sunday' or datetime.strptime(TRADING_DAY, '%Y-%m-%d').strftime('%A') != 'Saturday':
-        # 0) initializations
-        experiment_data = dict()
-        experiment_data['trading_day'] = TRADING_DAY
-        experiment_data['stickers'] = dict()
-        # 1) Get watchlist
-        azis_scanner = andrewAzizRecommendedScanner(trading_day=TRADING_DAY)
-        azis_scanner.get_filtering_stats()
-        azis_scanner.recommend_premarket_watchlist()
-        
-        stickers =  azis_scanner.recommended_stickers # TODO: a recommended_stickers itt még []
-        # TODO Tamas: debug!
-        #stickers = get_nasdaq_stickers()
-        for sticker in stickers: # TODO: a stickers itt még []
-            experiment_data['stickers'][sticker] = dict()
-        # 2) Load trading day data
-        get_price_data = generatePriceData(date=TRADING_DAY, exp_dict=experiment_data)
-        get_price_data.load_watchlist_daily_price_data()
-        # 3) Apply strategy
-        add_strategy_specific_indicators(exp_data=experiment_data, averaged_cols=['close', 'volume'], ma_short=5, ma_long=12, plot_strategy_indicators = True)
-        long_results = apply_single_long_strategy(exp_data=experiment_data, day=TRADING_DAY)
-        short_results = apply_single_short_strategy(exp_data=experiment_data, day=TRADING_DAY)
-        combined_results = apply_simple_combined_trend_following_strategy(exp_data=experiment_data, day=TRADING_DAY)
-    final_results.append(long_results)
-    final_results.append(short_results)
-    final_results.append(combined_results)
+if datetime.strptime(tr_day, '%Y-%m-%d').strftime('%A') != 'Sunday' or datetime.strptime(tr_day, '%Y-%m-%d').strftime('%A') != 'Saturday':
+    # 0) initializations
+    experiment_data = dict()
+    experiment_data['trading_day'] = tr_day
+    experiment_data['stickers'] = dict()
+    # 1) Get watchlist
+    azis_scanner = andrewAzizRecommendedScanner(trading_day=tr_day)
+    azis_scanner.get_filtering_stats()
+    azis_scanner.recommend_premarket_watchlist()
+    
+    stickers =  azis_scanner.recommended_stickers # TODO: a recommended_stickers itt még []
+    # TODO Tamas: debug!
+    #stickers = get_nasdaq_stickers()
+    for sticker in stickers: # TODO: a stickers itt még []
+        experiment_data['stickers'][sticker] = dict()
+    # 2) Load trading day data
+    get_price_data = generatePriceData(date=tr_day, exp_dict=experiment_data)
+    get_price_data.load_watchlist_daily_price_data()
+    # 3) Apply strategy
+    add_strategy_specific_indicators(exp_data=experiment_data, averaged_cols=['close', 'volume'], ma_short=5, ma_long=12, plot_strategy_indicators = True)
+    long_results = apply_single_long_strategy(exp_data=experiment_data, day=tr_day)
+    short_results = apply_single_short_strategy(exp_data=experiment_data, day=tr_day)
+    combined_results = apply_simple_combined_trend_following_strategy(exp_data=experiment_data, day=tr_day)
+final_results.append(long_results)
+final_results.append(short_results)
+final_results.append(combined_results)
 
 
 result = []

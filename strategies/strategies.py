@@ -40,6 +40,7 @@ def add_strategy_specific_indicators(exp_data, averaged_cols=['close', 'volume']
             sticker_df[f'{long_ind_col}_grad2'] = add_gradient(price_time_series=sticker_df, col=f'{long_ind_col}')
             indicators.append(f'{long_ind_col}_grad2')
         if plot_strategy_indicators:
+            # TODO: itt nem deep copy kéne, hogy az eredeti ne módosuljon?
             prev_day_sticker_df = sticker_df[pd.to_datetime(sticker_df.index).date == sticker_df.index[0].date()].copy()
             create_histograms(plot_df=prev_day_sticker_df,
                               cols=indicators,
@@ -51,6 +52,7 @@ def add_strategy_specific_indicators(exp_data, averaged_cols=['close', 'volume']
                 averaged_cols=averaged_cols,
                 indicators=indicators,
                 plot_name='prev_day')
+            # TODO: ez itt nem felesleges kódduplikáció?
             prev_day_sticker_df = sticker_df[pd.to_datetime(sticker_df.index).date == sticker_df.index[0].date()].copy()
             create_histograms(plot_df=prev_day_sticker_df,
                               cols=indicators,
@@ -75,13 +77,18 @@ def apply_single_long_strategy(exp_data, day, data='trading_day_data', ma_short=
         sticker_df['prev_position_lagged'] = sticker_df['position'].shift(1)
         #todo ki kell próbálni a 2. feltétel nélkül is, illetve meg kell nézni ha benne van, akkor van-e olyan trade, ami csak emiatt kerül bele, ugy kene mukodnie, hogy osszefuggo poziciokat alkossan az elso feltetellel
         sticker_df.loc[(sticker_df['position'] == 'long_buy') & (sticker_df['prev_position_lagged'] == 'out'), 'trading_action'] = 'buy next long position'
-        #sticker_df.loc[(sticker_df['position'] == 'out') & (sticker_df['prev_position_lagged'] == 'long_buy'), 'trading_action'] = 'sell previous long position'
+        sticker_df.loc[(sticker_df['position'] == 'out') & (sticker_df['prev_position_lagged'] == 'long_buy'), 'trading_action'] = 'sell previous long position'
         sticker_df.drop('prev_position_lagged', axis=1, inplace=True)
         trading_action_df = sticker_df[sticker_df['trading_action'] != ''].copy() #NOTE: a trading_action mező Datetime típusú
-        #ERROR: ValueError: max() arg is an empty sequence
-        #NOTE: trading_action_df['trading_action'] az itt épp Datetime debug alapján
+        
         if trading_action_df.shape[0] > 0:
-            sticker_df.loc[sticker_df.index > max(trading_action_df[trading_action_df['trading_action'] == 'sell previous long position'].index), 'trading_action'] = ''
+            #ERROR: ValueError: max() arg is an empty sequence
+            #sticker_df.loc[sticker_df.index > max(trading_action_df[trading_action_df['trading_action'] == 'sell previous long position'].index), 'trading_action'] = ''
+            
+            max_index = trading_action_df[trading_action_df['trading_action'] == 'sell previous long position'].index.max()
+            if not pd.isnull(max_index):
+                sticker_df.loc[sticker_df.index > max_index, 'trading_action'] = ''
+
             trading_action_df['gain'] = 0
             prev_long_buy_position_index = trading_action_df[trading_action_df['trading_action'] == 'buy next long position'].index[0]
             for i, row in trading_action_df.iterrows():
