@@ -15,6 +15,7 @@ class AndrewAzizRecommendedScanner(ScannerBase):
         start_date = self.scanning_day
         end_date = self.trading_day
         
+        #NOTE: nem muszáj ezzel a megoldással letölteni, csak így jobban tudtam debugolni
         try:
             ticker = yf.Ticker(sticker)
             ticker_history = ticker.history(start=start_date, end=end_date, interval='1h', period='1d') if ticker else None
@@ -80,13 +81,13 @@ class AndrewAzizRecommendedScanner(ScannerBase):
                 os.remove(os.listdir(f'{data_path}/{f}'))
         self.pre_market_stats.to_csv(path_or_buf=f'{self.project_path}/data_store/pre_market_stats_{save_date}', index=False)
         
-    def recommend_premarket_watchlist(self) -> List:
+    def recommend_premarket_watchlist(self) -> DataFrame:
         self.recommended_stickers = self.pre_market_stats[
             (self.lower_price_boundary < self.pre_market_stats['avg_close']) & \
             (self.pre_market_stats['avg_close'] < self.upper_price_boundary) & \
             (self.price_range_perc_cond < self.pre_market_stats['price_range_perc']) & \
-            (self.avg_volume_cond < self.pre_market_stats['avg_volume'])]['sticker'].to_list()
-        print(f'The recommended watchlist for {self.trading_day} is the following list: {self.recommended_stickers}')
+            (self.avg_volume_cond < self.pre_market_stats['avg_volume'])]
+        print(f'The recommended watchlist for {self.trading_day} is the following DataFrame: {self.recommended_stickers}')
         return self.recommended_stickers
 
 

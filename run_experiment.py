@@ -5,7 +5,7 @@ from random import sample
 from datetime import datetime
 
 from scanners.scanners import get_nasdaq_stickers, andrewAzizRecommendedScanner
-from data_sources.generate_price_data import generatePriceData
+from data_sources.PriceDataGenerator import PriceDataGenerator
 from strategies.strategies import add_strategy_specific_indicators
 from strategies.strategies import apply_single_long_strategy, apply_single_short_strategy, apply_simple_combined_trend_following_strategy
 
@@ -37,7 +37,7 @@ if datetime.strptime(tr_day, '%Y-%m-%d').strftime('%A') != 'Sunday' or datetime.
     for sticker in stickers: # TODO: a stickers itt még []
         experiment_data['stickers'][sticker] = dict()
     # 2) Load trading day data
-    get_price_data = generatePriceData(date=tr_day, exp_dict=experiment_data)
+    get_price_data = PriceDataGenerator(trading_day=tr_day, exp_dict=experiment_data)
     get_price_data.load_watchlist_daily_price_data()
     # 3) Apply strategy
     add_strategy_specific_indicators(exp_data=experiment_data, averaged_cols=['close', 'volume'], ma_short=5, ma_long=12, plot_strategy_indicators = True)

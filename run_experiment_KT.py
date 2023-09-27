@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 from scanners.scanners import get_nasdaq_stickers, andrewAzizRecommendedScanner
 from scanners.AndrewAzizRecommendedScanner import AndrewAzizRecommendedScanner
-from data_sources.generate_price_data import generatePriceData
+from data_sources.PriceDataGenerator import PriceDataGenerator
 from strategies.strategies import add_strategy_specific_indicators
 from strategies.strategies import apply_single_long_strategy, apply_single_short_strategy, apply_simple_combined_trend_following_strategy
 from checks.checks import check_trading_day
@@ -39,19 +39,19 @@ if datetime.strptime(tr_day_list[0], '%Y-%m-%d').strftime('%A') != 'Sunday' or d
     if pre_market_stats is not None:
         recommended_stickers = aziz_scanner.recommend_premarket_watchlist()
     
-        stickers = recommended_stickers
         # TODO Tamas: debug!
         #stickers = get_nasdaq_stickers()
-        for sticker in stickers: # TODO: a generatePriceData-ban listát használunk, oda mehetne a recommended_stickers is, ne legyen oda-vissza
-            experiment_data['stickers'][sticker] = dict()
+        for index, row in recommended_stickers.iterrows(): # TODO: a generatePriceData-ban listát használunk, oda mehetne a recommended_stickers is, ne legyen oda-vissza
+            experiment_data['stickers'][row['sticker']] = dict()
         # 2) Load trading day data
-        get_price_data = generatePriceData(date=tr_day_list[0], exp_dict=experiment_data)
-        get_price_data.load_watchlist_daily_price_data()
+        price_data_generator = PriceDataGenerator(trading_day=temp_trading_day, sticker_data=recommended_stickers, 
+                                                  exp_dict=experiment_data, lower_price_boundary=10, upper_price_boundary=100, lower_volume_boundary=10000)
+        price_data_generator.load_watchlist_daily_price_data()
         # 3) Apply strategy
         add_strategy_specific_indicators(exp_data=experiment_data, averaged_cols=['close', 'volume'], ma_short=5, ma_long=12, plot_strategy_indicators = True)
-        long_results = apply_single_long_strategy(exp_data=experiment_data, day=tr_day_list[0])
-        short_results = apply_single_short_strategy(exp_data=experiment_data, day=tr_day_list[0])
-        combined_results = apply_simple_combined_trend_following_strategy(exp_data=experiment_data, day=tr_day_list[0])
+        long_results = apply_single_long_strategy(exp_data=experiment_data, day=temp_trading_day)
+        short_results = apply_single_short_strategy(exp_data=experiment_data, day=temp_trading_day)
+        combined_results = apply_simple_combined_trend_following_strategy(exp_data=experiment_data, day=temp_trading_day)
 final_results.append(long_results)
 final_results.append(short_results)
 final_results.append(combined_results)
