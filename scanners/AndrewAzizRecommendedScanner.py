@@ -21,7 +21,11 @@ class AndrewAzizRecommendedScanner(ScannerBase):
             ticker_history = ticker.history(start=start_date, end=end_date, interval='1h', period='1d') if ticker else None
             
             if ticker_history is not None and not ticker_history.empty:
-            
+                #TODO: kell még az 
+                # index (DateTimeIndex)
+                # adatok a megelőző ÉS a trading napról
+                # itt csak a megelőző napot számoljuk, így kell a tz_localize(None) és szűrés
+                
                 avg_close = ticker_history['Close'].mean()
                 high_max = ticker_history['High'].max()
                 low_min = ticker_history['Low'].min()
