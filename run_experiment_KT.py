@@ -1,16 +1,17 @@
 import os
+import sys
+print(sys.executable)
 from dotenv import load_dotenv
 import pandas as pd
 from random import sample
 from datetime import datetime, timedelta
 
-from scanners.scanners import get_nasdaq_stickers, andrewAzizRecommendedScanner
 from scanners.AndrewAzizRecommendedScanner import AndrewAzizRecommendedScanner
 from data_sources.PriceDataGenerator import PriceDataGenerator
 from strategies.strategies import add_strategy_specific_indicators
 from strategies.strategies import apply_single_long_strategy, apply_single_short_strategy, apply_simple_combined_trend_following_strategy
 from checks.checks import check_trading_day
-from utils.utils import calculate_scanning_day
+from utils.utils import calculate_scanning_day, get_nasdaq_stickers
 
 load_dotenv()
 PROJECT_PATH = os.environ["PROJECT_PATH"]
@@ -19,7 +20,7 @@ PROJECT_PATH = os.environ["PROJECT_PATH"]
 final_results = list()
 tr_day_list = [trd.strftime('%Y-%m-%d') for trd in pd.bdate_range(pd.to_datetime('2023-09-12', format='%Y-%m-%d'), periods=20).to_list()]
 
-stickers = get_nasdaq_stickers(PROJECT_PATH)
+stickers = get_nasdaq_stickers(path=PROJECT_PATH, filename="nasdaq_stickers.csv")
 
 #for TRADING_DAY in tr_day_list:
 if datetime.strptime(tr_day_list[0], '%Y-%m-%d').strftime('%A') != 'Sunday' or datetime.strptime(tr_day_list[0], '%Y-%m-%d').strftime('%A') != 'Saturday':

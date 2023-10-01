@@ -9,13 +9,15 @@ import logging
 
 logging.getLogger('yfinance').setLevel(logging.CRITICAL)
 
-load_dotenv()
-
-PROJ_PATH = os.environ["PROJECT_PATH"]
+#load_dotenv()
+#
+#PROJ_PATH = os.environ["PROJECT_PATH"]
 
 # TODO: érdemes lenne kiszervezni a dataframe-előkészítést és a sticker-lista visszaadást külön-külön függvényekbe
-def get_nasdaq_stickers(path: str=PROJ_PATH):
-    daily_nasdaq_stickers = pd.read_csv(f'{path}/data_store/daily_nasdaq_stickers.csv')
+def get_nasdaq_stickers(filename: str, path: str):
+    if not filename:
+        raise ValueError(f"No files found with path '{path}' and filename '{filename}'")
+    daily_nasdaq_stickers = pd.read_csv(f'{path}/data_store/{filename}')
     daily_nasdaq_stickers['Last Sale'] = daily_nasdaq_stickers['Last Sale'].str.lstrip('$').astype(float)
     daily_nasdaq_stickers = daily_nasdaq_stickers[(~daily_nasdaq_stickers['Market Cap'].isna()) & \
                                                   (daily_nasdaq_stickers['Market Cap'] != 0.0)]
@@ -90,7 +92,7 @@ class andrewAzizRecommendedScanner:
                     'volume_range_ratio':0}
 
 
-    def get_filtering_stats(self, save_csv: bool = False, proj_path=PROJ_PATH):
+    def get_filtering_stats(self, proj_path, save_csv: bool = False):
         pre_market_sticker_stats = \
             Parallel(n_jobs=16)(delayed(self.get_pre_market_stats)(sticker) for sticker in self.stickers)
 
