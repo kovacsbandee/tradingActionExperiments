@@ -1,0 +1,14 @@
+1. stock market nyitáskor:
+ - watchlist előállítása előző napi adatokból [Scanner]
+ - prev_day_data előállítása watchlist alapján [PriceDataGenerator], tárolás konstansba/fájlba
+
+2. trading day-hez adatlista inicializálása és első feltöltése
+ - nem indítunk kereskedést, míg az adatlista n számú adattal nem rendelkezik
+
+3. trading flow:
+ - Alpaca Websocket update-kor adatlista frissítése (első elem pop, új elem push)
+ - stratégiák futtatása, kereskedési döntések meghozatala
+
+4. stock market záráskor:
+ - adatmentés fájlba/db-be (ha kell)
+ - garbage collection/object destroy (Scanner és PriceDataGenerator, következő tőzsdei nyitáskor újra-inicializáljuk)

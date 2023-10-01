@@ -1,14 +1,5 @@
-import os
-from dotenv import load_dotenv
 import pandas as pd
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-from datetime import datetime
-
-load_dotenv()
-
-PROJ_PATH = os.environ["PROJECT_PATH"] # nem köll (?)
-
+from pandas import DataFrame
 from data_sources.add_indicators import add_gradient, add_rolling_average
 from plots.plots import create_histograms, create_candle_stick_chart_w_indicators_for_trendscalping
 
@@ -66,9 +57,9 @@ def add_strategy_specific_indicators(exp_data, averaged_cols=['close', 'volume']
                 plot_name='trading_day')
 
 def apply_single_long_strategy(exp_data, day, data='trading_day_data', ma_short=5, ma_long=12, num_stocks=1):
-    results=list()
+    results=[]
     for sticker in exp_data['stickers'].keys():
-        sticker_df = exp_data['stickers'][sticker][data]
+        sticker_df: DataFrame = exp_data['stickers'][sticker][data]
         sticker_df['position'] = 'out'
         #TODO epsiolon has to be optimized!!!
         sticker_df.loc[(0.001 < sticker_df[f'close_ma{ma_long}_grad']) & (0.001 < sticker_df[f'close_ma{ma_short}_grad']), 'position'] = 'long_buy'
@@ -77,14 +68,11 @@ def apply_single_long_strategy(exp_data, day, data='trading_day_data', ma_short=
         sticker_df['prev_position_lagged'] = sticker_df['position'].shift(1)
         #todo ki kell próbálni a 2. feltétel nélkül is, illetve meg kell nézni ha benne van, akkor van-e olyan trade, ami csak emiatt kerül bele, ugy kene mukodnie, hogy osszefuggo poziciokat alkossan az elso feltetellel
         sticker_df.loc[(sticker_df['position'] == 'long_buy') & (sticker_df['prev_position_lagged'] == 'out'), 'trading_action'] = 'buy next long position'
-        sticker_df.loc[(sticker_df['position'] == 'out') & (sticker_df['prev_position_lagged'] == 'long_buy'), 'trading_action'] = 'sell previous long position'
+        #sticker_df.loc[(sticker_df['position'] == 'out') & (sticker_df['prev_position_lagged'] == 'long_buy'), 'trading_action'] = 'sell previous long position'
         sticker_df.drop('prev_position_lagged', axis=1, inplace=True)
-        trading_action_df = sticker_df[sticker_df['trading_action'] != ''].copy() #NOTE: a trading_action mező Datetime típusú
+        trading_action_df = sticker_df[sticker_df['trading_action'] != ''].copy()
         
         if trading_action_df.shape[0] > 0:
-            #ERROR: ValueError: max() arg is an empty sequence
-            #sticker_df.loc[sticker_df.index > max(trading_action_df[trading_action_df['trading_action'] == 'sell previous long position'].index), 'trading_action'] = ''
-            
             max_index = trading_action_df[trading_action_df['trading_action'] == 'sell previous long position'].index.max()
             if not pd.isnull(max_index):
                 sticker_df.loc[sticker_df.index > max_index, 'trading_action'] = ''

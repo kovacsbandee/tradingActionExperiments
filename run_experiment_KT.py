@@ -15,12 +15,13 @@ from utils.utils import calculate_scanning_day, get_nasdaq_stickers
 
 load_dotenv()
 PROJECT_PATH = os.environ["PROJECT_PATH"]
+STICKER_CSV_PATH = os.environ["STICKER_CSV_PATH"]
 
 # initial variables:
 final_results = list()
 tr_day_list = [trd.strftime('%Y-%m-%d') for trd in pd.bdate_range(pd.to_datetime('2023-09-12', format='%Y-%m-%d'), periods=20).to_list()]
 
-stickers = get_nasdaq_stickers(path=PROJECT_PATH, filename="nasdaq_stickers.csv")
+stickers = get_nasdaq_stickers(project_path=PROJECT_PATH, file_path=STICKER_CSV_PATH)
 
 #for TRADING_DAY in tr_day_list:
 if datetime.strptime(tr_day_list[0], '%Y-%m-%d').strftime('%A') != 'Sunday' or datetime.strptime(tr_day_list[0], '%Y-%m-%d').strftime('%A') != 'Saturday':
@@ -66,7 +67,6 @@ df = pd.DataFrame(result, columns=['date', 'position_type', 'sticker', 'gain_per
 df.to_csv(f'{PROJECT_PATH}/data_store/gains_from_all_stickers_0815_w_workaround.csv', index=False)
 
 # TODO olyan mintha nem prev_trading_day-en futna a stratégia
-# NOTE (Tamas): a load_watchlist_daily_price_data-ban nincsenek is prev_trading_day értékek [tessék azért még háromszor csekkolni]
 # 20230901: BEKE, AMC
 # 20230829: NVCR
 # 20230823: M

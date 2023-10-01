@@ -23,10 +23,10 @@ def calculate_scanning_day(trading_day: datetime) -> datetime:
     else:
         return trading_day - timedelta(days=1)
     
-def get_nasdaq_stickers(filename: str, path: str):
-    if not filename:
-        raise ValueError(f"No files found with path '{path}' and filename '{filename}'")
-    daily_nasdaq_stickers = pd.read_csv(f'{path}/data_store/{filename}')
+def get_nasdaq_stickers(project_path: str, file_path: str) -> list:
+    if not file_path:
+        raise ValueError(f"No files found with path '{project_path}{file_path}'")
+    daily_nasdaq_stickers = pd.read_csv(f'{project_path}/{file_path}')
     daily_nasdaq_stickers['Last Sale'] = daily_nasdaq_stickers['Last Sale'].str.lstrip('$').astype(float)
     daily_nasdaq_stickers = daily_nasdaq_stickers[(~daily_nasdaq_stickers['Market Cap'].isna()) & \
                                                   (daily_nasdaq_stickers['Market Cap'] != 0.0)]
