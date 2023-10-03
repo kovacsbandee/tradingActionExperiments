@@ -11,7 +11,6 @@ ALPACA_SECRET_KEY= os.environ["ALPACA_SECRET_KEY"]
 SOCKET_URL= os.environ["SOCKET_URL"]
 
 stream = StockDataStream(api_key=ALPACA_KEY, secret_key=ALPACA_SECRET_KEY)
-stream._connect()
 
 def on_open(ws):
     print("opened")
@@ -21,12 +20,10 @@ def on_open(ws):
 
     listen_message = {
         "action":"subscribe",
-        "trades":["AAPL"], # NOTE: ide jönnek a watchlistben lévő részvények
-        "quotes":["BOWL","CABA"], # NOTE: vagy ide?
-        "dailyBars":["*"]
+        #"trades":["AAPL"], # NOTE: ide jönnek a watchlistben lévő részvények
+        #"quotes":["BOWL","CABA"], # NOTE: vagy ide?
+        "bars":["AAPL"] # NOTE: ebben van low, high, open, close, volume, timestamp
         }
-    
-    listen_message = {"action": "listen", "data": {"streams": ["AM.TSLA"]}}
 
     ws.send(json.dumps(listen_message))
 
@@ -34,9 +31,6 @@ def on_open(ws):
 def on_message(ws, message):
     print("received a message")
     print(message)
-    #file = open("message.txt", "w")
-    #file.write(message)
-    #file.close()
 
 def on_close(ws):
     print("closed connection")

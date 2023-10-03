@@ -1,16 +1,33 @@
+BAR DATA
+[
+    {"T":"b",
+    "S":"AAPL",
+    "o":171.68,
+    "h":171.68,
+    "l":171.585,
+    "c":171.605,
+    "v":1961,
+    "t":"2023-10-03T18:16:00Z",
+    "n":22,
+    "vw":171.618957}
+]
 
-[{"T":"q",
-"S":"AMD",
-"bx":"V",
-"bp":102.41,
-"bs":2,
-"ax":"V",
-"ap":102.88,
-"as":1,
-"c":["R"],
-"z":"C",
-"t":"2023-10-02T19:33:22.617718649Z"}]
+QUOTE DATA
+[
+    {"T":"q",
+    "S":"AMD",
+    "bx":"V",
+    "bp":102.41,
+    "bs":2,
+    "ax":"V",
+    "ap":102.88,
+    "as":1,
+    "c":["R"],
+    "z":"C",
+    "t":"2023-10-02T19:33:22.617718649Z"}
+]
 
+DAILYBARS DATA
 [
     {"T":"d","S":"SVXY","o":86.03,"h":87.18,"l":85.24,"c":86.13,"v":12620,"t":"2023-10-02T04:00:00Z","n":159,"vw":86.097639},
     {"T":"d","S":"ICL","o":5.69,"h":5.69,"l":5.59,"c":5.63,"v":24517,"t":"2023-10-02T04:00:00Z","n":194,"vw":5.618435},
@@ -55,3 +72,39 @@
     {"T":"d","S":"VSME","o":3.73,"h":3.88,"l":3.66,"c":3.88,"v":1508,"t":"2023-10-02T04:00:00Z","n":25,"vw":3.748505},
     {"T":"d","S":"THM","o":0.345,"h":0.345,"l":0.345,"c":0.345,"v":100,"t":"2023-10-02T04:00:00Z","n":1,"vw":0.345}
 ]
+
+MARKET ORDER RESPONSE (BUY)
+{   
+    'asset_class': <AssetClass.US_EQUITY: 'us_equity'>,
+    'asset_id': UUID('b0b6dd9d-8b9b-48a9-ba46-b9d54906e415'),
+    'canceled_at': None,
+    'client_order_id': '46123d45-6fb6-4660-9694-721a16722f31',
+    'created_at': datetime.datetime(2023, 10, 3, 19, 2, 8, 636343, tzinfo=TzInfo(UTC)),
+    'expired_at': None,
+    'extended_hours': False,
+    'failed_at': None,
+    'filled_at': None,
+    'filled_avg_price': None,
+    'filled_qty': '0',
+    'hwm': None,
+    'id': UUID('496fb89c-6d6a-4d57-8a07-2e0d208dcb1c'),
+    'legs': None,
+    'limit_price': None,
+    'notional': None,
+    'order_class': <OrderClass.SIMPLE: 'simple'>,
+    'order_type': <OrderType.MARKET: 'market'>,
+    'qty': '0.012',
+    'replaced_at': None,
+    'replaced_by': None,
+    'replaces': None,
+    'side': <OrderSide.BUY: 'buy'>,
+    'status': <OrderStatus.PENDING_NEW: 'pending_new'>,
+    'stop_price': None,
+    'submitted_at': datetime.datetime(2023, 10, 3, 19, 2, 8, 635343, tzinfo=TzInfo(UTC)),
+    'symbol': 'AAPL',
+    'time_in_force': <TimeInForce.DAY: 'day'>,
+    'trail_percent': None,
+    'trail_price': None,
+    'type': <OrderType.MARKET: 'market'>,
+    'updated_at': datetime.datetime(2023, 10, 3, 19, 2, 8, 636385, tzinfo=TzInfo(UTC))
+}

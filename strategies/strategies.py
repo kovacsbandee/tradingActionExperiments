@@ -31,7 +31,6 @@ def add_strategy_specific_indicators(exp_data, averaged_cols=['close', 'volume']
             sticker_df[f'{long_ind_col}_grad2'] = add_gradient(price_time_series=sticker_df, col=f'{long_ind_col}')
             indicators.append(f'{long_ind_col}_grad2')
         if plot_strategy_indicators:
-            # TODO: itt nem deep copy kéne, hogy az eredeti ne módosuljon?
             prev_day_sticker_df = sticker_df[pd.to_datetime(sticker_df.index).date == sticker_df.index[0].date()].copy()
             create_histograms(plot_df=prev_day_sticker_df,
                               cols=indicators,

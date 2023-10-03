@@ -7,7 +7,7 @@ from random import sample
 from datetime import datetime, timedelta
 
 from scanners.AndrewAzizRecommendedScanner import AndrewAzizRecommendedScanner
-from data_sources.PriceDataGenerator import PriceDataGenerator
+from data_sources.AlpacaPriceDataGenerator import AlpacaPriceDataGenerator
 from strategies.strategies import add_strategy_specific_indicators
 from strategies.strategies import apply_single_long_strategy, apply_single_short_strategy, apply_simple_combined_trend_following_strategy
 from checks.checks import check_trading_day
@@ -43,11 +43,12 @@ if datetime.strptime(tr_day_list[0], '%Y-%m-%d').strftime('%A') != 'Sunday' or d
     
         # TODO Tamas: debug!
         #stickers = get_nasdaq_stickers()
-        for index, row in recommended_stickers.iterrows(): # TODO: a generatePriceData-ban listát használunk, oda mehetne a recommended_stickers is, ne legyen oda-vissza
-            experiment_data['stickers'][row['sticker']] = dict()
         # 2) Load trading day data
-        price_data_generator = PriceDataGenerator(trading_day=temp_trading_day, sticker_data=recommended_stickers, 
-                                                  exp_dict=experiment_data, lower_price_boundary=10, upper_price_boundary=100, lower_volume_boundary=10000)
+        price_data_generator = AlpacaPriceDataGenerator(trading_day=temp_trading_day, recommended_stickers=recommended_stickers, 
+                                                  lower_price_boundary=10, upper_price_boundary=100, lower_volume_boundary=10000,
+                                                  data_window_size=10)
+        price_data_generator.initialize_sticker_dict()
+        price_data_generator.initialize_current_data_window()
         price_data_generator.load_watchlist_daily_price_data()
         # 3) Apply strategy
         add_strategy_specific_indicators(exp_data=experiment_data, averaged_cols=['close', 'volume'], ma_short=5, ma_long=12, plot_strategy_indicators = True)

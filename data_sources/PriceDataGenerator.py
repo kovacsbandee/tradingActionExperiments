@@ -18,11 +18,11 @@ class PriceDataGenerator(PriceDataGeneratorBase):
     """
 
     def load_individual_sticker_data(self) -> List[tuple]:
-        if self.exp_dict is not None:
-            for ticker in self.exp_dict['stickers'].keys():
+        if self.recommended_stickers is not None:
+            for ticker in self.recommended_stickers['stickers'].keys():
                 ticker_symbol = ticker
                 
-                # ehelyett kell az Alpaca websocket-es megoldás (?)
+                # ehelyett kell az Alpaca REST hívás
                 yahoo_data: DataFrame = yf.download(ticker_symbol,
                             start=self.trading_day - timedelta(1),
                             end=self.trading_day + timedelta(1),
@@ -50,10 +50,10 @@ class PriceDataGenerator(PriceDataGeneratorBase):
                     }
                 ''' Here is a place, where a-priori constraints like price boundaries could be applied! '''
                 
-                self.exp_dict['stickers'][ticker_symbol]['trading_day_data'] = trading_day_data
-                self.exp_dict['stickers'][ticker_symbol]['trading_day_sticker_stats'] = trading_day_sticker_stats
-                self.exp_dict['stickers'][ticker_symbol]['prev_day_data'] = prev_day_data
-                self.exp_dict['stickers'][ticker_symbol]['prev_day_stats'] = prev_sticker_stats
+                self.recommended_stickers['stickers'][ticker_symbol]['trading_day_data'] = trading_day_data
+                self.recommended_stickers['stickers'][ticker_symbol]['trading_day_sticker_stats'] = trading_day_sticker_stats
+                self.recommended_stickers['stickers'][ticker_symbol]['prev_day_data'] = prev_day_data
+                self.recommended_stickers['stickers'][ticker_symbol]['prev_day_stats'] = prev_sticker_stats
         else: 
             return None 
 
