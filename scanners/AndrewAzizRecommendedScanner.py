@@ -85,14 +85,19 @@ class AndrewAzizRecommendedScanner(ScannerBase):
                 os.remove(os.listdir(f'{data_path}/{f}'))
         self.pre_market_stats.to_csv(path_or_buf=f'{self.project_path}/data_store/pre_market_stats_{save_date}', index=False)
         
-    def recommend_premarket_watchlist(self) -> DataFrame:
+    def recommend_premarket_watchlist(self) -> List[str]:
         self.recommended_stickers = self.pre_market_stats[
             (self.lower_price_boundary < self.pre_market_stats['avg_close']) & \
             (self.pre_market_stats['avg_close'] < self.upper_price_boundary) & \
             (self.price_range_perc_cond < self.pre_market_stats['price_range_perc']) & \
             (self.avg_volume_cond < self.pre_market_stats['avg_volume'])]
         print(f'The recommended watchlist for {self.trading_day} is the following DataFrame: {self.recommended_stickers}')
-        return self.recommended_stickers
+        sticker_string_list = [] # TODO: ez így kókányolás, ki kell találni valami jobbat, illetve kérdés, hogy a Scannerből kell-e az összes adat, 
+        if self.recommended_stickers is not None:
+            for index, row in self.recommended_stickers.iterrows():
+                sticker_string_list.append(row['sticker'])
+        
+        return sticker_string_list
 
 
 

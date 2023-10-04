@@ -20,9 +20,9 @@ def on_open(ws):
 
     listen_message = {
         "action":"subscribe",
-        #"trades":["AAPL"], # NOTE: ide jönnek a watchlistben lévő részvények
-        #"quotes":["BOWL","CABA"], # NOTE: vagy ide?
-        "bars":["AAPL"] # NOTE: ebben van low, high, open, close, volume, timestamp
+        #"trades":["AAPL"],
+        #"quotes":["BOWL","CABA"],
+        "bars":["AAPL", "SPY", "TSLA"] # NOTE: ebben van low, high, open, close, volume, timestamp
         }
 
     ws.send(json.dumps(listen_message))

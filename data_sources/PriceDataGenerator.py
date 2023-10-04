@@ -18,8 +18,8 @@ class PriceDataGenerator(PriceDataGeneratorBase):
     """
 
     def load_individual_sticker_data(self) -> List[tuple]:
-        if self.recommended_stickers is not None:
-            for ticker in self.recommended_stickers['stickers'].keys():
+        if self.recommended_sticker_list is not None:
+            for ticker in self.recommended_sticker_list['stickers'].keys():
                 ticker_symbol = ticker
                 
                 # ehelyett kell az Alpaca REST hívás
@@ -50,10 +50,10 @@ class PriceDataGenerator(PriceDataGeneratorBase):
                     }
                 ''' Here is a place, where a-priori constraints like price boundaries could be applied! '''
                 
-                self.recommended_stickers['stickers'][ticker_symbol]['trading_day_data'] = trading_day_data
-                self.recommended_stickers['stickers'][ticker_symbol]['trading_day_sticker_stats'] = trading_day_sticker_stats
-                self.recommended_stickers['stickers'][ticker_symbol]['prev_day_data'] = prev_day_data
-                self.recommended_stickers['stickers'][ticker_symbol]['prev_day_stats'] = prev_sticker_stats
+                self.recommended_sticker_list['stickers'][ticker_symbol]['trading_day_data'] = trading_day_data
+                self.recommended_sticker_list['stickers'][ticker_symbol]['trading_day_sticker_stats'] = trading_day_sticker_stats
+                self.recommended_sticker_list['stickers'][ticker_symbol]['prev_day_data'] = prev_day_data
+                self.recommended_sticker_list['stickers'][ticker_symbol]['prev_day_stats'] = prev_sticker_stats
         else: 
             return None 
 

@@ -7,10 +7,11 @@ from alpaca.data.historical import StockHistoricalDataClient
 class PriceDataGeneratorBase(ABC):
     
     trading_day: datetime
-    recommended_stickers: DataFrame
+    recommended_sticker_list: List[str]
     lower_price_boundary: int
     upper_price_boundary: int
     lower_volume_boundary: int
+    prev_day_data: DataFrame
     prev_day_sticker_stats: dict
     trading_day_sticker_stats: dict
     """
@@ -58,11 +59,11 @@ class PriceDataGeneratorBase(ABC):
     data_window_size: int
     historical_data_client: StockHistoricalDataClient
     
-    def __init__(self, trading_day, recommended_stickers, lower_price_boundary, 
+    def __init__(self, trading_day, recommended_sticker_list, lower_price_boundary, 
                  upper_price_boundary, lower_volume_boundary, data_window_size,
                  historical_data_client):
         self.trading_day = trading_day
-        self.recommended_stickers = recommended_stickers
+        self.recommended_sticker_list = recommended_sticker_list
         self.lower_price_boundary = lower_price_boundary
         self.upper_price_boundary = upper_price_boundary
         self.lower_volume_boundary = lower_volume_boundary

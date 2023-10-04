@@ -11,7 +11,7 @@ from data_sources.AlpacaPriceDataGenerator import AlpacaPriceDataGenerator
 from strategies.strategies import add_strategy_specific_indicators
 from strategies.strategies import apply_single_long_strategy, apply_single_short_strategy, apply_simple_combined_trend_following_strategy
 from checks.checks import check_trading_day
-from utils.utils import calculate_scanning_day, get_nasdaq_stickers
+from utils.utils import calculate_scanning_day, get_nasdaq_stickers, append_to_bar_list
 
 load_dotenv()
 PROJECT_PATH = os.environ["PROJECT_PATH"]
@@ -40,16 +40,30 @@ if datetime.strptime(tr_day_list[0], '%Y-%m-%d').strftime('%A') != 'Sunday' or d
     pre_market_stats = aziz_scanner.get_filtering_stats()
     if pre_market_stats is not None:
         recommended_stickers = aziz_scanner.recommend_premarket_watchlist()
-    
+
         # TODO Tamas: debug!
         #stickers = get_nasdaq_stickers()
+        
         # 2) Load trading day data
-        price_data_generator = AlpacaPriceDataGenerator(trading_day=temp_trading_day, recommended_stickers=recommended_stickers, 
+        price_data_generator = AlpacaPriceDataGenerator(trading_day=temp_trading_day, recommended_sticker_list=recommended_stickers, 
                                                   lower_price_boundary=10, upper_price_boundary=100, lower_volume_boundary=10000,
                                                   data_window_size=10)
         price_data_generator.initialize_sticker_dict()
         price_data_generator.initialize_current_data_window()
+        price_data_generator.load_prev_day_watchlist_data()
+        # innentől érdekes, hogy hogyan update-elünk a websocket message alapján
+        # a) "ősfeltöltés" -> current_data_window feltöltése n elemig
+        # b) n elem után engedjük továbbfutni
+        # c) WARNING! Van, hogy nem egyetlen listában jönnek az összes sticker adatai, 
+        #    hanem több, különálló message-ben és meglehetősen random
+        #    -> megoldás: itt is egy számláló, amihez ez if tartozik és csak akkor futtatjuk az algot, ha eléri az x értéket (?)
+        minute_bar_list = [] # TODO: a kereskedési esemény megtörténtekor ki kell üríteni
+        # on message:
+        append_to_bar_list(message="websocket_message", bar_list=minute_bar_list)
+        # HINT: threading, Event(), set, wait, stb.
+
         price_data_generator.load_watchlist_daily_price_data()
+        
         # 3) Apply strategy
         add_strategy_specific_indicators(exp_data=experiment_data, averaged_cols=['close', 'volume'], ma_short=5, ma_long=12, plot_strategy_indicators = True)
         long_results = apply_single_long_strategy(exp_data=experiment_data, day=temp_trading_day)

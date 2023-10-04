@@ -31,3 +31,6 @@ def get_nasdaq_stickers(project_path: str, file_path: str) -> list:
     daily_nasdaq_stickers = daily_nasdaq_stickers[(~daily_nasdaq_stickers['Market Cap'].isna()) & \
                                                   (daily_nasdaq_stickers['Market Cap'] != 0.0)]
     return list(daily_nasdaq_stickers['Symbol'].unique())
+
+def append_to_bar_list(message, bar_list):
+    bar_list.append(message) #TODO: implement

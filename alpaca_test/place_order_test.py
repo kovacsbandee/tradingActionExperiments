@@ -19,7 +19,7 @@ print(account)
 market_order_data = MarketOrderRequest(
                     symbol="AAPL",
                     qty=10,
-                    side=OrderSide.BUY,
+                    side=OrderSide.SELL,
                     time_in_force=TimeInForce.DAY
                     )
 
