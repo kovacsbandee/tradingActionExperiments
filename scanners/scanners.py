@@ -79,7 +79,7 @@ class andrewAzizRecommendedScanner:
                 pass
             self.pre_market_stats.to_csv(path_or_buf=f'{proj_path}/data_store/pre_market_stats_{save_date}', index=False)
         create_histograms(plot_df=self.pre_market_stats[[c for c in self.pre_market_stats.columns if c != 'sticker']],
-                          plot_name=f'pre_market_stats_hist_{save_date}')
+                          plot_name=f'pre_market_stats_{save_date}')
         print('Pre market statistics histograms can be found in the plots/plot_store directory, '
               'please check for avg_volume, price_range_perc as further constraints')
 

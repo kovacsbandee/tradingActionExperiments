@@ -21,7 +21,8 @@ class generatePriceData:
                                        progress=False)
             # note itt azért még lehet baj!
             sticker_data.columns = [c.lower() for c in sticker_data.columns]
-            trading_day_data = sticker_data[pd.to_datetime(sticker_data.index).tz_localize(None) > pd.to_datetime(self.date-timedelta(1))]
+            #trading_day_data = sticker_data[pd.to_datetime(sticker_data.index).tz_localize(None) > pd.to_datetime(self.date-timedelta(1))]
+            trading_day_data = sticker_data[pd.to_datetime(sticker_data.index).tz_localize(None) > pd.to_datetime(self.date)]
             # TODO for Kovi: sticker stats has to be revised and enhanced based on general price plots, comparison between stats and profitability!
             trading_day_sticker_stats = \
                 {'avg_close': trading_day_data['close'].mean(),
