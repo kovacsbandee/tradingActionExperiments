@@ -2,11 +2,6 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime
-
-PROJ_PATH = 'F:/tradingActionExperiments'
-
-
-
 from data_sources.add_indicators import add_gradient, add_rolling_average
 from plots.plots import create_histograms, create_candle_stick_chart_w_indicators_for_trendscalping
 
