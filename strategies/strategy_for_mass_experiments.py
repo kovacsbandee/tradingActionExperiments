@@ -116,7 +116,7 @@ def apply_simple_combined_trend_following_strategy(df,
                 prev_capital_index = i
         if trading_action_df is not None:
             df = pd.merge(df,
-                          trading_action_df[['gain_per_position', 'current_capital']],
+                          trading_action_df[['gain_per_position', 'current_capital', 'trading_action']],
                           how='left',
                           left_index=True,
                           right_index=True)
@@ -126,4 +126,5 @@ def apply_simple_combined_trend_following_strategy(df,
     else:
         df['gain_per_position'] = 0.0
         df['current_capital'] = 0.0
+        df['trading_action'] = ''
         return df

@@ -5,6 +5,10 @@ import pandas as pd
 from joblib import Parallel, delayed
 from strategies.strategy_for_mass_experiments import add_strategy_specific_indicators, apply_simple_combined_trend_following_strategy
 
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
+
 PROJ_PATH = 'F:/tradingActionExperiments'
 DB_PATH = f'{PROJ_PATH}/data_store/database'
 
@@ -35,8 +39,6 @@ def create_strategy_results(csv):
         capitals = sticker_df[sticker_df['current_capital'] != 0.0]['current_capital']
         final_capital = 0.0 if len(capitals) == 0 else capitals[-1]
         total_gain = sticker_df['gain_per_position'].sum()
-    sticker_df['current_capital'] = 0.0
-    sticker_df['gain_per_position'] = 0.0
     save_file_name = csv.rstrip('.csv') + '_' + experiment_description + '.csv'
     sticker_df.to_csv(save_file_name, mode='w+')
     result = [date, sticker, avg_close, avg_volume, final_capital, total_gain]
@@ -53,9 +55,52 @@ def run_parallel_strategy_operations(all_csvs, exp_desc):
     result_df.to_csv(f'{PROJ_PATH}/data_store/results/{exp_desc}.csv')
     return result_df
 
+def create_candle_stick_chart_w_indicators_for_trendscalping(plot_df,
+                                                             sticker_name,
+                                                             averaged_cols=[],
+                                                             indicators=['close_ma5', 'close_ma12'],
+                                                             plot_name=''):
+    for c in averaged_cols:
+        if c in indicators:
+            indicators.remove(c)
+    fig = make_subplots(rows=2+len(indicators), cols=1, shared_xaxes=True)
+    fig.add_trace(go.Candlestick(x=plot_df.index,
+                                 open=plot_df['open'],
+                                 high=plot_df['high'],
+                                 low=plot_df['low'],
+                                 close=plot_df['close'],
+                                 name=sticker_name), row=1, col=1)
+    fig.add_trace(go.Bar(x=plot_df.index,
+                         y=plot_df['volume'],
+                         name='Volume'), row=2, col=1)
+    for i, indicator in enumerate([col for col in indicators if col not in averaged_cols]):
+        fig.add_trace(go.Scatter(x=plot_df.index,
+                                 y=plot_df[f'{indicator}'],
+                                 name=f'{indicator}',
+                                 mode='lines',
+                                 connectgaps=True), row=3+i, col=1)
+    fig.update_layout(xaxis_rangeslider_visible=False,
+                      height=1500)
+    fig.write_html(f'{PROJ_PATH}/data_store/results/plots/candle_stick_chart_{sticker_name}_{plot_name}.html')
+
+
 files = get_all_file_w_paths()
 
 res_df = run_parallel_strategy_operations(all_csvs=files, exp_desc=experiment_description)
 
-result_df = pd.DataFrame.from_records(res, columns=['date', 'sticker', 'avg_close', 'avg_volume', 'final_capital', 'total_gain'])
-result_df.to_csv(f'{PROJ_PATH}/data_store/results/{experiment_description}.csv')
+
+plots = res_df[res_df['final_capital'] > 3150]
+
+for i, row in plots.iterrows():
+    d = row['date'].replace('-', '_')
+    s = row['sticker']
+    print(d,s)
+    df = pd.read_csv(f'{DB_PATH}/stock_prices_for_{d}/csvs/{s}_{experiment_description}.csv')
+    create_candle_stick_chart_w_indicators_for_trendscalping(plot_df=df,
+                                                             sticker_name=s,
+                                                             plot_name=f'{experiment_description}_with_positions_{d}',
+                                                             indicators=['current_capital',
+                                                                         f'close_ma{short_ma}',
+                                                                         f'close_ma{short_ma}_grad',
+                                                                         f'close_ma{long_ma}',
+                                                                         f'close_ma{long_ma}_grad'])
