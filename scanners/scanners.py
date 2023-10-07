@@ -17,7 +17,8 @@ def get_nasdaq_stickers(path: str='F:/tradingActionExperiments'):
 
 class andrewAzizRecommendedScanner:
 
-    def __init__(self, trading_day: datetime,
+    def __init__(self,
+                 trading_day: datetime,
                  stickers: list = None,
                  lower_price_boundary: float=10,
                  upper_price_boundary: float=100,
@@ -53,17 +54,17 @@ class andrewAzizRecommendedScanner:
             return {'sticker': sticker,
                     'avg_close': sticker_data['Close'].mean(),
                     'avg_volume': sticker_data['Volume'].mean(),
-                    'price_range_perc': (sticker_data['High'].max() - sticker_data['Low'].min()) / sticker_data['Close'].mean() * 100,
-                    'volume_range_ratio': (sticker_data['Volume'].max() - sticker_data['Volume'].min()) / sticker_data['Volume'].mean()}
+                    'price_range_perc': (sticker_data['High'].max() - sticker_data['Low'].min()) / sticker_data['Close'].mean() * 100}
+                    #'volume_range_ratio': (sticker_data['Volume'].max() - sticker_data['Volume'].min()) / sticker_data['Volume'].mean()}
         else:
             return {'sticker': sticker,
                     'avg_close': 0,
                     'avg_volume': 0,
-                    'price_range_perc': 0,
-                    'volume_range_ratio':0}
+                    'price_range_perc': 0}
+                    #'volume_range_ratio':0}
 
 
-    def get_filtering_stats(self, save_csv: bool = False, proj_path='F:/tradingActionExperiments'):
+    def calculate_filtering_stats(self, save_csv: bool = False, proj_path='F:/tradingActionExperiments'):
         pre_market_sticker_stats = \
             Parallel(n_jobs=16)(delayed(self.get_pre_market_stats)(sticker) for sticker in self.stickers)
 

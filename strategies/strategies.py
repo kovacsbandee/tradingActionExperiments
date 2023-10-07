@@ -11,7 +11,10 @@ from data_sources.add_indicators import add_gradient, add_rolling_average
 from plots.plots import create_histograms, create_candle_stick_chart_w_indicators_for_trendscalping
 
 
-def add_strategy_specific_indicators(exp_data, averaged_cols=['close', 'volume'], ma_short=5, ma_long=12,
+def add_strategy_specific_indicators(exp_data, averaged_cols=['close', 'volume'],
+                                     ma_short=5, ma_long=12,
+                                     shooth_win_len_short = 4,
+                                     shooth_win_len_long = 4,
                                      plot_strategy_indicators=True):
     for sticker in exp_data['stickers'].keys():
         sticker_df = exp_data['stickers'][sticker]['trading_day_data']
@@ -26,16 +29,25 @@ def add_strategy_specific_indicators(exp_data, averaged_cols=['close', 'volume']
             sticker_df[f'{short_ind_col}_grad'] = add_gradient(price_time_series=sticker_df,
                                                                col=short_ind_col)
             indicators.append(f'{short_ind_col}_grad')
-            '''
-            sticker_df[f'{short_ind_col}_grad2'] = add_gradient(price_time_series=sticker_df,
-                                                                col=f'{short_ind_col}_grad')
-            indicators.append(f'{short_ind_col}_grad2')
-            '''
+            # sticker_df[f'{short_ind_col}_grad_smoothed_{shooth_win_len_short}'] = add_rolling_average(price_time_series=sticker_df,
+            #                                                                                           col = f'{short_ind_col}_grad',
+            #                                                                                           window_length=shooth_win_len_short)
+            # indicators.append(f'{short_ind_col}_grad_smoothed_{shooth_win_len_short}')
+
+            # sticker_df[f'{short_ind_col}_grad2'] = add_gradient(price_time_series=sticker_df,
+            #                                                     col=f'{short_ind_col}_grad')
+            # indicators.append(f'{short_ind_col}_grad2')
+
             long_ind_col = f'{col}_ma{ma_long}'
             sticker_df[long_ind_col] = add_rolling_average(price_time_series=sticker_df, col=col, window_length=ma_long)
             indicators.append(long_ind_col)
             sticker_df[f'{long_ind_col}_grad'] = add_gradient(price_time_series=sticker_df, col=long_ind_col)
             indicators.append(f'{long_ind_col}_grad')
+            # sticker_df[f'{long_ind_col}_grad_smoothed_{shooth_win_len_long}'] = add_rolling_average(price_time_series=sticker_df,
+            #                                                                                           col = f'{long_ind_col}_grad',
+            #                                                                                           window_length=shooth_win_len_long)
+            # indicators.append(f'{long_ind_col}_grad_smoothed_{shooth_win_len_long}')
+
             '''
             sticker_df[f'{long_ind_col}_grad2'] = add_gradient(price_time_series=sticker_df, col=f'{long_ind_col}')
             indicators.append(f'{long_ind_col}_grad2')
@@ -65,14 +77,14 @@ def add_strategy_specific_indicators(exp_data, averaged_cols=['close', 'volume']
                 indicators=indicators,
                 plot_name='trading_day')
 
-def apply_single_long_strategy(exp_data, day, data='trading_day_data', ma_short=5, ma_long=12, initial_capital=3000, comission_ratio=0.0):
+def apply_single_long_strategy(exp_data, day, ind_price='close', data='trading_day_data', ma_short=5, ma_long=12, initial_capital=3000, comission_ratio=0.0):
     results=list()
     for sticker in exp_data['stickers'].keys():
         sticker_df = exp_data['stickers'][sticker][data]
         sticker_df['position'] = 'out'
         #TODO epsiolon has to be optimized!!!
-        sticker_df.loc[(0.001 < sticker_df[f'close_ma{ma_long}_grad']) & (0.001 < sticker_df[f'close_ma{ma_short}_grad']), 'position'] = 'long_buy'
-        #sticker_df.loc[(0.001 < sticker_df[f'close_ma{ma_long}_grad']) | (0.001 < sticker_df[f'close_ma{ma_short}_grad']), 'position'] = 'long_buy'
+        sticker_df.loc[(0.001 < sticker_df[f'{ind_price}_ma{ma_long}_grad']) & (0.001 < sticker_df[f'{ind_price}_ma{ma_short}_grad']), 'position'] = 'long_buy'
+        #sticker_df.loc[(0.001 < sticker_df[f'{ind_price}_ma{ma_long}_grad']) | (0.001 < sticker_df[f'{ind_price}_ma{ma_short}_grad']), 'position'] = 'long_buy'
         sticker_df['trading_action'] = ''
         sticker_df['prev_position_lagged'] = sticker_df['position'].shift(1)
         #todo ki kell próbálni a 2. feltétel nélkül is, illetve meg kell nézni ha benne van, akkor van-e olyan trade, ami csak emiatt kerül bele, ugy kene mukodnie, hogy osszefuggo poziciokat alkossan az elso feltetellel
@@ -89,11 +101,11 @@ def apply_single_long_strategy(exp_data, day, data='trading_day_data', ma_short=
         if trading_action_df.shape[0] > 0:
             for i, row in trading_action_df.iterrows():
                 if row['trading_action'] == 'sell previous long position':
-                    trading_action_df.loc[i, 'gain_per_position'] = trading_action_df.loc[i, 'close'] - trading_action_df.loc[prev_long_buy_position_index, 'close']
+                    trading_action_df.loc[i, 'gain_per_position'] = trading_action_df.loc[i, ind_price] - trading_action_df.loc[prev_long_buy_position_index, ind_price]
                     trading_action_df.loc[i, 'current_capital'] = (trading_action_df.loc[prev_capital_index, 'current_capital'] + (
                                                                                trading_action_df.loc[i, 'gain_per_position'] * \
                                                                                (trading_action_df.loc[prev_long_buy_position_index, 'current_capital'] /
-                                                                                trading_action_df.loc[prev_long_buy_position_index, 'close']))) - comission_ratio * \
+                                                                                trading_action_df.loc[prev_long_buy_position_index, ind_price]))) - comission_ratio * \
                                                                   trading_action_df.loc[prev_capital_index, 'current_capital']
                     prev_capital_index = i
                 if row['trading_action'] == 'buy next long position':
@@ -112,14 +124,14 @@ def apply_single_long_strategy(exp_data, day, data='trading_day_data', ma_short=
             exp_data['stickers'][sticker]['trading_day_data_long_strategy'] = sticker_df
     return results
 
-def apply_single_short_strategy(exp_data, day, data='trading_day_data', ma_short=5, ma_long=12, initial_capital=3000, comission_ratio=0.0):
+def apply_single_short_strategy(exp_data, day, ind_price='close', data='trading_day_data', ma_short=5, ma_long=12, initial_capital=3000, comission_ratio=0.0):
     results = list()
     for sticker in exp_data['stickers'].keys():
         sticker_df = exp_data['stickers'][sticker][data]
         sticker_df['position'] = 'out'
         #TODO epsiolon has to be optimized!!!
-        sticker_df.loc[(-0.001 > sticker_df[f'close_ma{ma_long}_grad']) & (-0.001 > sticker_df[f'close_ma{ma_short}_grad']), 'position'] = 'short_sell'
-        #sticker_df.loc[(-0.001 > sticker_df[f'close_ma{ma_long}_grad']) | (-0.001 > sticker_df[f'close_ma{ma_short}_grad']), 'position'] = 'short_sell'
+        sticker_df.loc[(-0.001 > sticker_df[f'{ind_price}_ma{ma_long}_grad']) & (-0.001 > sticker_df[f'{ind_price}_ma{ma_short}_grad']), 'position'] = 'short_sell'
+        #sticker_df.loc[(-0.001 > sticker_df[f'{ind_price}_ma{ma_long}_grad']) | (-0.001 > sticker_df[f'{ind_price}_ma{ma_short}_grad']), 'position'] = 'short_sell'
         sticker_df['trading_action'] = ''
         sticker_df['prev_position_lagged'] = sticker_df['position'].shift(1)
         sticker_df.loc[(sticker_df['position'] == 'short_sell') & (sticker_df['prev_position_lagged'] == 'out'), 'trading_action'] = 'sell next short position'
@@ -137,10 +149,10 @@ def apply_single_short_strategy(exp_data, day, data='trading_day_data', ma_short
             prev_short_sell_position_index = trading_action_df[trading_action_df['trading_action'] == 'sell next short position'].index[0]
             for i, row in trading_action_df.iterrows():
                 if row['trading_action'] == 'buy previous short position':
-                    trading_action_df.loc[i, 'gain_per_position'] = trading_action_df.loc[prev_short_sell_position_index, 'close'] - trading_action_df.loc[i, 'close']
+                    trading_action_df.loc[i, 'gain_per_position'] = trading_action_df.loc[prev_short_sell_position_index, ind_price] - trading_action_df.loc[i, ind_price]
                     trading_action_df.loc[i, 'current_capital'] = (trading_action_df.loc[prev_capital_index, 'current_capital'] + (trading_action_df.loc[i, 'gain_per_position'] * \
                                                                   (trading_action_df.loc[prev_short_sell_position_index, 'current_capital'] /
-                                                                   trading_action_df.loc[prev_short_sell_position_index, 'close']))) - comission_ratio * \
+                                                                   trading_action_df.loc[prev_short_sell_position_index, ind_price]))) - comission_ratio * \
                                                                    trading_action_df.loc[prev_capital_index, 'current_capital']
                 if row['trading_action'] == 'sell next short position':
                     prev_short_sell_position_index = i
@@ -158,8 +170,10 @@ def apply_single_short_strategy(exp_data, day, data='trading_day_data', ma_short
             exp_data['stickers'][sticker]['trading_day_data_short_strategy'] = sticker_df
     return results
 
-def apply_simple_combined_trend_following_strategy(exp_data, day, data='trading_day_data',
+def apply_simple_combined_trend_following_strategy(exp_data, day, exp_name, ind_price='close', data='trading_day_data',
                                                    ma_short=5, ma_long=12,
+                                                   shooth_win_len_long=4,
+                                                   shooth_win_len_short=4,
                                                    short_epsilon = 0.02, long_epsilon = 0.002,
                                                    initial_capital=3000, comission_ratio=0.0):
     results = list()
@@ -167,11 +181,19 @@ def apply_simple_combined_trend_following_strategy(exp_data, day, data='trading_
         sticker_df = exp_data['stickers'][sticker][data]
         sticker_df['position'] = 'out'
         sticker_df.loc[
-            (long_epsilon < sticker_df[f'close_ma{ma_long}_grad']), #& (short_epsilon < sticker_df[f'close_ma{ma_short}_grad']),
+            (long_epsilon < sticker_df[f'{ind_price}_ma{ma_long}_grad']) & (short_epsilon < sticker_df[f'{ind_price}_ma{ma_short}_grad']),
             'position'] = 'long_buy'
         sticker_df.loc[
-            (-long_epsilon > sticker_df[f'close_ma{ma_long}_grad']),# & (-short_epsilon > sticker_df[f'close_ma{ma_short}_grad']),
+            (-long_epsilon > sticker_df[f'{ind_price}_ma{ma_long}_grad']) & (-short_epsilon > sticker_df[f'{ind_price}_ma{ma_short}_grad']),
             'position'] = 'short_sell'
+        # sticker_df.loc[
+        #     (long_epsilon < sticker_df[f'{ind_price}_ma{ma_long}_grad_smoothed_{shooth_win_len_long}']) & (short_epsilon < sticker_df[f'{ind_price}_ma{ma_short}_grad_smoothed_{shooth_win_len_short}']),
+        #     'position'] = 'long_buy'
+        # sticker_df.loc[
+        #     (-long_epsilon > sticker_df[f'{ind_price}_ma{ma_long}_grad_smoothed_{shooth_win_len_long}']) & (-short_epsilon > sticker_df[f'{ind_price}_ma{ma_short}_grad_smoothed_{shooth_win_len_short}']),
+        #     'position'] = 'short_sell'
+
+
         sticker_df['trading_action'] = ''
         sticker_df['prev_position_lagged'] = sticker_df['position'].shift(1)
 
@@ -203,7 +225,8 @@ def apply_simple_combined_trend_following_strategy(exp_data, day, data='trading_
         buy_shorts = sticker_df[sticker_df['trading_action'] == 'buy previous short position'].index
         if len(buy_shorts)>0:
             last_indices.append(buy_shorts[-1])
-        sticker_df.loc[sticker_df.index > max(last_indices), 'trading_action'] = ''
+        if len(last_indices)>0:
+            sticker_df.loc[sticker_df.index > max(last_indices), 'trading_action'] = ''
 
 
         trading_action_df = sticker_df[sticker_df['trading_action'] != ''].copy()
@@ -229,28 +252,28 @@ def apply_simple_combined_trend_following_strategy(exp_data, day, data='trading_
                     trading_action_df.loc[i, 'current_capital'] = trading_action_df.loc[prev_capital_index, 'current_capital']
                 if row['trading_action'] == 'buy previous short position and buy next long position':
                     prev_long_buy_position_index = i
-                    trading_action_df.loc[i, 'gain_per_position'] = trading_action_df.loc[prev_short_sell_position_index, 'close'] - trading_action_df.loc[i, 'close']
+                    trading_action_df.loc[i, 'gain_per_position'] = trading_action_df.loc[prev_short_sell_position_index, ind_price] - trading_action_df.loc[i, ind_price]
                     trading_action_df.loc[i, 'current_capital'] = (trading_action_df.loc[prev_capital_index, 'current_capital'] + (trading_action_df.loc[i, 'gain_per_position'] * \
                                                                   (trading_action_df.loc[prev_short_sell_position_index, 'current_capital'] /
-                                                                   trading_action_df.loc[prev_short_sell_position_index, 'close']))) - comission_ratio * trading_action_df.loc[prev_capital_index, 'current_capital']
+                                                                   trading_action_df.loc[prev_short_sell_position_index, ind_price]))) - comission_ratio * trading_action_df.loc[prev_capital_index, 'current_capital']
                     prev_capital_index = i
                 if row['trading_action'] == 'sell previous long position and sell next short position':
                     prev_short_sell_position_index = i
-                    trading_action_df.loc[i, 'gain_per_position'] = trading_action_df.loc[i, 'close'] - trading_action_df.loc[prev_long_buy_position_index, 'close']
+                    trading_action_df.loc[i, 'gain_per_position'] = trading_action_df.loc[i, ind_price] - trading_action_df.loc[prev_long_buy_position_index, ind_price]
                     trading_action_df.loc[i, 'current_capital'] = (trading_action_df.loc[prev_capital_index, 'current_capital'] + (trading_action_df.loc[i, 'gain_per_position'] * \
                                                                   (trading_action_df.loc[prev_long_buy_position_index, 'current_capital'] /
-                                                                   trading_action_df.loc[prev_long_buy_position_index, 'close']))) - comission_ratio * trading_action_df.loc[prev_capital_index, 'current_capital']
+                                                                   trading_action_df.loc[prev_long_buy_position_index, ind_price]))) - comission_ratio * trading_action_df.loc[prev_capital_index, 'current_capital']
                     prev_capital_index = i
                 if row['trading_action'] == 'sell previous long position':
-                    trading_action_df.loc[i, 'gain_per_position'] = trading_action_df.loc[i, 'close'] - trading_action_df.loc[prev_long_buy_position_index, 'close']
+                    trading_action_df.loc[i, 'gain_per_position'] = trading_action_df.loc[i, ind_price] - trading_action_df.loc[prev_long_buy_position_index, ind_price]
                     trading_action_df.loc[i, 'current_capital'] = (trading_action_df.loc[prev_capital_index, 'current_capital'] + (trading_action_df.loc[i, 'gain_per_position'] * \
-                    (trading_action_df.loc[prev_long_buy_position_index, 'current_capital'] / trading_action_df.loc[prev_long_buy_position_index, 'close']))) - comission_ratio * trading_action_df.loc[prev_capital_index, 'current_capital']
+                    (trading_action_df.loc[prev_long_buy_position_index, 'current_capital'] / trading_action_df.loc[prev_long_buy_position_index, ind_price]))) - comission_ratio * trading_action_df.loc[prev_capital_index, 'current_capital']
                     prev_capital_index = i
                 if row['trading_action'] == 'buy previous short position':
-                    trading_action_df.loc[i, 'gain_per_position'] = trading_action_df.loc[prev_short_sell_position_index, 'close'] - trading_action_df.loc[i, 'close']
+                    trading_action_df.loc[i, 'gain_per_position'] = trading_action_df.loc[prev_short_sell_position_index, ind_price] - trading_action_df.loc[i, ind_price]
                     trading_action_df.loc[i, 'current_capital'] = (trading_action_df.loc[prev_capital_index, 'current_capital'] + (trading_action_df.loc[i, 'gain_per_position'] * \
                                                                   (trading_action_df.loc[prev_short_sell_position_index, 'current_capital'] /
-                                                                   trading_action_df.loc[prev_short_sell_position_index, 'close']))) - comission_ratio * trading_action_df.loc[prev_capital_index, 'current_capital']
+                                                                   trading_action_df.loc[prev_short_sell_position_index, ind_price]))) - comission_ratio * trading_action_df.loc[prev_capital_index, 'current_capital']
                     prev_capital_index = i
             print(f'Total gain per position on {sticker} with simple combined trend scalping strategy', trading_action_df.gain_per_position.sum())
             results.append((day, 'combined', sticker, trading_action_df.gain_per_position.sum()))
@@ -262,12 +285,12 @@ def apply_simple_combined_trend_following_strategy(exp_data, day, data='trading_
             sticker_df['gain_per_position'].fillna(0.0, inplace=True)
             create_candle_stick_chart_w_indicators_for_trendscalping(plot_df=sticker_df,
                                                                      sticker_name=sticker,
-                                                                     plot_name='with_positions',
+                                                                     plot_name=f'{exp_name}_with_positions',
                                                                      indicators=['current_capital',
-                                                                                 f'close_ma{ma_short}',
-                                                                                 f'close_ma{ma_short}_grad',
-                                                                                 f'close_ma{ma_long}',
-                                                                                 f'close_ma{ma_long}_grad'])
+                                                                                 f'{ind_price}_ma{ma_short}',
+                                                                                 f'{ind_price}_ma{ma_short}_grad',
+                                                                                 f'{ind_price}_ma{ma_long}',
+                                                                                 f'{ind_price}_ma{ma_long}_grad'])
             exp_data['stickers'][sticker]['trading_day_data_w_combined_strategy'] = sticker_df
         else:
             sticker_df['gain_per_position'] = 0
@@ -276,8 +299,10 @@ def apply_simple_combined_trend_following_strategy(exp_data, day, data='trading_
     return results
 
 
-def apply_simple_combined_trend_following_strategy_w_stopping_crit(exp_data, day, data='trading_day_data',
+def apply_simple_combined_trend_following_strategy_w_stopping_crit(exp_data, day, exp_name, ind_price='close', data='trading_day_data',
                                                    ma_short=5, ma_long=12,
+                                                   shooth_win_len_long=4,
+                                                   shooth_win_len_short=4,
                                                    short_epsilon = 0.02, long_epsilon = 0.002,
                                                    initial_capital=3000, comission_ratio=0.0):
     results = list()
@@ -286,15 +311,24 @@ def apply_simple_combined_trend_following_strategy_w_stopping_crit(exp_data, day
         sticker_df = sticker_df.iloc[:int(int(len(sticker_df.index)) / 2)].copy()
         sticker_df['position'] = 'out'
         sticker_df.loc[
-            (long_epsilon < sticker_df[f'close_ma{ma_long}_grad']), #& (short_epsilon < sticker_df[f'close_ma{ma_short}_grad']),
+            (long_epsilon < sticker_df[f'{ind_price}_ma{ma_long}_grad']) & (short_epsilon < sticker_df[f'{ind_price}_ma{ma_short}_grad']),
             'position'] = 'long_buy'
         sticker_df.loc[
-            (-long_epsilon > sticker_df[f'close_ma{ma_long}_grad']), # & (-short_epsilon > sticker_df[f'close_ma{ma_short}_grad']),
+            (-long_epsilon > sticker_df[f'{ind_price}_ma{ma_long}_grad']) & (-short_epsilon > sticker_df[f'{ind_price}_ma{ma_short}_grad']),
             'position'] = 'short_sell'
         sticker_df['trading_action'] = ''
         sticker_df['prev_position_lagged'] = sticker_df['position'].shift(1)
 
-    #   for finding all the possible position and laggad position combination
+        # sticker_df.loc[
+        #     (long_epsilon < sticker_df[f'{ind_price}_ma{ma_long}_grad_smoothed_{shooth_win_len_long}']) & (
+        #                 short_epsilon < sticker_df[f'{ind_price}_ma{ma_short}_grad_smoothed_{shooth_win_len_short}']),
+        #     'position'] = 'long_buy'
+        # sticker_df.loc[
+        #     (-long_epsilon > sticker_df[f'{ind_price}_ma{ma_long}_grad_smoothed_{shooth_win_len_long}']) & (
+        #                 -short_epsilon > sticker_df[f'{ind_price}_ma{ma_short}_grad_smoothed_{shooth_win_len_short}']),
+        #     'position'] = 'short_sell'
+
+        #   for finding all the possible position and laggad position combination
     #    list(set(list(zip(df['prev_position_lagged'], df['position']))))
 
         sticker_df.loc[(sticker_df['prev_position_lagged'] == 'out') & (sticker_df['position'] == 'long_buy'),
@@ -321,7 +355,8 @@ def apply_simple_combined_trend_following_strategy_w_stopping_crit(exp_data, day
         buy_shorts = sticker_df[sticker_df['trading_action'] == 'buy previous short position'].index
         if len(buy_shorts)>0:
             last_indices.append(buy_shorts[-1])
-        sticker_df.loc[sticker_df.index > max(last_indices), 'trading_action'] = ''
+        if len(last_indices)>0:
+            sticker_df.loc[sticker_df.index > max(last_indices), 'trading_action'] = ''
         trading_action_df = sticker_df[sticker_df['trading_action'] != ''].copy()
 
         if trading_action_df.shape[0] > 0:
@@ -345,29 +380,29 @@ def apply_simple_combined_trend_following_strategy_w_stopping_crit(exp_data, day
                     trading_action_df.loc[i, 'current_capital'] = trading_action_df.loc[prev_capital_index, 'current_capital']
                 if row['trading_action'] == 'buy previous short position and buy next long position':
                     prev_long_buy_position_index = i
-                    trading_action_df.loc[i, 'gain_per_position'] = trading_action_df.loc[prev_short_sell_position_index, 'close'] - trading_action_df.loc[i, 'close']
+                    trading_action_df.loc[i, 'gain_per_position'] = trading_action_df.loc[prev_short_sell_position_index, ind_price] - trading_action_df.loc[i, ind_price]
                     trading_action_df.loc[i, 'current_capital'] = (trading_action_df.loc[prev_capital_index, 'current_capital'] + (trading_action_df.loc[i, 'gain_per_position'] * \
                                                                   (trading_action_df.loc[prev_short_sell_position_index, 'current_capital'] /
-                                                                   trading_action_df.loc[prev_short_sell_position_index, 'close']))) - comission_ratio * trading_action_df.loc[prev_capital_index, 'current_capital']
+                                                                   trading_action_df.loc[prev_short_sell_position_index, ind_price]))) - comission_ratio * trading_action_df.loc[prev_capital_index, 'current_capital']
                     prev_capital_index = i
                 if row['trading_action'] == 'sell previous long position and sell next short position':
                     prev_short_sell_position_index = i
-                    trading_action_df.loc[i, 'gain_per_position'] = trading_action_df.loc[i, 'close'] - trading_action_df.loc[prev_long_buy_position_index, 'close']
+                    trading_action_df.loc[i, 'gain_per_position'] = trading_action_df.loc[i, ind_price] - trading_action_df.loc[prev_long_buy_position_index, ind_price]
                     trading_action_df.loc[i, 'current_capital'] = (trading_action_df.loc[prev_capital_index, 'current_capital'] + (trading_action_df.loc[i, 'gain_per_position'] * \
                                                                   (trading_action_df.loc[prev_long_buy_position_index, 'current_capital'] /
-                                                                   trading_action_df.loc[prev_long_buy_position_index, 'close']))) - comission_ratio * trading_action_df.loc[prev_capital_index, 'current_capital']
+                                                                   trading_action_df.loc[prev_long_buy_position_index, ind_price]))) - comission_ratio * trading_action_df.loc[prev_capital_index, 'current_capital']
                     prev_capital_index = i
                 if row['trading_action'] == 'sell previous long position':
-                    trading_action_df.loc[i, 'gain_per_position'] = trading_action_df.loc[i, 'close'] - trading_action_df.loc[prev_long_buy_position_index, 'close']
+                    trading_action_df.loc[i, 'gain_per_position'] = trading_action_df.loc[i, ind_price] - trading_action_df.loc[prev_long_buy_position_index, ind_price]
                     trading_action_df.loc[i, 'current_capital'] = (trading_action_df.loc[prev_capital_index, 'current_capital'] + (trading_action_df.loc[i, 'gain_per_position'] * \
                                                                   (trading_action_df.loc[prev_long_buy_position_index, 'current_capital'] /
-                                                                  trading_action_df.loc[prev_long_buy_position_index, 'close']))) - comission_ratio * trading_action_df.loc[prev_capital_index, 'current_capital']
+                                                                  trading_action_df.loc[prev_long_buy_position_index, ind_price]))) - comission_ratio * trading_action_df.loc[prev_capital_index, 'current_capital']
                     prev_capital_index = i
                 if row['trading_action'] == 'buy previous short position':
-                    trading_action_df.loc[i, 'gain_per_position'] = trading_action_df.loc[prev_short_sell_position_index, 'close'] - trading_action_df.loc[i, 'close']
+                    trading_action_df.loc[i, 'gain_per_position'] = trading_action_df.loc[prev_short_sell_position_index, ind_price] - trading_action_df.loc[i, ind_price]
                     trading_action_df.loc[i, 'current_capital'] = (trading_action_df.loc[prev_capital_index, 'current_capital'] + (trading_action_df.loc[i, 'gain_per_position'] * \
                                                                   (trading_action_df.loc[prev_short_sell_position_index, 'current_capital'] /
-                                                                   trading_action_df.loc[prev_short_sell_position_index, 'close']))) - comission_ratio * trading_action_df.loc[prev_capital_index, 'current_capital']
+                                                                   trading_action_df.loc[prev_short_sell_position_index, ind_price]))) - comission_ratio * trading_action_df.loc[prev_capital_index, 'current_capital']
                     prev_capital_index = i
             print(f'Total gain per position on {sticker} with simple combined trend scalping strategy with time restriction', trading_action_df.gain_per_position.sum())
             results.append((day, 'combined_time_restriction', sticker, trading_action_df.gain_per_position.sum()))
@@ -379,12 +414,12 @@ def apply_simple_combined_trend_following_strategy_w_stopping_crit(exp_data, day
             sticker_df['gain_per_position'].fillna(0.0, inplace=True)
             create_candle_stick_chart_w_indicators_for_trendscalping(plot_df=sticker_df,
                                                                      sticker_name=sticker,
-                                                                     plot_name='with_positions_and_time_restriction',
+                                                                     plot_name=f'{exp_name}_with_positions_and_time_restriction',
                                                                      indicators=['current_capital',
-                                                                                 f'close_ma{ma_short}',
-                                                                                 f'close_ma{ma_short}_grad',
-                                                                                 f'close_ma{ma_long}',
-                                                                                 f'close_ma{ma_long}_grad'])
+                                                                                 f'{ind_price}_ma{ma_short}',
+                                                                                 f'{ind_price}_ma{ma_short}_grad',
+                                                                                 f'{ind_price}_ma{ma_long}',
+                                                                                 f'{ind_price}_ma{ma_long}_grad'])
             exp_data['stickers'][sticker]['trading_day_data_w_combined_strategy'] = sticker_df
         else:
             sticker_df['gain_per_position'] = 0

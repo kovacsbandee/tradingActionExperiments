@@ -2,14 +2,24 @@
 #  - csináld meg jól a pozíciós plot-ot: EZ KÉSZ!
 #  - fejezd be a kereskedést 14-kor: EZ ÚGY NÉZ KI HASZNÁL!
 #  - próbáld ki a simított gradienst
-
+# TODO:
+#  - rá kell tenni az indikátorokra is a pozícióba állás és a kijövetel jelét!
 #  - meg kell csinálni hosszú időszakra, sok stock-ra a gradiensek eloszlását
 #  - mi lenne ha mindig csak a kezdeti tőkét tenném be és a nyereséget kivenném minden pozíció után és
 #  emellé beállítanék egy stop loss-t, ami kijön a pozícióból, ha valamennyi veszteség termelődik, de nem megy vissza ugyan abba, megvárja a következőt
 
+# feltételezés, hogy egyik napról a másikra nem változik nagyon:
+# epsilon függvényében a nullátmenetek távolsága nagy legyen! illetve legyen kiegyensúlyozott a volume, legyen pici a szórása
 
 '''
-Ha a kereskedésben hirtelen spike-ok vannak, akkor rosszul működik a trend scalping, mert gyorsabban változik az ár mint ahogyan a gradiensek le tudják követni.
+Ha a kereskedésben hirtelen spike-ok vannak, akkor rosszul működik a trend scalping, mert gyorsabban változik az ár mint ahogyan a gradiensek le tudják követni:
+megoldások lehetnek:
+    - órás periódus idejű változásokat mutató stock-okat keresünk a scanner-el, mert a 5-12-es MA-k ezen működnek a legjobban, vagyis a 'periódus idő' legyen ötszöröse a hosszú átlagnak
+    ->
+    -> a változás kb. fél órás nagyságrendű shortma5 és longma12 esetén; az amplitúdó néhány %; nem nagy a percen belüli szórás; a volume gradiense nő;
+        van benne egybefüggő legalább fél óra hosszú egyirányú mozgás (EZ VALÓSZÍNŰLEG A RITKASÁG....)
+    -> kellene egy olyan elgondolás, ami az ABCD pattern-t használja...
+    - buy jelet a long_ma adja, sell jelet pedig a short_ma, és a símított gradiens legyen konstans
 '''
 
 
@@ -23,11 +33,12 @@ from strategies.strategies import apply_single_long_strategy, apply_single_short
 
 # initial variables:
 final_results = list()
-experiement_start_date = '2023-09-20'
-number_of_experiment_days = 10
-mashort=6
-malong=12
+experiement_start_date = '2023-09-10'
+number_of_experiment_days = 15
+mashort=10
+malong=24
 
+exp_name = 'longer_mas_for_low_freq_gain'
 for TRADING_DAY in [TRADING_DAY.strftime('%Y-%m-%d') for TRADING_DAY in pd.bdate_range(pd.to_datetime(experiement_start_date, format='%Y-%m-%d'), periods=number_of_experiment_days).to_list()]:
     if datetime.strptime(TRADING_DAY, '%Y-%m-%d').strftime('%A') != 'Sunday' or datetime.strptime(TRADING_DAY, '%Y-%m-%d').strftime('%A') != 'Saturday':
         # 0) initializations
@@ -41,27 +52,33 @@ for TRADING_DAY in [TRADING_DAY.strftime('%Y-%m-%d') for TRADING_DAY in pd.bdate
                                                     avg_volume_cond=25000,
                                                     price_range_perc_cond=10)
 
-        azis_scanner.get_filtering_stats()
+        azis_scanner.calculate_filtering_stats()
         azis_scanner.recommend_premarket_watchlist()
         stickers =  azis_scanner.recommended_stickers
-        # TODO Tamas: debug!
-        #stickers = get_nasdaq_stickers()
         for sticker in stickers:
             experiment_data['stickers'][sticker] = dict()
         # 2) Load trading day data
         get_price_data = generatePriceData(date=TRADING_DAY, exp_dict=experiment_data)
         get_price_data.load_watchlist_daily_price_data()
         # 3) Apply strategy
-        add_strategy_specific_indicators(exp_data=experiment_data, averaged_cols=['close', 'volume'], ma_short=mashort, ma_long=malong, plot_strategy_indicators = True)
+        add_strategy_specific_indicators(exp_data=experiment_data,
+                                         averaged_cols=['open', 'volume'],
+                                         ma_short=mashort,
+                                         ma_long=malong,
+                                         plot_strategy_indicators = False)
         #long_results = apply_single_long_strategy(exp_data=experiment_data, day=TRADING_DAY)
         #short_results = apply_single_short_strategy(exp_data=experiment_data, day=TRADING_DAY)
         combined_results = apply_simple_combined_trend_following_strategy(exp_data=experiment_data,
+                                                                          exp_name=exp_name,
+                                                                          ind_price='open',
                                                                           ma_short=mashort,
                                                                           ma_long=malong,
                                                                           short_epsilon=0.01,
                                                                           long_epsilon=0.01,
                                                                           day=TRADING_DAY)
         combined_results_w_time_restriction = apply_simple_combined_trend_following_strategy_w_stopping_crit(exp_data=experiment_data,
+                                                                                                             exp_name=exp_name,
+                                                                                                             ind_price='open',
                                                                                                              ma_short=mashort,
                                                                                                              ma_long=malong,
                                                                                                              short_epsilon=0.01,
@@ -80,7 +97,7 @@ df = pd.DataFrame(result, columns=['date', 'position_type', 'sticker', 'gain_per
 df.sort_values(by='gain_per_stock', inplace=True)
 print(df[['position_type', 'gain_per_stock']].groupby(by='position_type').sum())
 
-df.to_csv(f'F:/tradingActionExperiments/data_store/gains_from_all_stickers_{experiement_start_date}_w_time_restriction_w_only_long12.csv', index=False)
+df.to_csv(f'F:/tradingActionExperiments/data_store/gains_from_all_stickers_{experiement_start_date}_w_open_as_price_base_scanner{exp_name}.csv', index=False)
 
 
 # TODO olyan mintha nem prev_trading_day-en futna a stratégia

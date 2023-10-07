@@ -5,8 +5,9 @@ from joblib import Parallel, delayed
 import logging
 logging.getLogger('yfinance').setLevel(logging.CRITICAL)
 
-class generatePriceData:
 
+
+class generatePriceData:
     def __init__(self, date, exp_dict, lower_price_boundary=10, upper_price_boundary=100, lower_volume_boundary=10000):
         self.date = date
         self.date = datetime.strptime(date, '%Y-%m-%d')
