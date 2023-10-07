@@ -1,84 +1,55 @@
 from datetime import datetime, timedelta
 import os
-from dotenv import load_dotenv
 import pandas as pd
 import yfinance as yf
 from joblib import Parallel, delayed
 from plots.plots import create_histograms
 import logging
-
 logging.getLogger('yfinance').setLevel(logging.CRITICAL)
 
-#load_dotenv()
-#
-#PROJ_PATH = os.environ["PROJECT_PATH"]
-
-# TODO: érdemes lenne kiszervezni a dataframe-előkészítést és a sticker-lista visszaadást külön-külön függvényekbe
-def get_nasdaq_stickers(filename: str, path: str):
-    if not filename:
-        raise ValueError(f"No files found with path '{path}' and filename '{filename}'")
-    daily_nasdaq_stickers = pd.read_csv(f'{path}/data_store/{filename}')
+def get_nasdaq_stickers(path: str='F:/tradingActionExperiments'):
+    daily_nasdaq_stickers = pd.read_csv(f'{path}/data_store/daily_nasdaq_stickers.csv')
     daily_nasdaq_stickers['Last Sale'] = daily_nasdaq_stickers['Last Sale'].str.lstrip('$').astype(float)
     daily_nasdaq_stickers = daily_nasdaq_stickers[(~daily_nasdaq_stickers['Market Cap'].isna()) & \
                                                   (daily_nasdaq_stickers['Market Cap'] != 0.0)]
     return list(daily_nasdaq_stickers['Symbol'].unique())
 
-"""
-    Érdemes lenne létrehozni egy Scanner ősosztályt és egy ScannerFactory-t, 
-    ami a különböző scannerek létrehozását végzi. 
-    
-    A ScannerFactory-ba kerülnének a következő metódusok 
-    (vagy valami nagy alg, ami az adatfeldolgozást megcsinálja):
-    - get_nasdaq_stickers
-    - get_pre_market_stats
-    - get_filtering_stats
-    - recommend_premarket_watchlist
-    
-    Az alosztályok pedig dataclassok* lennének, csak a feldolgozott adatokat kapnák meg,
-    jelen esetben pl. csak a recommended_stickers-t használjuk kívülről is.
-    
-    *Kivéve, ha pl. hozzájuk kapcsolódik a create_histograms() metódus,
-    mert akkor az specifikusan hívandó az alosztályon.
-"""
 
 class andrewAzizRecommendedScanner:
-    
+
     def __init__(self, trading_day: datetime,
                  stickers: list = None,
                  lower_price_boundary: float=10,
                  upper_price_boundary: float=100,
                  price_range_perc_cond: int = 10,
-                 avg_volume_cond: int = 25000): # TODO: ez itt fura, hogy megadjuk, de belül felüldefiniáljuk - konstans az érték?
+                 avg_volume_cond: int = 25000):
         self.trading_day = datetime.strptime(trading_day, '%Y-%m-%d')
-        # TODO: a trading day ellenőrzése máshol történjen, ne az __init__ feladata legyen
         if self.trading_day.strftime('%A') == 'Sunday' or self.trading_day.strftime('%A') == 'Saturday':
             raise ValueError(f'{self.trading_day} is not a valid trading day, because it is on a weekend. Choose a weekday!')
         if (self.trading_day - timedelta(1)).strftime('%A') == 'Sunday':
-            self.scanning_day = self.trading_day - timedelta(days=2)
+            self.scanning_day = self.trading_day - timedelta(2)
         else:
-            self.scanning_day = self.trading_day - timedelta(days=1)
-        # TODO: a nasdaq stickereket mindenképp kívülről kapja meg
+            self.scanning_day = self.trading_day - timedelta(1)
         self.stickers = get_nasdaq_stickers() if stickers is None else stickers
         self.lower_price_boundary = lower_price_boundary
         self.upper_price_boundary = upper_price_boundary
         self.price_range_perc_cond = price_range_perc_cond
         self.avg_volume_cond = avg_volume_cond
         self.pre_market_stats = None
-        self.recommended_stickers = [] # TODO: veszélyes!!!
-        self.name = 'andrewAzizRecommendedScanner' # TODO: jöhet ez is param-ból, de ha konstans, akkor legyen konstans :V
+        self.recommended_stickers = []
+        self.name = 'andrewAzizRecommendedScanner'
 
-    def get_pre_market_stats(self, sticker: str) -> dict:
+    def get_pre_market_stats(self, sticker: str):
         sticker_data = None
-        # TODO: a yf.download ha nem talál adatot, akkor a data.empty()-vel lehet csekkolni [pandas metódus]
         try:
             sticker_data = yf.download(sticker,
                                        start=self.scanning_day,
-                                       end=self.scanning_day + timedelta(days=1),
+                                       end=self.scanning_day + timedelta(1),
                                        interval='1m',
                                        progress=False)
         except:
             pass
-        if sticker_data is not None: # TODO: ehelyett kell a data.empty()-t használni
+        if sticker_data is not None:
             return {'sticker': sticker,
                     'avg_close': sticker_data['Close'].mean(),
                     'avg_volume': sticker_data['Volume'].mean(),
@@ -92,7 +63,7 @@ class andrewAzizRecommendedScanner:
                     'volume_range_ratio':0}
 
 
-    def get_filtering_stats(self, proj_path, save_csv: bool = False):
+    def get_filtering_stats(self, save_csv: bool = False, proj_path='F:/tradingActionExperiments'):
         pre_market_sticker_stats = \
             Parallel(n_jobs=16)(delayed(self.get_pre_market_stats)(sticker) for sticker in self.stickers)
 
@@ -108,7 +79,7 @@ class andrewAzizRecommendedScanner:
                 pass
             self.pre_market_stats.to_csv(path_or_buf=f'{proj_path}/data_store/pre_market_stats_{save_date}', index=False)
         create_histograms(plot_df=self.pre_market_stats[[c for c in self.pre_market_stats.columns if c != 'sticker']],
-                          plot_name=f'pre_market_stats_hist_{save_date}')
+                          plot_name=f'pre_market_stats_{save_date}')
         print('Pre market statistics histograms can be found in the plots/plot_store directory, '
               'please check for avg_volume, price_range_perc as further constraints')
 

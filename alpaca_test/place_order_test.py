@@ -18,8 +18,8 @@ print(account)
 # preparing orders
 market_order_data = MarketOrderRequest(
                     symbol="AAPL",
-                    qty=10,
-                    side=OrderSide.SELL,
+                    qty=0.8,
+                    side=OrderSide.BUY,
                     time_in_force=TimeInForce.DAY
                     )
 

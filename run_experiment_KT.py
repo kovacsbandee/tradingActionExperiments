@@ -37,7 +37,7 @@ if datetime.strptime(tr_day_list[0], '%Y-%m-%d').strftime('%A') != 'Sunday' or d
     temp_trading_day: datetime = check_trading_day(tr_day_list[0])
     temp_scanning_day: datetime = calculate_scanning_day(temp_trading_day)
     aziz_scanner = AndrewAzizRecommendedScanner(PROJECT_PATH, 'KTAZIZ', temp_trading_day, temp_scanning_day, stickers, 10, 100, 10, 25000)
-    pre_market_stats = aziz_scanner.get_filtering_stats()
+    pre_market_stats = aziz_scanner.calculate_filtering_stats()
     if pre_market_stats is not None:
         recommended_stickers = aziz_scanner.recommend_premarket_watchlist()
 
@@ -69,6 +69,7 @@ if datetime.strptime(tr_day_list[0], '%Y-%m-%d').strftime('%A') != 'Sunday' or d
         long_results = apply_single_long_strategy(exp_data=experiment_data, day=temp_trading_day)
         short_results = apply_single_short_strategy(exp_data=experiment_data, day=temp_trading_day)
         combined_results = apply_simple_combined_trend_following_strategy(exp_data=experiment_data, day=temp_trading_day)
+        #
 final_results.append(long_results)
 final_results.append(short_results)
 final_results.append(combined_results)

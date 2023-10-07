@@ -10,6 +10,13 @@ from plots.plots import create_histograms
 from .ScannerBase import ScannerBase
 
 class AndrewAzizRecommendedScanner(ScannerBase):
+
+    def __init__(self, lower_price_boundary, upper_price_boundary, price_range_perc_cond, avg_volume_cond):
+        super.__init__()
+        self.lower_price_boundary = lower_price_boundary
+        self.upper_price_boundary = upper_price_boundary
+        self.price_range_perc_cond = price_range_perc_cond
+        self.avg_volume_cond = avg_volume_cond
     
     def get_pre_market_stats(self, sticker: str) -> dict:
         start_date = self.scanning_day

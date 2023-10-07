@@ -1,19 +1,14 @@
-import os
-from dotenv import load_dotenv
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from data_sources.add_indicators import add_gradient
 
-load_dotenv()
-
-PROJ_PATH = os.environ["PROJECT_PATH"]
+PROJ_PATH = 'F:/tradingActionExperiments'
 
 def create_histograms(plot_df: pd.DataFrame,
                       cols: list=None,
                       column_vars: list=None,
                       plot_name: str = ''):
-    date = 'place_for_DATE'#plot_df.index[-1].date().strftime('%Y-%m-%d')
     if cols is None:
         plot_vars = plot_df.columns
     else:
@@ -36,7 +31,7 @@ def create_histograms(plot_df: pd.DataFrame,
                                            nbinsx=100), row=i+1, col=1+j)
                 #fig.update_xaxes(title = c,row=i+1, col=1+j)
     fig.update_layout(height=len(plot_vars)*100 if column_vars is None else int(len(plot_vars)/2)*150)
-    fig.write_html(f'{PROJ_PATH}/plots/plot_store/{plot_name}_{date}_hist.html')
+    fig.write_html(f'{PROJ_PATH}/plots/plot_store/histograms/{plot_name}_hist.html')
 
 
 def create_time_series_plots(plot_df: pd.DataFrame,
@@ -66,7 +61,7 @@ def create_candle_stick_chart_w_indicators_for_trendscalping(plot_df,
     for c in averaged_cols:
         if c in indicators:
             indicators.remove(c)
-    fig = make_subplots(rows=3+len(indicators), cols=1, shared_xaxes=True)
+    fig = make_subplots(rows=2+len(indicators), cols=1, shared_xaxes=True)
     fig.add_trace(go.Candlestick(x=plot_df.index,
                                  open=plot_df['open'],
                                  high=plot_df['high'],
@@ -75,32 +70,36 @@ def create_candle_stick_chart_w_indicators_for_trendscalping(plot_df,
                                  name=sticker_name), row=1, col=1)
     if 'trading_action' in plot_df.columns:
         marker_df = plot_df.loc[plot_df['trading_action'] != ''].copy()
-        marker_df['trading_price'] = 0
-        marker_df.loc[marker_df['trading_action'] == 'buy next long position', 'trading_price'] = marker_df.loc[marker_df['trading_action'] == 'buy next long position', 'High']
-        marker_df.loc[marker_df['trading_action'] == 'sell previous long position', 'trading_price'] = marker_df.loc[marker_df['trading_action'] == 'sell previous long position', 'Low']
+        #marker_df['trading_price'] = 0
+        # marker_df.loc[marker_df['trading_action'] == 'buy next long position', 'trading_price'] = marker_df.loc[marker_df['trading_action'] == 'buy next long position', 'close']
+        # marker_df.loc[marker_df['trading_action'] == 'sell previous long position', 'trading_price'] = marker_df.loc[marker_df['trading_action'] == 'sell previous long position', 'close']
         marker_df['symbols'] = '0'
         marker_df.loc[marker_df['trading_action'] == 'buy next long position', 'symbols'] = 'arrow-right'
         marker_df.loc[marker_df['trading_action'] == 'sell previous long position', 'symbols'] = 'arrow-left'
+        marker_df.loc[marker_df['trading_action'] == 'sell next short position', 'symbols'] = 'arrow-right'
+        marker_df.loc[marker_df['trading_action'] == 'buy previous short position', 'symbols'] = 'arrow-left'
+        marker_df.loc[marker_df['trading_action'] == 'buy previous short position and buy next long position', 'symbols'] = 'diamond'
+        marker_df.loc[marker_df['trading_action'] == 'sell previous long position and sell next short position', 'symbols'] = 'diamond'
         fig.add_trace(go.Scatter(x=marker_df.index,
-                                 y=marker_df['trading_price'],
+                                 y=marker_df['close'],
                                  mode='markers',
-                                 name='in and out price markers',
+                                 #name='in and out price markers',
+                                 hovertext=marker_df['trading_action'],
                                  marker_color='yellow',
                                  marker_symbol=marker_df['symbols']), row=1, col=1)
     fig.add_trace(go.Bar(x=plot_df.index,
                          y=plot_df['volume'],
                          name='Volume'), row=2, col=1)
-    fig.add_trace(go.Scatter(x=plot_df.index,
-                             y=add_gradient(plot_df, col='volume'),
-                             name='Volume gradient'), row=3, col=1)
     for i, indicator in enumerate([col for col in indicators if col not in averaged_cols]):
         fig.add_trace(go.Scatter(x=plot_df.index,
                                  y=plot_df[f'{indicator}'],
-                                 name=f'{indicator}'), row=4+i, col=1)
+                                 name=f'{indicator}',
+                                 mode='lines',
+                                 connectgaps=True), row=3+i, col=1)
     fig.update_layout(xaxis_rangeslider_visible=False,
                       height=1500)
     date = plot_df.index[-1].date().strftime('%Y-%m-%d')
-    fig.write_html(f'{PROJ_PATH}/plots/plot_store/candle_stick_chart_{sticker_name}_{date}_{plot_name}.html')
+    fig.write_html(f'{PROJ_PATH}/plots/plot_store/candle_stick_charts/candle_stick_chart_{sticker_name}_{date}_{plot_name}.html')
 
 '''
 ezeknek majd az analyzers-ben lesz a helye

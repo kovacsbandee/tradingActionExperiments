@@ -25,8 +25,7 @@ class AlpacaPriceDataGenerator(PriceDataGeneratorBase):
         else:
             raise ValueError("Recommended sticker list is empty.")
                 
-    def append_to_current_data_window(self, minute_bars: List[dict]):
-        #TODO: számolni kell azzal, hogy nem feltétlenül egy listában jönnek az adatok
+    def update_current_data_window(self, minute_bars: List[dict]):
         if minute_bars is not None and len(minute_bars) > 0:
             for bar in minute_bars:               
                 self.current_data_window[bar['S']].append(pd.DataFrame(bar))
@@ -65,43 +64,26 @@ class AlpacaPriceDataGenerator(PriceDataGeneratorBase):
                 }
                             
     def load_watchlist_daily_price_data(self):
-        # 1) kell egy számláló, ami figyeli, hogy hány websocket-message érkezett, addig nem engedi az algot továbbfutni, 
-        #    amíg a counter nem éri el a self.data_window_size-ot
         if self.recommended_sticker_list is not None:
-            for ticker in self.recommended_sticker_list['stickers'].keys():
-                ticker_symbol = ticker
-                
-                # ehelyett kell az Alpaca REST hívás
-                yahoo_data: DataFrame = yf.download(ticker_symbol,
-                            start=self.trading_day - timedelta(1),
-                            end=self.trading_day + timedelta(1),
-                            interval='1m',
-                            progress=False)
-                
-                # note itt azért még lehet baj!
-                yahoo_data.columns = [c.lower() for c in yahoo_data.columns]
-                
-                trading_day_data = yahoo_data[pd.to_datetime(yahoo_data.index).tz_localize(None) > pd.to_datetime(self.trading_day-timedelta(1))]
-                # TODO for Kovi: sticker stats has to be revised and enhanced based on general price plots, comparison between stats and profitability!
-                trading_day_sticker_stats = {
-                    'avg_close': trading_day_data['close'].mean(),
-                    'avg_volume': trading_day_data['volume'].mean(),
-                    'price_range_perc': (trading_day_data['high'].max() - trading_day_data['low'].min()) / trading_day_data['close'].mean() * 100,
-                    'volume_range_ratio': (trading_day_data['volume'].max() - trading_day_data['volume'].min()) / trading_day_data['volume'].mean()
+            for symbol in self.recommended_sticker_list:
+
+                avg_close = self.current_data_window[symbol]["c"].mean()
+                avg_volume = self.current_data_window[symbol]["v"].mean()
+                max_high = self.current_data_window[symbol]["h"].max()
+                min_low = self.current_data_window[symbol]["l"].min()
+                max_volume = self.current_data_window[symbol]["v"].max()
+                min_volume = self.current_data_window[symbol]["v"].min()
+               
+                self.trading_day_sticker_stats = {
+                    'avg_close': avg_close,
+                    'avg_volume': avg_volume,
+                    'price_range_perc': (max_high - min_low) / avg_close * 100,
+                    'volume_range_ratio': (max_volume - min_volume) / avg_volume
                     }
                 
-                prev_day_data = yahoo_data[pd.to_datetime(yahoo_data.index).tz_localize(None) < pd.to_datetime(self.trading_day)]
-                prev_sticker_stats = {
-                    'avg_close': prev_day_data['close'].mean(),
-                    'avg_volume': prev_day_data['volume'].mean(),
-                    'price_range_perc': (prev_day_data['high'].max() - prev_day_data['low'].min()) / prev_day_data['close'].mean() * 100,
-                    'volume_range_ratio': (prev_day_data['volume'].max() - prev_day_data['volume'].min()) / prev_day_data['volume'].mean()
-                    }
                 ''' Here is a place, where a-priori constraints like price boundaries could be applied! '''
                 
-                self.sticker_dict['stickers'][ticker_symbol]['trading_day_data'] = trading_day_data
-                self.sticker_dict['stickers'][ticker_symbol]['trading_day_sticker_stats'] = trading_day_sticker_stats
-                self.sticker_dict['stickers'][ticker_symbol]['prev_day_data'] = self.prev_day_data
-                self.sticker_dict['stickers'][ticker_symbol]['prev_day_stats'] = prev_sticker_stats
+                self.sticker_dict['stickers'][symbol]['trading_day_data'] = trading_day_data
+                self.sticker_dict['stickers'][symbol]['trading_day_sticker_stats'] = self.trading_day_sticker_stats
         else: 
-            raise ValueError('recommended_stickers is None!')
+            raise ValueError('recommended_sticker_list is empty or None!')
