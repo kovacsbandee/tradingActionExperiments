@@ -2,11 +2,6 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from datetime import datetime
-
-PROJ_PATH = 'F:/tradingActionExperiments'
-
-
-
 from data_sources.add_indicators import add_gradient, add_rolling_average
 from plots.plots import create_histograms, create_candle_stick_chart_w_indicators_for_trendscalping
 
@@ -274,7 +269,6 @@ def apply_simple_combined_trend_following_strategy(exp_data, day, data='trading_
             sticker_df['current_capital'] = initial_capital
             exp_data['stickers'][sticker]['trading_day_data_w_combined_strategy'] = sticker_df
     return results
-
 
 def apply_simple_combined_trend_following_strategy_w_stopping_crit(exp_data, day, data='trading_day_data',
                                                    ma_short=5, ma_long=12,

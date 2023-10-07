@@ -12,5 +12,5 @@
 # TRADING DAY-T UPDATELNI KELL (NAPONTA, NYILVÁN)
 
 if __name__ == "__main__":
-    #ws.run_forever()
+    #trading_manager.ws.run_forever()
     print("This is main, yo.")

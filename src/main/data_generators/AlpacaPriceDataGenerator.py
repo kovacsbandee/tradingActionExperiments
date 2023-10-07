@@ -1,20 +1,17 @@
 from typing import List
-from datetime import datetime, timedelta
 from .PriceDataGeneratorBase import PriceDataGeneratorBase
 import pandas as pd
-import threading
-from pandas import DataFrame
-from alpaca.data.requests import StockBarsRequest
-from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 
 class AlpacaPriceDataGenerator(PriceDataGeneratorBase):
     
     def initialize_sticker_dict(self):
-        self.sticker_dict['trading_day'] = self.trading_day.strftime('%Y-%m-%d')
-        self.sticker_dict['stickers'] = dict()
+        self.sticker_data['trading_day'] = self.trading_day.strftime('%Y-%m-%d')
+        self.sticker_data['stickers'] = dict()
         if self.recommended_sticker_list is not None:
             for stckr in self.recommended_sticker_list:
-                self.sticker_dict['stickers'][stckr] = dict()
+                self.sticker_data['stickers'][stckr] = dict()
+                self.sticker_data['stickers'][stckr]['trading_day_data'] = None
+                self.sticker_data['stickers'][stckr]['trading_day_sticker_stats'] = None
         else:
             raise ValueError("Recommended sticker list is empty.")
                 
@@ -34,34 +31,34 @@ class AlpacaPriceDataGenerator(PriceDataGeneratorBase):
         else:
             raise ValueError("Minute bar list is empty.")
                     
-    #NOTE: nem köll
-    def load_prev_day_watchlist_data(self):
-        if self.recommended_sticker_list:
-            for symbol in self.recommended_sticker_list:
-                scanning_day = TimeFrame(amount=1, unit=TimeFrameUnit.Minute)
-                bars_request = StockBarsRequest(
-                    symbol_or_symbols=symbol,
-                    timeframe=scanning_day
-                )
-                
-                self.prev_day_data = self.historical_data_client.get_stock_bars(bars_request).df
-                self.prev_day_sticker_stats = self._calculate_prev_day_sticker_stats()
-        else:
-            raise ValueError("Recommended sticker list is empty.")
-        
-    def _calculate_prev_day_sticker_stats(self) -> dict:
-        high = self.prev_day_data['high']
-        low = self.prev_day_data['low']
-        close = self.prev_day_data['close']
-        volume = self.prev_day_data['volume']
-        price_range_perc = (high.max() - low.min()) / close.mean() * 100
-        volume_range_ratio = (volume.max() - volume.min()) / volume.mean()
-        return {
-                'avg_close': close.mean(),
-                'avg_volume': volume.mean(),
-                'price_range_perc': price_range_perc,
-                'volume_range_ratio': volume_range_ratio
-                }
+    ##NOTE: nem köll
+    #def load_prev_day_watchlist_data(self):
+    #    if self.recommended_sticker_list:
+    #        for symbol in self.recommended_sticker_list:
+    #            scanning_day = TimeFrame(amount=1, unit=TimeFrameUnit.Minute)
+    #            bars_request = StockBarsRequest(
+    #                symbol_or_symbols=symbol,
+    #                timeframe=scanning_day
+    #            )
+    #            
+    #            self.prev_day_data = self.historical_data_client.get_stock_bars(bars_request).df
+    #            self.prev_day_sticker_stats = self._calculate_prev_day_sticker_stats()
+    #    else:
+    #        raise ValueError("Recommended sticker list is empty.")
+    #    
+    #def _calculate_prev_day_sticker_stats(self) -> dict:
+    #    high = self.prev_day_data['high']
+    #    low = self.prev_day_data['low']
+    #    close = self.prev_day_data['close']
+    #    volume = self.prev_day_data['volume']
+    #    price_range_perc = (high.max() - low.min()) / close.mean() * 100
+    #    volume_range_ratio = (volume.max() - volume.min()) / volume.mean()
+    #    return {
+    #            'avg_close': close.mean(),
+    #            'avg_volume': volume.mean(),
+    #            'price_range_perc': price_range_perc,
+    #            'volume_range_ratio': volume_range_ratio
+    #            }
                             
     def load_watchlist_daily_price_data(self):
         if self.recommended_sticker_list is not None:
@@ -83,7 +80,7 @@ class AlpacaPriceDataGenerator(PriceDataGeneratorBase):
                 
                 ''' Here is a place, where a-priori constraints like price boundaries could be applied! '''
                 
-                self.sticker_dict['stickers'][symbol]['trading_day_data'] = trading_day_data
-                self.sticker_dict['stickers'][symbol]['trading_day_sticker_stats'] = self.trading_day_sticker_stats
+                self.sticker_data['stickers'][symbol]['trading_day_data'] = pd.DataFrame(self.current_data_window[symbol])
+                self.sticker_data['stickers'][symbol]['trading_day_sticker_stats'] = pd.DataFrame.from_dict(self.trading_day_sticker_stats)
         else: 
             raise ValueError('recommended_sticker_list is empty or None!')
