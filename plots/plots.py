@@ -138,3 +138,32 @@ def create_gain_histograms(gain_file = 'gains_from_0815.csv'):
                                        nbinsx=40,
                                        histnorm='probability'), col=1,  row=i+1)
     fig.write_html(f'{PROJ_PATH}/plots/plot_store/gain_histograms_for_{gain_file[:-4]}.html')
+
+
+def create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiments(plot_df,
+                                                             sticker_name,
+                                                             averaged_cols=[],
+                                                             indicators=['close_ma5', 'close_ma12'],
+                                                             plot_name=''):
+    for c in averaged_cols:
+        if c in indicators:
+            indicators.remove(c)
+    fig = make_subplots(rows=2+len(indicators), cols=1, shared_xaxes=True)
+    fig.add_trace(go.Candlestick(x=plot_df.index,
+                                 open=plot_df['open'],
+                                 high=plot_df['high'],
+                                 low=plot_df['low'],
+                                 close=plot_df['close'],
+                                 name=sticker_name), row=1, col=1)
+    fig.add_trace(go.Bar(x=plot_df.index,
+                         y=plot_df['volume'],
+                         name='Volume'), row=2, col=1)
+    for i, indicator in enumerate([col for col in indicators if col not in averaged_cols]):
+        fig.add_trace(go.Scatter(x=plot_df.index,
+                                 y=plot_df[f'{indicator}'],
+                                 name=f'{indicator}',
+                                 mode='lines',
+                                 connectgaps=True), row=3+i, col=1)
+    fig.update_layout(xaxis_rangeslider_visible=False,
+                      height=1500)
+    fig.write_html(f'{PROJ_PATH}/data_store/results/plots/candle_stick_chart_{sticker_name}_{plot_name}.html')

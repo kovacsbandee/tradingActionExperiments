@@ -29,6 +29,7 @@ def apply_simple_combined_trend_following_strategy(df,
                                                    long_epsilon = 0.01,
                                                    initial_capital=3000,
                                                    comission_ratio=0.0):
+
     if stopping_crit_hour is not None:
         df = df[df.index < df.index[0].split(' ')[0]+f' {stopping_crit_hour}:00:00-04:00'].copy()
     df['position'] = 'out'
