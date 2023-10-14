@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from data_sources.add_indicators import add_gradient
@@ -148,22 +149,43 @@ def create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiment
     for c in averaged_cols:
         if c in indicators:
             indicators.remove(c)
-    fig = make_subplots(rows=2+len(indicators), cols=1, shared_xaxes=True)
+    fig = make_subplots(rows=2+len(indicators), cols=1, shared_xaxes=True, )
     fig.add_trace(go.Candlestick(x=plot_df.index,
                                  open=plot_df['open'],
                                  high=plot_df['high'],
                                  low=plot_df['low'],
                                  close=plot_df['close'],
                                  name=sticker_name), row=1, col=1)
-    fig.add_trace(go.Bar(x=plot_df.index,
-                         y=plot_df['volume'],
-                         name='Volume'), row=2, col=1)
+    if 'trading_action' in plot_df.columns:
+        marker_df = plot_df.loc[plot_df['trading_action'] != ''].copy()
+        #marker_df['trading_price'] = 0
+        # marker_df.loc[marker_df['trading_action'] == 'buy next long position', 'trading_price'] = marker_df.loc[marker_df['trading_action'] == 'buy next long position', 'close']
+        # marker_df.loc[marker_df['trading_action'] == 'sell previous long position', 'trading_price'] = marker_df.loc[marker_df['trading_action'] == 'sell previous long position', 'close']
+        marker_df['symbols'] = '0'
+        marker_df.loc[marker_df['trading_action'] == 'buy next long position', 'symbols'] = 'arrow-right'
+        marker_df.loc[marker_df['trading_action'] == 'sell previous long position', 'symbols'] = 'arrow-left'
+        marker_df.loc[marker_df['trading_action'] == 'sell next short position', 'symbols'] = 'arrow-right'
+        marker_df.loc[marker_df['trading_action'] == 'buy previous short position', 'symbols'] = 'arrow-left'
+        marker_df.loc[marker_df['trading_action'] == 'buy previous short position and buy next long position', 'symbols'] = 'diamond'
+        marker_df.loc[marker_df['trading_action'] == 'sell previous long position and sell next short position', 'symbols'] = 'diamond'
+        fig.add_trace(go.Scatter(x=marker_df.index,
+                                 y=marker_df['close'],
+                                 mode='markers',
+                                 name='in and out price markers',
+                                 hovertext=marker_df['trading_action'],
+                                 marker_color='yellow',
+                                 marker_symbol=marker_df['symbols']), row=1, col=1)
+    # fig.add_trace(go.Bar(x=plot_df.index,
+    #                      y=plot_df['volume'],
+    #                      name='Volume'), row=2, col=1)
     for i, indicator in enumerate([col for col in indicators if col not in averaged_cols]):
+        if indicator == 'current_capital':
+            plot_df.loc[plot_df[f'{indicator}'] == 0.0, f'{indicator}'] = np.nan
         fig.add_trace(go.Scatter(x=plot_df.index,
                                  y=plot_df[f'{indicator}'],
                                  name=f'{indicator}',
                                  mode='lines',
-                                 connectgaps=True), row=3+i, col=1)
+                                 connectgaps=True), row=2+i, col=1)
     fig.update_layout(xaxis_rangeslider_visible=False,
                       height=1500)
     fig.write_html(f'{PROJ_PATH}/data_store/results/plots/candle_stick_chart_{sticker_name}_{plot_name}.html')
