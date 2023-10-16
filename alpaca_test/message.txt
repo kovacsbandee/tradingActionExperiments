@@ -1,3 +1,37 @@
+ACCOUNT_DATA:
+
+id=UUID('375e2943-f0cd-4bd6-9d51-24f273044ac4') 
+account_number='PA3E4FE8JIHW' 
+status=<AccountStatus.ACTIVE: 'ACTIVE'> 
+crypto_status=<AccountStatus.ACTIVE: 'ACTIVE'> 
+currency='USD' 
+buying_power='199682.57' 
+regt_buying_power='199682.57' 
+daytrading_buying_power='0' 
+non_marginable_buying_power='99663.06' 
+cash='99805.77' 
+accrued_fees='0' 
+pending_transfer_out=None 
+pending_transfer_in='0' 
+portfolio_value='100019.51' 
+pattern_day_trader=False 
+trading_blocked=False 
+transfers_blocked=False 
+account_blocked=False 
+created_at=datetime.datetime(2023, 8, 13, 17, 26, 27, 302325, tzinfo=TzInfo(UTC)) 
+trade_suspended_by_user=False 
+multiplier='2' 
+shorting_enabled=True 
+equity='100019.51' 
+last_equity='100019.5118' 
+long_market_value='213.74' 
+short_market_value='0' 
+initial_margin='178.23' 
+maintenance_margin='64.12' 
+last_maintenance_margin='64.12' 
+sma='100022.06' 
+daytrade_count=0
+
 BAR DATA
 [
     {"T":"b",

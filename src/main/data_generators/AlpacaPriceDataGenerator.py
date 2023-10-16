@@ -1,8 +1,23 @@
 from typing import List
 from .PriceDataGeneratorBase import PriceDataGeneratorBase
 import pandas as pd
+from pandas import DataFrame
 
 class AlpacaPriceDataGenerator(PriceDataGeneratorBase):
+
+    def __init__(self, 
+                 trading_day, 
+                 recommended_sticker_list, 
+                 lower_price_boundary, 
+                 upper_price_boundary, 
+                 lower_volume_boundary, 
+                 data_window_size):
+        super().__init__(trading_day, 
+                        recommended_sticker_list, 
+                        lower_price_boundary, 
+                        upper_price_boundary, 
+                        lower_volume_boundary,
+                        data_window_size)
     
     def initialize_sticker_dict(self):
         self.sticker_data['trading_day'] = self.trading_day.strftime('%Y-%m-%d')
@@ -18,16 +33,26 @@ class AlpacaPriceDataGenerator(PriceDataGeneratorBase):
     def initialize_current_data_window(self):
         if self.recommended_sticker_list is not None:
             for stckr in self.recommended_sticker_list:
-                self.current_data_window[stckr] = pd.DataFrame
+                self.current_data_window[stckr] = None
         else:
             raise ValueError("Recommended sticker list is empty.")
                 
     def update_current_data_window(self, minute_bars: List[dict]):
         if minute_bars is not None and len(minute_bars) > 0:
-            for bar in minute_bars:               
-                self.current_data_window[bar['S']].append(pd.DataFrame(bar))
-                if len(self.current_data_window[bar['S']]) > self.data_window_size:
-                    self.current_data_window[bar['S']].drop(0)
+            for bar in minute_bars:
+                symbol = bar['S']
+                bar_df = DataFrame([bar])
+                bar_df.set_index('t', inplace=True)
+
+                if self.current_data_window[symbol] is None:
+                    self.current_data_window[symbol] = bar_df
+                elif isinstance(self.current_data_window[symbol], DataFrame):
+                    self.current_data_window[symbol] = pd.concat([self.current_data_window[symbol], bar_df])
+                else:
+                    raise ValueError("Unexpected data structure for the symbol in current_data_window")
+
+                if len(self.current_data_window[symbol]) > self.data_window_size:
+                    self.current_data_window[symbol] = self.current_data_window[symbol].tail(self.data_window_size)
         else:
             raise ValueError("Minute bar list is empty.")
                             

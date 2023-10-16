@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 class ScannerBase(ABC):
     
-    project_path: str
+    #project_path: str
     name: str
     trading_day: datetime 
     scanning_day: datetime # nem kell, származtatjuk
@@ -12,8 +12,13 @@ class ScannerBase(ABC):
     pre_market_stats: List
     recommended_stickers: List
 
-    def __init__(self, project_path, name, trading_day, scanning_day, stickers):
-        self.project_path = project_path
+    def __init__(self, 
+                 #project_path, 
+                 name, 
+                 trading_day, 
+                 scanning_day, 
+                 stickers):
+        #self.project_path = project_path
         self.name = name
         self.trading_day = trading_day
         self.scanning_day = scanning_day # TODO: lehet, hogy származtatni kéne? egyszerűbb lenne...

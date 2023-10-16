@@ -10,8 +10,8 @@ class SingleLongStrategy(StrategyBase):
     
     def apply_strategy(self):
         results=list()
-        for sticker in self.sticker_data['stickers'].keys():
-            sticker_df = self.sticker_data['stickers'][sticker]['trading_day_data']
+        for sticker in self.sticker_dict['stickers'].keys():
+            sticker_df = self.sticker_dict['stickers'][sticker]['trading_day_data']
             sticker_df['position'] = 'out'
             #TODO epsiolon has to be optimized!!!
             sticker_df.loc[(0.001 < sticker_df[f'close_ma{self.ma_long}_grad']) & (0.001 < sticker_df[f'close_ma{self.ma_short}_grad']), 'position'] = 'long_buy'
@@ -49,8 +49,8 @@ class SingleLongStrategy(StrategyBase):
                                     left_index=True,
                                     right_index=True)
                 sticker_df['gain_per_position'].fillna(0.0, inplace=True)
-                self.sticker_data['stickers'][sticker]['trading_day_data_long_strategy'] = sticker_df
+                self.sticker_dict['stickers'][sticker]['trading_day_data_long_strategy'] = sticker_df
             else:
                 sticker_df['gain_per_position'] = 0
-                self.sticker_data['stickers'][sticker]['trading_day_data_long_strategy'] = sticker_df
+                self.sticker_dict['stickers'][sticker]['trading_day_data_long_strategy'] = sticker_df
         return results

@@ -7,12 +7,20 @@ import yfinance as yf
 from joblib import Parallel, delayed
 from plots.plots import create_histograms
 
-from .ScannerBase import ScannerBase
+from src.main.scanners.ScannerBase import ScannerBase
 
 class AndrewAzizRecommendedScanner(ScannerBase):
 
-    def __init__(self, lower_price_boundary, upper_price_boundary, price_range_perc_cond, avg_volume_cond):
-        super.__init__()
+    def __init__(self, 
+                 name, 
+                 trading_day, 
+                 scanning_day, 
+                 stickers,
+                 lower_price_boundary, 
+                 upper_price_boundary, 
+                 price_range_perc_cond, 
+                 avg_volume_cond):
+        super().__init__(name, trading_day, scanning_day, stickers)
         self.lower_price_boundary = lower_price_boundary
         self.upper_price_boundary = upper_price_boundary
         self.price_range_perc_cond = price_range_perc_cond
@@ -65,11 +73,11 @@ class AndrewAzizRecommendedScanner(ScannerBase):
         if save_csv:
             self.save_stats_to_csv(save_date) 
 
-        if self.pre_market_stats is not None:
-            create_histograms(plot_df=self.pre_market_stats[[c for c in self.pre_market_stats.columns if c != 'sticker']],
-                            plot_name=f'pre_market_stats_hist_{save_date}')
-            print('Pre market statistics histograms can be found in the plots/plot_store directory, '
-                'please check for avg_volume, price_range_perc as further constraints')
+        #if self.pre_market_stats is not None:
+        #    create_histograms(plot_df=self.pre_market_stats[[c for c in self.pre_market_stats.columns if c != 'sticker']],
+        #                    plot_name=f'pre_market_stats_hist_{save_date}')
+        #    print('Pre market statistics histograms can be found in the plots/plot_store directory, '
+        #        'please check for avg_volume, price_range_perc as further constraints')
         return self.pre_market_stats
         
     def _create_pre_market_stats(self) -> DataFrame:

@@ -65,22 +65,24 @@ class PriceDataGeneratorBase(ABC):
     }
     """
     data_window_size: int
-    historical_data_client: StockHistoricalDataClient
     
-    def __init__(self, trading_day, recommended_sticker_list, lower_price_boundary, 
-                 upper_price_boundary, lower_volume_boundary, data_window_size,
-                 historical_data_client):
+    def __init__(self, 
+                 trading_day, 
+                 recommended_sticker_list, 
+                 lower_price_boundary, 
+                 upper_price_boundary, 
+                 lower_volume_boundary, 
+                 data_window_size):
         self.trading_day = trading_day
         self.recommended_sticker_list = recommended_sticker_list
         self.lower_price_boundary = lower_price_boundary
         self.upper_price_boundary = upper_price_boundary
         self.lower_volume_boundary = lower_volume_boundary
         self.data_window_size = data_window_size
-        self.historical_data_client = historical_data_client
         
-    @abstractmethod
-    def load_individual_sticker_data(self):
-        pass
+    #@abstractmethod
+    #def load_individual_sticker_data(self):
+    #    pass
     
     @abstractmethod
     def load_watchlist_daily_price_data(self):
