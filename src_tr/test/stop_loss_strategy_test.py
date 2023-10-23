@@ -1,12 +1,12 @@
 import pandas as pd
-from src.main.strategies.StrategyWithStopLoss import StrategyWithStopLoss
+from src_tr.main.strategies.StrategyWithStopLoss import StrategyWithStopLoss
 
-csv = 'c:/Users/kiralyt/Documents/KURZUS_EGYEB/trading_venv/tradingActionExperiments/data_store/AAPL.csv'
-sticker_df = pd.read_csv(csv)
+csv_path = '/home/tamkiraly/Development/tradingActionExperiments/data_store/AAPL.csv'
+sticker_df = pd.read_csv(csv_path)
 sticker_df = sticker_df[['Datetime' ,'open', 'high', 'low', 'close', 'adj close', 'volume']]
 sticker_df.set_index('Datetime', inplace=True)
-date = csv[65:75].replace('_', '-')
-sticker = csv.split('/')[-1][:-4]
+date = csv_path[65:75].replace('_', '-')
+sticker = csv_path.split('/')[-1][:-4]
 avg_close = sticker_df['close'].mean()
 avg_volume = sticker_df['volume'].mean()
 

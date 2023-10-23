@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from src.main.strategies.StrategyBase import StrategyBase
+from src_tr.main.strategies.StrategyBase import StrategyBase
 
 class StrategyWithStopLoss(StrategyBase):
 
@@ -135,10 +135,12 @@ class StrategyWithStopLoss(StrategyBase):
                     if row['prev_position_lagged'] == 'out' and row['position'] == 'long_buy':
                         prev_long_buy_position_index = i
                         df.loc[i, 'current_capital'] = df.loc[self.prev_capital_index, 'current_capital']
+                        df.loc[i, 'trading_action'] = 'buy_long'
                     # sell short eset
                     if row['prev_position_lagged'] == 'out' and row['position'] == 'short_sell':
                         prev_short_sell_position_index = i
                         df.loc[i, 'current_capital'] = df.loc[self.prev_capital_index, 'current_capital']
+                        df.loc[i, 'trading_action'] = 'sell_short'
                     # sell long eset
                     if row['prev_position_lagged'] == 'long_buy' and row['position'] == 'out':
                         df.loc[i, 'gain_per_position'] = df.loc[i, self.ind_price] - df.loc[prev_long_buy_position_index, self.ind_price]
@@ -148,6 +150,7 @@ class StrategyWithStopLoss(StrategyBase):
                                                         df.loc[prev_long_buy_position_index, self.ind_price]))) - \
                                                     self.comission_ratio * df.loc[self.prev_capital_index, 'current_capital']
                         self.prev_capital_index = i
+                        df.loc[i, 'trading_action'] = 'sell_long'
                     # buy short eset
                     if row['prev_position_lagged'] == 'short_sell' and row['position'] == 'out':
                         df.loc[i, 'gain_per_position'] = df.loc[prev_short_sell_position_index, self.ind_price] - df.loc[i, self.ind_price]
@@ -157,6 +160,7 @@ class StrategyWithStopLoss(StrategyBase):
                                                         df.loc[prev_short_sell_position_index, self.ind_price]))) - \
                                                     self.comission_ratio * df.loc[self.prev_capital_index, 'current_capital']
                         self.prev_capital_index = i
+                        df.loc[i, 'trading_action'] = 'buy_short'
                     # buy short-sell long eset
                     if row['prev_position_lagged'] == 'short_sell' and row['position'] == 'long_buy':
                         prev_long_buy_position_index = i
@@ -167,6 +171,7 @@ class StrategyWithStopLoss(StrategyBase):
                                                         df.loc[prev_short_sell_position_index, self.ind_price]))) - \
                                                     self.comission_ratio * df.loc[self.prev_capital_index, 'current_capital']
                         self.prev_capital_index = i
+                        df.loc[i, 'trading_action'] = 'buy_short_sell_long'
                     # sell long  - buy short eset
                     if row['prev_position_lagged'] == 'long_buy' and row['position'] == 'short_sell':
                         prev_short_sell_position_index = i
@@ -177,3 +182,4 @@ class StrategyWithStopLoss(StrategyBase):
                                                         df.loc[prev_long_buy_position_index, self.ind_price]))) - \
                                                     self.comission_ratio * df.loc[self.prev_capital_index, 'current_capital']
                         self.prev_capital_index = i
+                        df.loc[i, 'trading_action'] = 'sell_long_buy_short'

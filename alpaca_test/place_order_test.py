@@ -15,17 +15,17 @@ trading_client = TradingClient(ALPACA_KEY, ALPACA_SECRET_KEY, paper=True)
 account = trading_client.get_account()
 print(account.cash)
 
-## preparing orders
-#market_order_data = MarketOrderRequest(
-#                    symbol="AAPL",
-#                    qty=0.8,
-#                    side=OrderSide.BUY,
-#                    time_in_force=TimeInForce.DAY
-#                    )
-#
-## Market order
-#market_order = trading_client.submit_order(
-#                order_data=market_order_data
-#               )
-#
-#print(market_order)
+# preparing orders
+market_order_data = MarketOrderRequest(
+                    symbol="AAPL",
+                    qty=0.1,
+                    side=OrderSide.SELL,
+                    time_in_force=TimeInForce.DAY
+                    )
+
+# Market order
+market_order = trading_client.submit_order(
+                order_data=market_order_data
+               )
+
+print(market_order)

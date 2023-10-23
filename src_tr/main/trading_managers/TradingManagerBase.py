@@ -2,11 +2,11 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 import websocket
 
-from src.main.scanners.ScannerBase import ScannerBase
-from src.main.data_generators.PriceDataGeneratorBase import PriceDataGeneratorBase
-from src.main.strategies.StrategyBase import StrategyBase
-from src.main.data_streams.DataStreamBase import DataStreamBase
-from src.main.trading_clients.TradingClientBase import TradingClientBase
+from src_tr.main.scanners.ScannerBase import ScannerBase
+from src_tr.main.data_generators.PriceDataGeneratorBase import PriceDataGeneratorBase
+from src_tr.main.strategies.StrategyBase import StrategyBase
+from src_tr.main.data_streams.DataStreamBase import DataStreamBase
+from src_tr.main.trading_clients.TradingClientBase import TradingClientBase
 
 class TradingManagerBase(ABC):
 

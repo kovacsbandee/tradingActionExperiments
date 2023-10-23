@@ -1,7 +1,6 @@
 import os
 from dotenv import load_dotenv
 import websocket, json
-from alpaca.data.live import StockDataStream
 
 load_dotenv()
 
@@ -20,9 +19,7 @@ def on_open(ws):
 
     listen_message = {
         "action":"subscribe",
-        #"trades":["AAPL"],
-        #"quotes":["BOWL","CABA"],
-        "bars":["AAPL", "SPY", "TSLA"] # NOTE: ebben van low, high, open, close, volume, timestamp
+        "bars":["AAPL"]
         }
 
     ws.send(json.dumps(listen_message))

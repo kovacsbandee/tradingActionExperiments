@@ -38,6 +38,7 @@ class AlpacaPriceDataGenerator(PriceDataGeneratorBase):
             raise ValueError("Recommended sticker list is empty.")
                 
     def update_current_data_window(self, minute_bars: List[dict]):
+        #TODO: csekkold a formátumot, mert az első három üzenetben nem lesz bar['S']
         if minute_bars is not None and len(minute_bars) > 0:
             for bar in minute_bars:
                 symbol = bar['S']

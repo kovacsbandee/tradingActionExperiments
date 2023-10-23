@@ -7,7 +7,7 @@ import yfinance as yf
 from joblib import Parallel, delayed
 from plots.plots import create_histograms
 
-from src.main.scanners.ScannerBase import ScannerBase
+from src_tr.main.scanners.ScannerBase import ScannerBase
 
 class AndrewAzizRecommendedScanner(ScannerBase):
 
