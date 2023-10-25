@@ -47,6 +47,10 @@ data_generator = AlpacaPriceDataGenerator(trading_day=trading_day,
                                           upper_price_boundary=100,
                                           lower_volume_boundary=0,
                                           data_window_size=10)
+prev_close_price = None
+curr_close_price = None
+curr_position = 'out'
+capital = float(trading_client.get_account().cash)
 
 def on_open(ws):
     print("opened")
@@ -62,71 +66,80 @@ def on_open(ws):
         }
 
     ws.send(json.dumps(listen_message))
-    
-prev_close_price = None
-curr_close_price = None
-curr_position = 'out'
+    print("Capital at the opening of trading session: " + capital)
     
 def on_message(ws, message):
     global data_generator, prev_close_price, curr_close_price, curr_position
     print("New bar data received")
     minute_bars = string_to_dict_list(message)
-    print(minute_bars)
 
-    data_generator.update_current_data_window(minute_bars=minute_bars)
-    print(data_generator.current_data_window['AAPL'])
-    
-    curr_close_index = datetime.strptime(data_generator.current_data_window['AAPL'].index[-1], '%Y-%m-%dT%H:%M:%SZ')
-    curr_close_price = _get_current_close_price(curr_close_index)
+    if minute_bars[0]['T'] == 'b':
+        data_generator.update_current_data_window(minute_bars=minute_bars)
+        print(data_generator.current_data_window['AAPL'])
         
-    if len(data_generator.current_data_window['AAPL']) >= 2:
-        case_init = prev_close_price is None and curr_position == 'out'
-        case_long_sell = not case_init and curr_close_price < prev_close_price and curr_position == 'long'
-        case_short_buy = not case_init and curr_close_price > prev_close_price and curr_position == 'short'
-        
-        if case_init:
-            prev_close_index = datetime.strptime(data_generator.current_data_window['AAPL'].index[-2], '%Y-%m-%dT%H:%M:%SZ')
-            prev_close_time = prev_close_index.strftime('%Y-%m-%dT%H:%M:%SZ')
-            prev_close_price = data_generator.current_data_window['AAPL'].loc[prev_close_time, 'c']
-            if curr_close_price > prev_close_price:
+        curr_close_price = _get_current_close_price()
+            
+        if len(data_generator.current_data_window['AAPL']) >= 2:
+            case_init = prev_close_price is None and curr_position == 'out'
+            case_long_sell = not case_init and curr_close_price < prev_close_price and curr_position == 'long'
+            case_long_buy = not case_init and curr_close_price > prev_close_price and curr_position == 'out'
+            case_short_buy = not case_init and curr_close_price > prev_close_price and curr_position == 'short'
+            
+            if case_init:
+                prev_close_price = _get_prev_close_price()
+                if curr_close_price > prev_close_price:
+                    curr_position = 'long'
+                    # buy
+                    print("Buying")
+                    place_buy_order()
+            elif case_long_sell:
+                prev_close_price = curr_close_price
+                curr_position = 'short'
+                # sell
+                print("Selling")
+                place_sell_order()
+            elif case_short_buy or case_long_buy:
+                prev_close_price = curr_close_price
                 curr_position = 'long'
                 # buy
-                place_buy_order()
                 print("Buying")
-        elif case_long_sell:
-            prev_close_price = curr_close_price
-            curr_position = 'short'
-            # sell
-            place_sell_order()
-            print("Selling")
-        elif case_short_buy:
-            prev_close_price = curr_close_price
-            curr_position = 'long'
-            # buy
-            place_buy_order()
-            print("Buying")
-        else:
-            print("No action")
+                place_buy_order()
+            else:
+                print("No action")
         
-    print(f"Current close price: {curr_close_price}")
-    print(f"Previous close price: {prev_close_price}")
-    print(f"Current position: {curr_position}")
+        prev_close_price = _get_prev_close_price()
+        curr_close_price = _get_current_close_price()
         
-def _get_current_close_price(curr_close_index):
+        print(f"Current close price: {curr_close_price}")
+        print(f"Previous close price: {prev_close_price}")
+        print(f"Current position: {curr_position}")
+    else:
+        print('Authentication and data initialization')
+        
+def _get_current_close_price():
+    global data_generator
+    curr_close_index = datetime.strptime(data_generator.current_data_window['AAPL'].index[-1], '%Y-%m-%dT%H:%M:%SZ')
     curr_close_time = curr_close_index.strftime('%Y-%m-%dT%H:%M:%SZ')
     curr_close_price = data_generator.current_data_window['AAPL'].loc[curr_close_time, 'c']
     return curr_close_price
 
+def _get_prev_close_price():
+    global data_generator
+    prev_close_index = datetime.strptime(data_generator.current_data_window['AAPL'].index[-2], '%Y-%m-%dT%H:%M:%SZ')
+    prev_close_time = prev_close_index.strftime('%Y-%m-%dT%H:%M:%SZ')
+    prev_close_price = data_generator.current_data_window['AAPL'].loc[prev_close_time, 'c']
+    return prev_close_price
+
 def place_buy_order():
-    global trading_client
+    global trading_client, capital, curr_close_price
+    quantity = capital / curr_close_price
     try:
         market_order_data = MarketOrderRequest(
                         symbol="AAPL",
-                        qty=0.1,
+                        qty=quantity,
                         side=OrderSide.BUY,
                         time_in_force=TimeInForce.DAY
                         )
-        
         trading_client.submit_order(
                         order_data=market_order_data
                     )
@@ -134,15 +147,15 @@ def place_buy_order():
         print("Error in placing buy order")
 
 def place_sell_order():
-    global trading_client
+    global trading_client, capital, curr_close_price
+    quantity = capital / curr_close_price
     try:
         market_order_data = MarketOrderRequest(
                         symbol="AAPL",
-                        qty=0.1,
+                        qty=quantity,
                         side=OrderSide.SELL,
                         time_in_force=TimeInForce.DAY
                         )
-        
         trading_client.submit_order(
                         order_data=market_order_data
                     )
@@ -172,7 +185,7 @@ def place_sell_order():
 socket = SOCKET_URL
 
 ws = websocket.WebSocketApp(socket, 
-                            on_open=on_open, 
+                            on_open=on_open,
                             on_message=on_message)
 
 ws.run_forever()
