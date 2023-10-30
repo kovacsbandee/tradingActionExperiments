@@ -12,6 +12,7 @@ import pandas as pd
 
 from src_tr.main.scanners.AndrewAzizRecommendedScanner import AndrewAzizRecommendedScanner
 from src_tr.main.data_generators.AlpacaPriceDataGenerator import AlpacaPriceDataGenerator
+from src_tr.main.strategies.StrategyWithStopLoss import StrategyWithStopLoss
 from src_tr.main.helpers.converter import string_to_dict_list
 
 load_dotenv()
@@ -51,8 +52,11 @@ prev_close_price = None
 curr_close_price = None
 curr_position = 'out'
 capital = float(trading_client.get_account().cash)
+strategy = None
+
 
 def on_open(ws):
+    global strategy
     print("opened")
     data_generator.initialize_sticker_dict()
     data_generator.initialize_current_data_window()
@@ -66,6 +70,12 @@ def on_open(ws):
         }
 
     ws.send(json.dumps(listen_message))
+    strategy = StrategyWithStopLoss(ma_short=5,
+                                ma_long=12,
+                                stop_loss_perc=0.0,
+                                epsilon=0.01,
+                                initial_capital=capital
+                                )
     print("Capital at the opening of trading session: " + capital)
     
 def on_message(ws, message):
@@ -75,11 +85,15 @@ def on_message(ws, message):
 
     if minute_bars[0]['T'] == 'b':
         data_generator.update_current_data_window(minute_bars=minute_bars)
-        print(data_generator.current_data_window['AAPL'])
+        print(data_generator.sticker_df['AAPL'])
         
         curr_close_price = _get_current_close_price()
+
+        if len(data_generator.sticker_df['AAPL']) >= strategy.ma_long:
             
-        if len(data_generator.current_data_window['AAPL']) >= 2:
+
+            
+        if len(data_generator.sticker_df['AAPL']) >= 2: #ma_long
             case_init = prev_close_price is None and curr_position == 'out'
             case_long_sell = not case_init and curr_close_price < prev_close_price and curr_position == 'long'
             case_long_buy = not case_init and curr_close_price > prev_close_price and curr_position == 'out'
@@ -118,16 +132,16 @@ def on_message(ws, message):
         
 def _get_current_close_price():
     global data_generator
-    curr_close_index = datetime.strptime(data_generator.current_data_window['AAPL'].index[-1], '%Y-%m-%dT%H:%M:%SZ')
+    curr_close_index = datetime.strptime(data_generator.sticker_df['AAPL'].index[-1], '%Y-%m-%dT%H:%M:%SZ')
     curr_close_time = curr_close_index.strftime('%Y-%m-%dT%H:%M:%SZ')
-    curr_close_price = data_generator.current_data_window['AAPL'].loc[curr_close_time, 'c']
+    curr_close_price = data_generator.sticker_df['AAPL'].loc[curr_close_time, 'c']
     return curr_close_price
 
 def _get_prev_close_price():
     global data_generator
-    prev_close_index = datetime.strptime(data_generator.current_data_window['AAPL'].index[-2], '%Y-%m-%dT%H:%M:%SZ')
+    prev_close_index = datetime.strptime(data_generator.sticker_df['AAPL'].index[-2], '%Y-%m-%dT%H:%M:%SZ')
     prev_close_time = prev_close_index.strftime('%Y-%m-%dT%H:%M:%SZ')
-    prev_close_price = data_generator.current_data_window['AAPL'].loc[prev_close_time, 'c']
+    prev_close_price = data_generator.sticker_df['AAPL'].loc[prev_close_time, 'c']
     return prev_close_price
 
 def place_buy_order():

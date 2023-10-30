@@ -45,7 +45,7 @@ class PriceDataGeneratorBase(ABC):
 
     **trading_day_sticker_stats:
     """
-    current_data_window: dict = dict()
+    sticker_df: dict = dict()
     """
     NOTE: the current_data_window is a dictionary of dataframes, 
     where the key is the sticker symbol

@@ -1,5 +1,7 @@
 import json
 
+# TODO: emberi header-ök
+
 def string_to_dict_list(input_string):
     try:
         data_list = json.loads(input_string)

@@ -1,24 +1,24 @@
 from datetime import datetime, timedelta
+import pandas as pd
 
 from src_tr.main.strategies.StrategyBase import StrategyBase
 
 class StrategyWithStopLoss(StrategyBase):
 
-    def __init__(self, sticker_dict_from_generator, 
+    def __init__(self,
+                 sticker_dict,    # {'AAPL': pd.DataFrame} 
                  ma_short, 
-                 ma_long, 
+                 ma_long, #NOTE: ugyanaz, mint a PriceDataGenerator data_window length
                  stop_loss_perc, 
-                 comission_ratio,
-                 initial_capital):
-        super().__init__(sticker_dict_from_generator)
+                 initial_capital, 
+                 epsilon):
+        super().__init__(sticker_dict)
         self.ma_short = ma_short
         self.ma_long = ma_long
         self.stop_loss_perc = stop_loss_perc
-        self.comission_ratio = comission_ratio
-        self.averaged_cols = ['close']
+        self.comission_ratio = 0.0
         self.ind_price = 'close'
-        self.short_epsilon = 0.01
-        self.long_epsilon = 0.01
+        self.epsilon = epsilon
         self.strategy_filters = None
         self.capital = initial_capital
         self.prev_capital_index = None
@@ -29,34 +29,69 @@ class StrategyWithStopLoss(StrategyBase):
     def update_capital_amount(self, account_cash):
         # TradingClient.get_account().cash
         self.capital = account_cash
+    
+
+    def initialize_additional_columns(self):
+        ['position', 'current_capital', 'trading_action', 'position_quantity']
+        pass
+
+
+# innentől, minden új timestamp-nél kiszámítjuk az alábbiakat és ezek alapján meghatározzuk a pozíciókat
 
     def add_trendscalping_specific_indicators(self):
+        # NOTE: működik de csak 1 elemű lista
         for df in self.sticker_dict.values():
-            for col in self.averaged_cols: #TODO: ez egyszerűsíthető, ha ez csak egyetlen érték
-                short_ind_col = f'{col}_ma{self.ma_short}'
-                df[short_ind_col] = self.add_rolling_average(price_time_series=df,
-                                                        col=col,
-                                                        window_length=self.ma_short)
-                df[f'{short_ind_col}_grad'] = self.add_gradient(price_time_series=df,
-                                                        col=short_ind_col)
-                
-                long_ind_col = f'{col}_ma{self.ma_long}'
-                df[long_ind_col] = self.add_rolling_average(price_time_series=df,
-                                                    col=col,
-                                                    window_length=self.ma_long)
-                df[f'{long_ind_col}_grad'] = self.add_gradient(price_time_series=df,
-                                                        col=long_ind_col)
+            self.small_ind_col = f'{self.ind_price}_ma{self.ma_short}_grad'
+            df[self.small_ind_col] = df[self.ind_price].rolling(window = self.ma_short, center=False).mean().diff()
 
+            self.big_ind_col = f'{self.ind_price}_ma{self.ma_long}_grad'
+            df[self.big_ind_col] = df[self.ind_price].rolling(window = self.ma_long, center=False).mean().diff()
+
+
+
+
+    '''
+    Ha t-1-ben nincsen pozícióban és a small_ind_col(t) és a big_ind_col(t) is nagyobb mint, +epsilon, 
+        -> akkor LONG_BUY(t)
+    
+    Ha long pozícióban van és a small_ind_col(t) és a big_ind_col(t) is nagyobb mint, +epsilon, ÉS a price(t) >= price(pozícióba álláskor),
+        -> akkor LONG_BUY marad
+    
+    Ha long pozícióban van és a small_ind_col(t) és a big_ind_col(t) is nagyobb mint, +epsilon, ÉS a price(t) < price(pozícióba álláskor),
+        -> akkor azonnal add el az előző LONG_BUY-t
+        -> állítsd át a pozíciót out-ra
+    
+    Ha long pozícióban van és a small_ind_col(t) vagy a big_ind_col(t) is kisebb mint, +epsilon,
+        -> akkor azonnal add el az előző LONG_BUY-t
+        -> állítsd át a pozíciót out-ra
+
+
+    (short pozíció visszavásárlás: vegyél meg ugyan annyi darab részvényt, mint amennyit az elején eladtál (hitelbe elkérted a brókertől))
+    Ha t-1-ben nincsen pozícióban és a small_ind_col és a big_ind_col is kisebb mint, -epsilon,
+        -> akkor SHORT_SELL(t)
+    Ha short pozícióban van és a small_ind_col és a big_ind_col is kisebb mint, -epsilon, ÉS a price(t) <= price(pozícióba álláskor),
+        -> akkor SHORT_SELL marad
+    Ha short pozícióban van és a small_ind_col és a big_ind_col is kisebb mint, -epsilon, ÉS a price(t) > price(pozícióba álláskor),
+        -> akkor azonnal vásárold vissz az előző SHORT_SELL-t
+        -> állítsd át a pozíciót out-ra
+    Ha short pozícióban van és a small_ind_col vagy a big_ind_col nagyobb mint, -epsilon,
+        -> akkor azonnal vásárold vissza az előző SHORT_SELL-t
+        -> állítsd át a pozíciót out-ra    
+    '''
+
+
+
+# ezszar.
     def create_strategy_filter(self):
         # reutrns a boolean filter sequence for long buy, and another one for short sell
         df = list(self.sticker_dict.values())[0] #TODO: ide majd valami kevésbé kókány megoldás kellene
         
-        short_grad = f'{self.ind_price}_ma{self.ma_short}_grad'
-        long_grad = f'{self.ind_price}_ma{self.ma_long}_grad'
-
-        long_filter = (self.long_epsilon < df[long_grad]) & (self.short_epsilon < df[short_grad])
-        short_filter = (-self.long_epsilon > df[long_grad]) & (-self.short_epsilon > df[short_grad])
+        long_filter = (self.long_epsilon < df[self.big_ind_col]) & (self.short_epsilon < df[self.small_ind_col])
+        short_filter = (-self.long_epsilon > df[self.big_ind_col]) & (-self.short_epsilon > df[self.small_ind_col])
         self.strategy_filters = {'short_filter': short_filter, 'long_filter': long_filter}
+
+
+
 
     def initialize_strategy_specific_fields(self):
         filters = self.strategy_filters
