@@ -16,10 +16,10 @@ class AndrewAzizRecommendedScanner(ScannerBase):
                  trading_day, 
                  scanning_day, 
                  stickers,
-                 lower_price_boundary, 
-                 upper_price_boundary, 
-                 price_range_perc_cond, 
-                 avg_volume_cond):
+                 lower_price_boundary=10, 
+                 upper_price_boundary=250, 
+                 price_range_perc_cond=10, 
+                 avg_volume_cond=25000): # ez csak bele van kókányolva, mert függ a tőkétől és a részvény ártól is! újra kell gondolni
         super().__init__(name, trading_day, scanning_day, stickers)
         self.lower_price_boundary = lower_price_boundary
         self.upper_price_boundary = upper_price_boundary
@@ -51,7 +51,7 @@ class AndrewAzizRecommendedScanner(ScannerBase):
                 volume_range_ratio = 0
                 
                 if not pd.isnull(avg_volume) and avg_volume != 0: 
-                    price_range_perc = (high_max - low_min) / avg_close * 100
+                    price_range_perc = (high_max - low_min) / ((high_max + low_min) / 2) * 100
                     volume_range_ratio = (volume_max - volume_min) / avg_volume
                     
                 return {

@@ -33,7 +33,7 @@ scanner = AndrewAzizRecommendedScanner(name="AzizScanner",
                                        scanning_day=scanning_day,
                                        stickers=stickers,
                                        lower_price_boundary=10,
-                                       upper_price_boundary=100,
+                                       upper_price_boundary=250,
                                        price_range_perc_cond=10,
                                        avg_volume_cond=25000)
 #scanner.calculate_filtering_stats(save_csv=False)
