@@ -9,8 +9,8 @@ PROJ_PATH = 'F:/tradingActionExperiments'
 DB_PATH = f'F:/tradingActionExperiments_database'
 
 
-start_date = '2023-09-11'
-day_nums = 1
+start_date = '2023-10-07'
+day_nums = 16
 
 log_dfs = list()
 for loading_day in [loading_day.strftime('%Y-%m-%d') for loading_day in pd.bdate_range(pd.to_datetime(start_date, format='%Y-%m-%d'), periods=day_nums).to_list()]:
@@ -19,11 +19,15 @@ for loading_day in [loading_day.strftime('%Y-%m-%d') for loading_day in pd.bdate
         if db_builder.instance_dir_name not in os.listdir(db_builder.db_path):
             instance_dir = f'{db_builder.db_path}/{db_builder.instance_dir_name}'
             os.mkdir(instance_dir)
+            os.mkdir(f'{instance_dir}/csvs')
+            db_builder.instance_dir_name = f'{instance_dir}/csvs'
         else:
-            db_builder.instance_dir = f'{db_builder.db_path}/{db_builder.instance_dir_name}'
+            db_builder.instance_dir_name = f'{db_builder.db_path}/{db_builder.instance_dir_name}/csvs'
             print(f'{db_builder.instance_dir_name} is already created at the {db_builder.db_path}!')
         db_builder.get_nasdaq_stickers()
         df = db_builder.run_paralelle_loading()
+
+
 
 del sticker_data
 
@@ -44,15 +48,21 @@ def get_all_listed_stickers_for_db():
     builder.get_nasdaq_stickers()
     return builder.stickers
 
-#stickers = get_all_listed_stickers_for_db()
+stickers = get_all_listed_stickers_for_db()
 
-def create_stockwise_price_data(sticker_csv):
-    sticker_dfs = list()
-    for daily_dirs in os.listdir(f'{DB_PATH}/daywise_database'):
-        if sticker_csv in os.listdir(f'{DB_PATH}/daywise_database/{daily_dirs}/csvs'):
-            sticker_dfs.append(pd.read_csv(f'{DB_PATH}/daywise_database/{daily_dirs}/csvs/{sticker_csv}'))
-    if len(sticker_dfs) > 0:
-        long_sticker_df = pd.concat(sticker_dfs, axis=0)
-        long_sticker_df.set_index('Datetime', inplace=True)
-        long_sticker_df.to_csv(f'{DB_PATH}/stockwise_database/{sticker_csv}')
-    return sticker_csv
+
+
+
+def create_stockwise_price_data(stickers):
+    for sticker in stickers:
+        sticker_csv = f'{sticker}.csv'
+        sticker_dfs = list()
+        for daily_dirs in os.listdir(f'{DB_PATH}/daywise_database'):
+            if sticker_csv in os.listdir(f'{DB_PATH}/daywise_database/{daily_dirs}/csvs'):
+                sticker_dfs.append(pd.read_csv(f'{DB_PATH}/daywise_database/{daily_dirs}/csvs/{sticker_csv}'))
+        if len(sticker_dfs) > 0:
+            long_sticker_df = pd.concat(sticker_dfs, axis=0)
+            long_sticker_df.set_index('Datetime', inplace=True)
+            long_sticker_df.to_csv(f'{DB_PATH}/stockwise_database/{sticker_csv}', )
+
+create_stockwise_price_data(stickers=stickers)

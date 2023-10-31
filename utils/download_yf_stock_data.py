@@ -7,13 +7,14 @@ import logging
 logging.getLogger('yfinance').setLevel(logging.CRITICAL)
 
 PROJ_PATH = 'F:/tradingActionExperiments'
+DB_PATH = 'F:/tradingActionExperiments_database'
 
 class yfPriceDatabaseBuilder:
 
     def __init__(self, start_date, nasdaq_screener = 'nasdaq_screener_20231007.csv', low_last_sale = 5, upper_last_sale=400):
         self.date = start_date
         self.date_dt = datetime.strptime(self.date, '%Y-%m-%d')
-        self.db_path = f'{PROJ_PATH}/data_store/database'
+        self.db_path = f'{DB_PATH}/daywise_database'
         self.mod_date = self.date.replace('-', '_')
         self.instance_dir_name = f'stock_prices_for_{self.mod_date}'
         self.screener_file = nasdaq_screener
@@ -52,20 +53,19 @@ class yfPriceDatabaseBuilder:
                                        progress=False)
             sticker_data.columns = [c.lower() for c in sticker_data.columns]
             if len(sticker_data) > 0:
-                sticker_data.to_csv(f'{self.instance_dir}/csvs/{sticker}.csv')
+                sticker_data.to_csv(f'{self.instance_dir_name}/{sticker}.csv')
                 successfull_stickers.append(sticker)
             else:
                 pass
-                #failed_stickers.append(sticker)
+                failed_stickers.append(sticker)
         except:
             pass
-        #     failed_stickers.append(sticker)
-        # return (successfull_stickers, failed_stickers)
+            failed_stickers.append(sticker)
+        return (successfull_stickers, failed_stickers)
 
     def run_paralelle_loading(self):
         print(self.stickers)
         s = Parallel(n_jobs=16)(delayed(self.load_individual_sticker_price_data)(sticker) for sticker in self.stickers)
-        return s
-        # log_df = pd.DataFrame.from_records(stored_stickers, columns=['loaded_stickers', 'failed_stickers'])
-        # log_df['date'] = self.date
-        # return  log_df
+        log_df = pd.DataFrame.from_records(s, columns=['loaded_stickers', 'failed_stickers'])
+        log_df['date'] = self.date
+        return  log_df

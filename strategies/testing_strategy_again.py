@@ -22,7 +22,7 @@ long_grad = f'{price_col}_ma{ma_long}_grad'
 
 
 
-df = pd.read_csv('F:/tradingActionExperiments_database/stockwise_database/RIVN.csv', index_col='Datetime')
+df = pd.read_csv('F:/tradingActionExperiments_database/stockwise_database/TSLA.csv', index_col='Datetime')
 df.index = pd.to_datetime(df.index.str[:-6])
 
 basedf = pd.merge(pd.DataFrame(index = [datetime.combine(d, t) for d,t in list(product(np.unique(df.index.date), np.unique(df.index.time)))]),
