@@ -7,17 +7,9 @@ class AlpacaPriceDataGenerator(PriceDataGeneratorBase):
 
     def __init__(self, 
                  recommended_sticker_list
-                 #lower_price_boundary, 
-                 #upper_price_boundary, 
-                 #lower_volume_boundary, 
-                 #data_window_size
                  ):
         super().__init__(
-                        self.recommended_sticker_list 
-                        #lower_price_boundary, 
-                        #upper_price_boundary, 
-                        #lower_volume_boundary,
-                        #data_window_size
+                        recommended_sticker_list
                         )
     
     def initialize_sticker_dict(self):
@@ -52,9 +44,6 @@ class AlpacaPriceDataGenerator(PriceDataGeneratorBase):
                     self.sticker_df[symbol] = pd.concat([self.sticker_df[symbol], bar_df])
                 else:
                     raise ValueError("Unexpected data structure for the symbol in current_data_window")
-
-                if len(self.sticker_df[symbol]) > self.data_window_size:
-                    self.sticker_df[symbol] = self.sticker_df[symbol].tail(self.data_window_size)
         else:
             raise ValueError("Minute bar list is empty.")
                             

@@ -11,7 +11,7 @@ class StrategyBase(ABC):
         }
     """
     
-    def __init__(self, sticker_dict_from_generator: dict):
+    def __init__(self, sticker_dict_from_generator: dict=None):
         self.sticker_dict = sticker_dict_from_generator
 
     

@@ -66,19 +66,9 @@ class PriceDataGeneratorBase(ABC):
     """
     data_window_size: int
     
-    def __init__(self, 
-                 trading_day, 
-                 recommended_sticker_list, 
-                 lower_price_boundary, 
-                 upper_price_boundary, 
-                 lower_volume_boundary, 
-                 data_window_size):
-        self.trading_day = trading_day
+    def __init__(self,
+                 recommended_sticker_list):
         self.recommended_sticker_list = recommended_sticker_list
-        self.lower_price_boundary = lower_price_boundary
-        self.upper_price_boundary = upper_price_boundary
-        self.lower_volume_boundary = lower_volume_boundary
-        self.data_window_size = data_window_size
         
     #@abstractmethod
     #def load_individual_sticker_data(self):
