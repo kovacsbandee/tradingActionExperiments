@@ -32,13 +32,13 @@ scanner = AndrewAzizRecommendedScanner(name="AzizScanner",
                                        trading_day=trading_day,
                                        scanning_day=scanning_day,
                                        stickers=stickers,
-                                       lower_price_boundary=10,
-                                       upper_price_boundary=100,
+                                       lower_price_boundary=35,
+                                       upper_price_boundary=400,
                                        price_range_perc_cond=10,
-                                       avg_volume_cond=25000)
+                                       avg_volume_cond=15000)
 #scanner.calculate_filtering_stats(save_csv=False)
 #rec_st_list = scanner.recommend_premarket_watchlist()
-rec_st_list = ["AAPL"]
+rec_st_list = ["RARE"]
 #print([s for s in rec_st_list])
 
 # 2) PriceDataGenerator inicializálás
