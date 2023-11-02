@@ -27,6 +27,7 @@ class AndrewAzizRecommendedScanner(ScannerBase):
                 # itt csak a megelőző napot számoljuk, így kell a tz_localize(None) és szűrés
                 
                 avg_close = ticker_history['Close'].mean()
+                std_close = ticker_history['Close'].std()
                 high_max = ticker_history['High'].max()
                 low_min = ticker_history['Low'].min()
                 avg_volume = ticker_history['Volume'].mean()
@@ -42,6 +43,7 @@ class AndrewAzizRecommendedScanner(ScannerBase):
                 return {
                     'sticker': sticker, # TODO: ref -> generate_price_data -> továbbadhatnánk az oda kellő adatokat is
                     'avg_close': avg_close,
+                    'std_close': std_close,
                     'avg_volume': avg_volume,
                     'price_range_perc': price_range_perc,
                     'volume_range_ratio': volume_range_ratio
@@ -90,7 +92,8 @@ class AndrewAzizRecommendedScanner(ScannerBase):
             (self.lower_price_boundary < self.pre_market_stats['avg_close']) & \
             (self.pre_market_stats['avg_close'] < self.upper_price_boundary) & \
             (self.price_range_perc_cond < self.pre_market_stats['price_range_perc']) & \
-            (self.avg_volume_cond < self.pre_market_stats['avg_volume'])]
+            (self.avg_volume_cond < self.pre_market_stats['avg_volume']) & \
+            (self.std_close_lower_boundary_cond < self.pre_market_stats['std_close'])]
         print(f'The recommended watchlist for {self.trading_day} is the following DataFrame: {self.recommended_stickers}')
         sticker_string_list = [] # TODO: ez így kókányolás, ki kell találni valami jobbat, illetve kérdés, hogy a Scannerből kell-e az összes adat, 
         if self.recommended_stickers is not None:
