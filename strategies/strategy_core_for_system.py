@@ -83,7 +83,8 @@ df = pd.merge(df,
               on='sticker')
 df = df[['sticker', 'day', 'cap_max', 'cap_min', 'cap_mean', 'cap_min_avg', 'cap_mean_avg', 'cap_max_avg']]
 df['daily_gain'] = df['cap_max']-25000
-print(df[['sticker', 'daily_gain']].groupby(by='sticker').sum())
+tdf = df[['sticker', 'daily_gain']].groupby(by='sticker').sum()
+print(tdf)
 avg_gain = df[~df['sticker'].isin(['AMAM', 'ZJYL'])][['sticker', 'daily_gain']].groupby(by='sticker').sum().mean()
 print(avg_gain/25000)
 print(np.power(1+avg_gain/25000, 12))
