@@ -15,6 +15,35 @@ results = results[(results['volume_max'] != 0)]
 results = results[(~results['close_small_ind_col_max'].isna())]
 
 
+lower_price_boundary = 10
+upper_price_boundary = 400
+price_range_perc_cond = 10
+avg_volume_cond = 25000
+std_close_lower_boundary_cond = 0.25
+epsilon = 0.01
+scanner_check = results.copy()
+scanner_check['filter_col'] = scanner_check['sticker'] + scanner_check['day']
+
+scanner_in = scanner_check[(scanner_check['close_mean'] > lower_price_boundary) & \
+                           (scanner_check['close_mean'] < upper_price_boundary) & \
+                           (scanner_check['volume_mean'] > avg_volume_cond) & \
+                           (scanner_check['close_std'] > std_close_lower_boundary_cond) & \
+                           (scanner_check['close_small_ind_col_mean'] > epsilon) & \
+                           (scanner_check['close_big_ind_col_mean'] > epsilon)]
+
+scanner_out = scanner_check[~scanner_check['filter_col'].isin(scanner_in['filter_col'].unique())]
+
+print('Scanner in skewness', skewtest(scanner_in.cap_mean).statistic)
+print('Scanner out skewness',  skewtest(scanner_out.cap_mean).statistic)
+
+print('in cap mean', scanner_in.cap_mean.mean())
+print('out cap mean', scanner_out.cap_mean.mean())
+
+
+
+compare_results(scanner_out, scanner_in, vars=vars, plot_name='scanner_check')
+
+
 max_winners = results[results['cap_max'] > 25050]
 mean_winners = results[results['cap_mean'] > 25050]
 
@@ -41,27 +70,28 @@ vars = ['cap_max', 'cap_min', 'cap_mean', 'close_max',
        'close_big_ind_col_max', 'close_big_ind_col_min',
        'close_big_ind_col_mean']
 
-fig = make_subplots(cols=1,
-                    subplot_titles=vars,
-                    rows=len(vars))
+def compare_results(loser_df,winners_df, vars, plot_name=''):
+    fig = make_subplots(cols=1,
+                        subplot_titles=vars,
+                        rows=len(vars))
 
-for i, v in enumerate(vars):
-    fig.add_trace(go.Histogram(x=losers[v],
-                               name='losers',
-                               nbinsx=100,
-                               showlegend=True if i == 0 else False,
-                               histnorm='probability',
-                               marker = dict(color='blue')), col=1, row=i + 1)
-    fig.add_trace(go.Histogram(x=mean_winners[v],
-                               name='mean_winners',
-                               nbinsx=100,
-                               showlegend=True if i==0 else False,
-                               histnorm='probability',
-                               marker = dict(color='red')), col=1, row=i + 1)
-fig.update_layout(barmode='overlay',
-                  height=len(vars)*150)
-fig.update_traces(opacity=0.5)
-fig.write_html(f'{PROJ_PATH}/plots/plot_store/losers_and_mean_winner_comparision.html')
+    for i, v in enumerate(vars):
+        fig.add_trace(go.Histogram(x=loser_df[v],
+                                   name='losers',
+                                   nbinsx=100,
+                                   showlegend=True if i == 0 else False,
+                                   histnorm='probability density',
+                                   marker = dict(color='blue')), col=1, row=i + 1)
+        fig.add_trace(go.Histogram(x=winners_df[v],
+                                   name='winners',
+                                   nbinsx=100,
+                                   showlegend=True if i==0 else False,
+                                   histnorm='probability density',
+                                   marker = dict(color='red')), col=1, row=i + 1)
+    fig.update_layout(barmode='overlay',
+                      height=len(vars)*150)
+    fig.update_traces(opacity=0.5)
+    fig.write_html(f'{PROJ_PATH}/plots/plot_store/losers_and_mean_winner_comparision_{plot_name}.html')
 
 
 mean_winners.to_csv(f'F:/tradingActionExperiments/data_store/mean_winners_final_strategy_implementation_results_on_daily.csv', index=False)
