@@ -32,11 +32,11 @@ scanner = AndrewAzizRecommendedScanner(name="AzizScanner",
                                        trading_day=trading_day,
                                        scanning_day=scanning_day,
                                        stickers=stickers,
-                                       lower_price_boundary=35,
+                                       lower_price_boundary=10,
                                        upper_price_boundary=400,
                                        price_range_perc_cond=10,
-                                       avg_volume_cond=15000,
-                                       std_close_lower_boundary_cond=0.35)
+                                       avg_volume_cond=25000,
+                                       std_close_lower_boundary_cond=0.25)
 #scanner.calculate_filtering_stats(save_csv=False)
 #rec_st_list = scanner.recommend_premarket_watchlist()
 rec_st_list = ["RARE"]
