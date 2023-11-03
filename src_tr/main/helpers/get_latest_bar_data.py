@@ -8,25 +8,23 @@ from alpaca.data.models.bars import BarSet
 import pandas as pd
 from pandas import DataFrame
 
-load_dotenv()
+def get_latest_bar_data(alpaca_key, alpaca_secret_key, input_symbol):
 
-ALPACA_KEY = os.environ["ALPACA_KEY"]
-ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
+    client = StockHistoricalDataClient(alpaca_key, alpaca_secret_key)
 
-client = StockHistoricalDataClient(ALPACA_KEY, ALPACA_SECRET_KEY)
+    symbol = [input_symbol]
+    timeframe = TimeFrame(amount=1, unit=TimeFrameUnit.Minute)
 
-symbol = ["AAPL"]
-timeframe = TimeFrame(amount=1, unit=TimeFrameUnit.Minute)
+    bars_request = StockBarsRequest(
+        symbol_or_symbols=symbol,
+        timeframe=timeframe
+    )
 
-bars_request = StockBarsRequest(
-    symbol_or_symbols=symbol,
-    timeframe=timeframe
-)
-
-latest_bars = client.get_stock_bars(bars_request)
+    latest_bars = client.get_stock_bars(bars_request)
+    return convert(latest_bars.df)
 
 def convert(latest_bars: DataFrame):
-        # Reset the index to move the 'symbol' and 'timestamp' to columns
+    # Reset the index to move the 'symbol' and 'timestamp' to columns
     df = latest_bars.reset_index()
 
     # Rename the columns to match the desired format

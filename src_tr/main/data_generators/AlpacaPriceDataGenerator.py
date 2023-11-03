@@ -23,14 +23,14 @@ class AlpacaPriceDataGenerator(PriceDataGeneratorBase):
         else:
             raise ValueError("Recommended sticker list is empty.")
                 
-    def initialize_current_data_window(self):
+    def initialize_sticker_df(self):
         if self.recommended_sticker_list is not None:
             for stckr in self.recommended_sticker_list:
                 self.sticker_df[stckr] = None
         else:
             raise ValueError("Recommended sticker list is empty.")
                 
-    def update_current_data_window(self, minute_bars: List[dict]):
+    def update_sticker_df(self, minute_bars: List[dict]):
         #TODO: ne vegyük el az első sort, ne legyen data_window size és legyen benne pozíció oszlop
         if minute_bars is not None and len(minute_bars) > 0:
             for bar in minute_bars:

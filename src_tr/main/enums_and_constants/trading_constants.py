@@ -10,8 +10,8 @@ STOP_LOSS_OUT_SIGNAL = 'stop_loss_out_signal'
 
 # sticker_df column value constants:
 POS_OUT = 'out'
-POS_LONG_BUY = 'long_buy'
-POS_SHORT_SELL = 'short_sell'
+POS_LONG_BUY = 'long'
+POS_SHORT_SELL = 'short'
 
 ACT_NO_ACTION = 'no_action'
 ACT_BUY_NEXT_LONG = 'buy_next_long_position'

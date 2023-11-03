@@ -34,7 +34,7 @@ class TradingManager(TradingManagerBase):
         # az ezután érkező message-eket ignoráljuk (self.market_open, self.market_close)
         
         # if timecheck, stb:
-        self.price_data_generator.update_current_data_window(self.minute_bars)
+        self.price_data_generator.update_sticker_df(self.minute_bars)
         self.event.clear()
         return True
         # else: 

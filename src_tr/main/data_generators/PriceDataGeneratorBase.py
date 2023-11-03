@@ -79,5 +79,5 @@ class PriceDataGeneratorBase(ABC):
         pass
 
     @abstractmethod
-    def update_current_data_window():
+    def update_sticker_df():
         pass

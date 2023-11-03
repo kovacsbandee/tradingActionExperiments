@@ -14,6 +14,7 @@ from src_tr.main.scanners.AndrewAzizRecommendedScanner import AndrewAzizRecommen
 from src_tr.main.data_generators.AlpacaPriceDataGenerator import AlpacaPriceDataGenerator
 from src_tr.main.strategies.StrategyWithStopLoss import StrategyWithStopLoss
 from src_tr.main.helpers.converter import string_to_dict_list
+from src_tr.main.helpers.get_latest_bar_data import get_latest_bar_data
 from src_tr.main.enums_and_constants.trading_constants import *
 
 load_dotenv()
@@ -41,7 +42,7 @@ scanner = AndrewAzizRecommendedScanner(name="AzizScanner",
                                        )
 #scanner.calculate_filtering_stats(save_csv=False)
 #rec_st_list = scanner.recommend_premarket_watchlist()
-rec_st_list = ["AAPL"]
+rec_st_list = ["TSLA"]
 #print([s for s in rec_st_list])
 
 # 2) PriceDataGenerator inicializálás
@@ -58,14 +59,14 @@ def on_open(ws):
     global strategy
     print("opened")
     data_generator.initialize_sticker_dict()
-    data_generator.initialize_current_data_window()
+    data_generator.initialize_sticker_df()
     auth_data = {"action": "auth", "key": f"{ALPACA_KEY}", "secret": f"{ALPACA_SECRET_KEY}"}
 
     ws.send(json.dumps(auth_data))
 
     listen_message = {
         "action":"subscribe",
-        "bars":["AAPL"]
+        "bars":["TSLA"]
         }
 
     ws.send(json.dumps(listen_message))
@@ -77,38 +78,42 @@ def on_open(ws):
                                 epsilon=0.01,
                                 initial_capital=capital
                                 )
-
-    print("Capital at the opening of trading session: " + capital)
+    data_generator.sticker_df['TSLA'] = get_latest_bar_data(alpaca_key=ALPACA_KEY, 
+                                                            alpaca_secret_key=ALPACA_SECRET_KEY,
+                                                            input_symbol='TSLA')
+    strategy.set_sticker_df(data_generator.sticker_df['TSLA'])
+    strategy.initialize_additional_fields()
+    print("Capital at the opening of trading session: " + str(strategy.capital))
     
 def on_message(ws, message):
-    global capital, strategy
+    global capital, strategy, trading_client
     print("New bar data received")
     minute_bars = string_to_dict_list(message)
 
     if minute_bars[0]['T'] == 'b':
-        data_generator.update_current_data_window(minute_bars=minute_bars)
-        sticker_df: pd.DataFrame = data_generator.sticker_df['AAPL']
-        print(sticker_df)
-        strategy.set_sticker_df(sticker_df)
-        strategy.initialize_additional_fields()
-        
+        data_generator.update_sticker_df(minute_bars=minute_bars)       
         #ITT JÖN A MEDZSIK
-        if len(data_generator.sticker_df['AAPL']) > strategy.ma_long:
-            strategy.sticker_df = sticker_df
-            """
-                trading_client.get_all_positions()
-                 - listát ad vissza, benne vannak az aktuális pozíciók
-            """
-            strategy.update_capital_amount(capital)
-            strategy.apply_strategy()
+        if len(data_generator.sticker_df['TSLA']) > strategy.ma_long:
+            strategy.set_sticker_df(data_generator.sticker_df['TSLA'])
+            strategy.update_capital_amount(float(trading_client.get_account().cash))
+            strategy.apply_strategy(trading_client)
+            sticker_df = strategy.sticker_df
 
             trading_action = sticker_df.iloc[-1][TRADING_ACTION]
+            current_position = sticker_df.iloc[-1][POSITION]
             quantity = sticker_df.iloc[-1][CURRENT_CAPITAL] / sticker_df.iloc[-1][CLOSE]
 
-            if trading_action in [ACT_BUY_NEXT_LONG, ACT_BUY_PREV_SHORT]:
+            if trading_action == ACT_BUY_NEXT_LONG and current_position != POS_OUT:
                 place_buy_order(quantity)
-            elif trading_action in [ACT_SELL_PREV_LONG, ACT_SELL_NEXT_SHORT]:
+                # refresh position in sticker_df
+            elif trading_action == ACT_SELL_NEXT_SHORT and current_position != POS_OUT:
                 place_sell_order(quantity)
+                #NOTE: {"code":42210000,"message":"fractional orders cannot be sold short"}
+                # refresh position in sticker_df
+            elif trading_action == ACT_SELL_PREV_LONG and current_position == POS_OUT:
+                close_current_position("Sell previous long")
+            elif trading_action == ACT_BUY_PREV_SHORT and current_position == POS_OUT:
+                close_current_position("Buy previous long")
             else:
                 print(ACT_NO_ACTION)
 
@@ -119,7 +124,7 @@ def place_buy_order(quantity):
     global trading_client
     try:
         market_order_data = MarketOrderRequest(
-                        symbol="AAPL",
+                        symbol="TSLA",
                         qty=quantity,
                         side=OrderSide.BUY,
                         time_in_force=TimeInForce.DAY
@@ -131,25 +136,32 @@ def place_buy_order(quantity):
     except Exception as e:
         print(str(e))
 
-def place_sell_order():
+def place_sell_order(quantity):
     global trading_client
     try:
-        trading_client.close_position('AAPL')
-        #market_order_data = MarketOrderRequest(
-        #                symbol="AAPL",
-        #                qty=quantity,
-        #                side=OrderSide.SELL,
-        #                time_in_force=TimeInForce.DAY
-        #                )
-        #trading_client.submit_order(
-        #                order_data=market_order_data
-        #            )
+        market_order_data = MarketOrderRequest(
+                        symbol="TSLA",
+                        qty=round(quantity),
+                        side=OrderSide.SELL,
+                        time_in_force=TimeInForce.DAY
+                        )
+        trading_client.submit_order(
+                        order_data=market_order_data
+                    )
         print('Sell order completed')
+    except Exception as e:
+        print(str(e))
+
+def close_current_position(position):
+    global trading_client
+    try:
+        trading_client.close_position('TSLA')
+        print(f'{position} position closed successfully')
     except Exception as e:
         print(str(e))
     
     #market_order_data = MarketOrderRequest(
-    #                symbol="AAPL",
+    #                symbol="TSLA",
     #                qty=0.8,
     #                side=OrderSide.BUY,
     #                time_in_force=TimeInForce.DAY
@@ -160,7 +172,7 @@ def place_sell_order():
     #            )
 
     #account = trading_client.get_account()
-    #position = [p for p in trading_client.get_all_positions() if p.symbol == "AAPL"]
+    #position = [p for p in trading_client.get_all_positions() if p.symbol == "TSLA"]
     #current_position = position[0].side if position else "out"
     #
     #print("Symbol: " + position[0].symbol)
