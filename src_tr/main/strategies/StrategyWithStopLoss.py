@@ -116,7 +116,7 @@ class StrategyWithStopLoss(StrategyBase):
         self.sticker_df[CURRENT_CAPITAL] = self.capital
         self.sticker_df[STOP_LOSS_OUT_SIGNAL] = STOP_LOSS_NONE
     
-    def apply_strategy(self, trading_client: TradingClient):
+    def apply_strategy(self, trading_client: TradingClient, symbol: str):
         # set current_capital column
         self.sticker_df.loc[self.sticker_df.index[-1], CURRENT_CAPITAL] = self.capital
 
@@ -125,7 +125,7 @@ class StrategyWithStopLoss(StrategyBase):
         previous_position = None
         if positions is not None and len(positions) > 0:
             p: Position = positions[0]
-            if p.symbol == 'AAPL':
+            if p.symbol == symbol:
                 previous_position = p.side.value
             # loop through dict values and check if symbol is present
             # if present, set current index's POSITION column to symbol's position
@@ -212,7 +212,9 @@ class StrategyWithStopLoss(StrategyBase):
         #                                                    (self.sticker_df.loc[self.prev_long_buy_position_index, CURRENT_CAPITAL] / self.sticker_df.loc[self.prev_long_buy_position_index, self.ind_price])
 
         if self.prev_short_sell_position_index is not None:
-            if (self.sticker_df.loc[last_index, self.ind_price] < self.sticker_df.loc[self.prev_short_sell_position_index, self.ind_price]) and self.sticker_df.loc[last_index, POSITION] == POS_LONG_BUY:
+            if (self.sticker_df.loc[last_index, self.ind_price] < self.sticker_df.loc[self.prev_short_sell_position_index, self.ind_price]) \
+                and self.sticker_df.loc[last_index, POSITION] == POS_LONG_BUY:
+                    
                 self.sticker_df.loc[last_index, STOP_LOSS_OUT_SIGNAL] = STOP_LOSS_LONG
                 self.sticker_df.loc[last_index, TRADING_ACTION] = ACT_SELL_PREV_LONG
                 #self.sticker_df.loc[last_index, CURRENT_CAPITAL] = self.sticker_df.loc[self.prev_short_sell_position_index, CURRENT_CAPITAL] + \
@@ -222,7 +224,9 @@ class StrategyWithStopLoss(StrategyBase):
                 #self.sticker_df.loc[last_index, POSITION] = POS_OUT
 
         if self.prev_long_buy_position_index is not None:
-            if (self.sticker_df.loc[last_index, self.ind_price] > self.sticker_df.loc[self.prev_long_buy_position_index, self.ind_price]) and self.sticker_df.loc[last_index, POSITION] == POS_SHORT_SELL:
+            if (self.sticker_df.loc[last_index, self.ind_price] > self.sticker_df.loc[self.prev_long_buy_position_index, self.ind_price]) \
+                and self.sticker_df.loc[last_index, POSITION] == POS_SHORT_SELL:
+                    
                 self.sticker_df.loc[last_index, STOP_LOSS_OUT_SIGNAL] = STOP_LOSS_SHORT
                 self.sticker_df.loc[last_index, TRADING_ACTION] = ACT_BUY_PREV_SHORT
                 #self.sticker_df.loc[last_index, CURRENT_CAPITAL] = self.sticker_df.loc[self.prev_long_buy_position_index, CURRENT_CAPITAL] + \

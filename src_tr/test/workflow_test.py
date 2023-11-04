@@ -23,7 +23,7 @@ STICKER_CSV_PATH = os.environ["STICKER_CSV_PATH"]
 ALPACA_KEY= os.environ["ALPACA_KEY"]
 ALPACA_SECRET_KEY= os.environ["ALPACA_SECRET_KEY"]
 SOCKET_URL= os.environ["SOCKET_URL"]
-# paper=True enables paper trading
+
 trading_client = TradingClient(ALPACA_KEY, ALPACA_SECRET_KEY, paper=True)
 
 # 1) Scanner inicializálása -> watchlist létrehozás
@@ -42,7 +42,8 @@ scanner = AndrewAzizRecommendedScanner(name="AzizScanner",
                                        )
 #scanner.calculate_filtering_stats(save_csv=False)
 #rec_st_list = scanner.recommend_premarket_watchlist()
-rec_st_list = ["TSLA"]
+TEST_SYMBOL = "TSLA"
+rec_st_list = [TEST_SYMBOL]
 #print([s for s in rec_st_list])
 
 # 2) PriceDataGenerator inicializálás
@@ -52,7 +53,7 @@ data_generator = AlpacaPriceDataGenerator(#trading_day=trading_day,
 prev_close_price = None
 curr_close_price = None
 curr_position = 'out'
-capital = float(trading_client.get_account().cash)
+initial_capital = float(trading_client.get_account().cash)
 strategy = None
 
 def on_open(ws):
@@ -66,7 +67,7 @@ def on_open(ws):
 
     listen_message = {
         "action":"subscribe",
-        "bars":["TSLA"]
+        "bars":[TEST_SYMBOL]
         }
 
     ws.send(json.dumps(listen_message))
@@ -76,43 +77,47 @@ def on_open(ws):
                                 ma_long=12,
                                 stop_loss_perc=0.0,
                                 epsilon=0.01,
-                                initial_capital=capital
+                                initial_capital=initial_capital
                                 )
-    data_generator.sticker_df['TSLA'] = get_latest_bar_data(alpaca_key=ALPACA_KEY, 
+    data_generator.sticker_df[TEST_SYMBOL] = get_latest_bar_data(alpaca_key=ALPACA_KEY, 
                                                             alpaca_secret_key=ALPACA_SECRET_KEY,
-                                                            input_symbol='TSLA')
-    strategy.set_sticker_df(data_generator.sticker_df['TSLA'])
+                                                            input_symbol=TEST_SYMBOL)
+    strategy.set_sticker_df(data_generator.sticker_df[TEST_SYMBOL])
     strategy.initialize_additional_fields()
     print("Capital at the opening of trading session: " + str(strategy.capital))
     
 def on_message(ws, message):
-    global capital, strategy, trading_client
+    global strategy, trading_client
     print("New bar data received")
     minute_bars = string_to_dict_list(message)
 
     if minute_bars[0]['T'] == 'b':
         data_generator.update_sticker_df(minute_bars=minute_bars)       
         #ITT JÖN A MEDZSIK
-        if len(data_generator.sticker_df['TSLA']) > strategy.ma_long:
-            strategy.set_sticker_df(data_generator.sticker_df['TSLA'])
+        #TODO: data_generator.sticker_df most akkor egy DataFrame, vagy dict? úgy tűnik, hogy dict
+        if len(data_generator.sticker_df[TEST_SYMBOL]) > strategy.ma_long:
+            strategy.set_sticker_df(data_generator.sticker_df[TEST_SYMBOL]) #TODO: itt lehet galiba, ha nem dataframe
             strategy.update_capital_amount(float(trading_client.get_account().cash))
-            strategy.apply_strategy(trading_client)
-            sticker_df = strategy.sticker_df
+            strategy.apply_strategy(trading_client=trading_client,
+                                    symbol=TEST_SYMBOL)
+            
+            sticker_df = strategy.sticker_df #TODO: itt lehet galiba, ha nem dataframe
 
             trading_action = sticker_df.iloc[-1][TRADING_ACTION]
-            current_position = sticker_df.iloc[-1][POSITION]
+            current_position = sticker_df.iloc[-2][POSITION] #NOTE: próba cseresznye
             quantity = sticker_df.iloc[-1][CURRENT_CAPITAL] / sticker_df.iloc[-1][CLOSE]
 
-            if trading_action == ACT_BUY_NEXT_LONG and current_position != POS_OUT:
+            # kurvanagy TODO: 
+            if trading_action == ACT_BUY_NEXT_LONG and current_position == POS_OUT:
                 place_buy_order(quantity)
-                # refresh position in sticker_df
-            elif trading_action == ACT_SELL_NEXT_SHORT and current_position != POS_OUT:
+                # refresh position in sticker_df?
+            elif trading_action == ACT_SELL_NEXT_SHORT and current_position == POS_OUT:
                 place_sell_order(quantity)
                 #NOTE: {"code":42210000,"message":"fractional orders cannot be sold short"}
-                # refresh position in sticker_df
-            elif trading_action == ACT_SELL_PREV_LONG and current_position == POS_OUT:
+                # refresh position in sticker_df?
+            elif trading_action == ACT_SELL_PREV_LONG and current_position == POS_LONG_BUY:
                 close_current_position("Sell previous long")
-            elif trading_action == ACT_BUY_PREV_SHORT and current_position == POS_OUT:
+            elif trading_action == ACT_BUY_PREV_SHORT and current_position == POS_SHORT_SELL:
                 close_current_position("Buy previous long")
             else:
                 print(ACT_NO_ACTION)
@@ -124,7 +129,7 @@ def place_buy_order(quantity):
     global trading_client
     try:
         market_order_data = MarketOrderRequest(
-                        symbol="TSLA",
+                        symbol=TEST_SYMBOL,
                         qty=quantity,
                         side=OrderSide.BUY,
                         time_in_force=TimeInForce.DAY
@@ -140,7 +145,7 @@ def place_sell_order(quantity):
     global trading_client
     try:
         market_order_data = MarketOrderRequest(
-                        symbol="TSLA",
+                        symbol=TEST_SYMBOL,
                         qty=round(quantity),
                         side=OrderSide.SELL,
                         time_in_force=TimeInForce.DAY
@@ -155,7 +160,7 @@ def place_sell_order(quantity):
 def close_current_position(position):
     global trading_client
     try:
-        trading_client.close_position('TSLA')
+        trading_client.close_position(TEST_SYMBOL)
         print(f'{position} position closed successfully')
     except Exception as e:
         print(str(e))
