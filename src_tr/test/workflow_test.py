@@ -42,7 +42,7 @@ scanner = AndrewAzizRecommendedScanner(name="AzizScanner",
                                        )
 #scanner.calculate_filtering_stats(save_csv=False)
 #rec_st_list = scanner.recommend_premarket_watchlist()
-TEST_SYMBOL = "TSLA"
+TEST_SYMBOL = "NVDA"
 rec_st_list = [TEST_SYMBOL]
 #print([s for s in rec_st_list])
 
@@ -53,7 +53,6 @@ data_generator = AlpacaPriceDataGenerator(#trading_day=trading_day,
 prev_close_price = None
 curr_close_price = None
 curr_position = 'out'
-initial_capital = float(trading_client.get_account().cash)
 strategy = None
 
 def on_open(ws):
@@ -73,58 +72,64 @@ def on_open(ws):
     ws.send(json.dumps(listen_message))
     
     # initialize strategy
-    strategy = StrategyWithStopLoss(ma_short=3,
+    initial_capital = float(trading_client.get_account().cash)
+    strategy = StrategyWithStopLoss(ma_short=5,
                                 ma_long=12,
                                 stop_loss_perc=0.0,
                                 epsilon=0.01,
                                 initial_capital=initial_capital
                                 )
-    data_generator.sticker_df[TEST_SYMBOL] = get_latest_bar_data(alpaca_key=ALPACA_KEY, 
-                                                            alpaca_secret_key=ALPACA_SECRET_KEY,
-                                                            input_symbol=TEST_SYMBOL)
-    strategy.set_sticker_df(data_generator.sticker_df[TEST_SYMBOL])
+    #data_generator.sticker_df[TEST_SYMBOL] = get_latest_bar_data(alpaca_key=ALPACA_KEY, 
+    #                                                        alpaca_secret_key=ALPACA_SECRET_KEY,
+    #                                                        input_symbol=TEST_SYMBOL)
+    #strategy.set_sticker_df(data_generator.sticker_df[TEST_SYMBOL])
     strategy.initialize_additional_fields()
     print("Capital at the opening of trading session: " + str(strategy.capital))
     
 def on_message(ws, message):
     global strategy, trading_client
-    print("New bar data received")
-    minute_bars = string_to_dict_list(message)
+    try:
+        print("New bar data received at: " + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        minute_bars = string_to_dict_list(message)
 
-    if minute_bars[0]['T'] == 'b':
-        data_generator.update_sticker_df(minute_bars=minute_bars)       
-        #ITT JÖN A MEDZSIK
-        #TODO: data_generator.sticker_df most akkor egy DataFrame, vagy dict? úgy tűnik, hogy dict
-        if len(data_generator.sticker_df[TEST_SYMBOL]) > strategy.ma_long:
-            strategy.set_sticker_df(data_generator.sticker_df[TEST_SYMBOL]) #TODO: itt lehet galiba, ha nem dataframe
-            strategy.update_capital_amount(float(trading_client.get_account().cash))
-            strategy.apply_strategy(trading_client=trading_client,
-                                    symbol=TEST_SYMBOL)
-            
-            sticker_df = strategy.sticker_df #TODO: itt lehet galiba, ha nem dataframe
+        if minute_bars[0]['T'] == 'b':
+            data_generator.update_sticker_df(minute_bars=minute_bars)       
+            #ITT JÖN A MEDZSIK
+            #TODO: data_generator.sticker_df most akkor egy DataFrame, vagy dict? úgy tűnik, hogy dict
+            sticker_df_length = len(data_generator.sticker_df[TEST_SYMBOL])
+            str_ma_long_value = int(strategy.ma_long)
+            if sticker_df_length > str_ma_long_value:
+                strategy.set_sticker_df(data_generator.sticker_df[TEST_SYMBOL]) #TODO: itt lehet galiba, ha nem dataframe
+                strategy.update_capital_amount(float(trading_client.get_account().cash))
+                strategy.apply_strategy(trading_client=trading_client,
+                                        symbol=TEST_SYMBOL)
+                
+                sticker_df = strategy.sticker_df #TODO: itt lehet galiba, ha nem dataframe
 
-            trading_action = sticker_df.iloc[-1][TRADING_ACTION]
-            current_position = sticker_df.iloc[-2][POSITION] #NOTE: próba cseresznye
-            quantity = sticker_df.iloc[-1][CURRENT_CAPITAL] / sticker_df.iloc[-1][CLOSE]
+                trading_action = sticker_df.iloc[-1][TRADING_ACTION]
+                current_position = sticker_df.iloc[-2][POSITION] #NOTE: próba cseresznye
+                quantity = sticker_df.iloc[-1][CURRENT_CAPITAL] / sticker_df.iloc[-1][CLOSE]
 
-            # kurvanagy TODO: 
-            if trading_action == ACT_BUY_NEXT_LONG and current_position == POS_OUT:
-                place_buy_order(quantity)
-                # refresh position in sticker_df?
-            elif trading_action == ACT_SELL_NEXT_SHORT and current_position == POS_OUT:
-                place_sell_order(quantity)
-                #NOTE: {"code":42210000,"message":"fractional orders cannot be sold short"}
-                # refresh position in sticker_df?
-            elif trading_action == ACT_SELL_PREV_LONG and current_position == POS_LONG_BUY:
-                close_current_position("Sell previous long")
-            elif trading_action == ACT_BUY_PREV_SHORT and current_position == POS_SHORT_SELL:
-                close_current_position("Buy previous long")
+                # kurvanagy TODO: 
+                if trading_action == ACT_BUY_NEXT_LONG and current_position == POS_OUT:
+                    place_buy_order(quantity)
+                    # refresh position in sticker_df?
+                #elif trading_action == ACT_SELL_NEXT_SHORT and current_position == POS_OUT:
+                #    place_sell_order(quantity)
+                #    # refresh position in sticker_df?
+                elif trading_action == ACT_SELL_PREV_LONG and current_position == POS_LONG_BUY:
+                    close_current_position("Sell previous long")
+                #elif trading_action == ACT_BUY_PREV_SHORT and current_position == POS_SHORT_SELL:
+                #    close_current_position("Buy previous long")
+                else:
+                    print(ACT_NO_ACTION)
             else:
-                print(ACT_NO_ACTION)
-
-    else:
-        print('Authentication and data initialization')
-
+                print("Not enough data to apply strategy")
+        else:
+            print('Authentication and data initialization')
+    except Exception as e:
+        print(str(e))
+        
 def place_buy_order(quantity):
     global trading_client
     try:
@@ -165,37 +170,17 @@ def close_current_position(position):
     except Exception as e:
         print(str(e))
     
-    #market_order_data = MarketOrderRequest(
-    #                symbol="TSLA",
-    #                qty=0.8,
-    #                side=OrderSide.BUY,
-    #                time_in_force=TimeInForce.DAY
-    #                )
-    #
-    #market_order = trading_client.submit_order(
-    #                order_data=market_order_data
-    #            )
-
-    #account = trading_client.get_account()
-    #position = [p for p in trading_client.get_all_positions() if p.symbol == "TSLA"]
-    #current_position = position[0].side if position else "out"
-    #
-    #print("Symbol: " + position[0].symbol)
-    #print("Current position: " + current_position)
-    #print("Capital: " + account.cash)
-    #print("Order data: " + market_order)
+def on_ping(ws):
+    print("ping!")
+    
+def on_pong(ws):
+    print("pong!")
     
 socket = SOCKET_URL
 
-ws = websocket.WebSocketApp(socket, 
+ws = websocket.WebSocketApp(url=socket, 
                             on_open=on_open,
-                            on_message=on_message)
-
+                            on_message=on_message,
+                            on_ping=on_ping,
+                            on_pong=on_pong)
 ws.run_forever()
-
-# 3) Stratégia, DataStream, TradingClient inicializálás
-#NOTE: stop_loss_strategy_test.py
-
-# 4) WebSocket inicializálás (ping interval fontos!)
-
-# 5) TradingManager inicializálás, priceData ősfeltöltés
