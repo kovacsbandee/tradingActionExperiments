@@ -42,7 +42,7 @@ scanner = AndrewAzizRecommendedScanner(name="AzizScanner",
                                        )
 #scanner.calculate_filtering_stats(save_csv=False)
 #rec_st_list = scanner.recommend_premarket_watchlist()
-TEST_SYMBOL = "NVDA"
+TEST_SYMBOL = "TSLA"
 rec_st_list = [TEST_SYMBOL]
 #print([s for s in rec_st_list])
 
@@ -52,7 +52,7 @@ data_generator = AlpacaPriceDataGenerator(#trading_day=trading_day,
                                           )
 prev_close_price = None
 curr_close_price = None
-curr_position = 'out'
+curr_position = 'MSFT'
 strategy = None
 
 def on_open(ws):
@@ -175,12 +175,22 @@ def on_ping(ws):
     
 def on_pong(ws):
     print("pong!")
+
+def on_close(ws, close_status_code, close_msg):
+    print(f"Connection closed with status code {close_status_code}: {close_msg}")
+
+def on_error(ws, error):
+    print(f"WebSocket error: {error}")
+
     
 socket = SOCKET_URL
 
 ws = websocket.WebSocketApp(url=socket, 
                             on_open=on_open,
                             on_message=on_message,
+                            on_close=on_close,
+                            on_error=on_error,
                             on_ping=on_ping,
-                            on_pong=on_pong)
-ws.run_forever()
+                            on_pong=on_pong
+                            )
+ws.run_forever(reconnect=True, ping_interval=30, ping_timeout=10)
