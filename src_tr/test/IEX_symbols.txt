@@ -1,3 +1,10 @@
-NVDA
-AAPL
-TSLA
+real-time:
+    METC
+    AAPL
+    NVDA
+    TSLA
+    TMST
+    ZEUS
+    HAYN
+    FORR
+    GABC

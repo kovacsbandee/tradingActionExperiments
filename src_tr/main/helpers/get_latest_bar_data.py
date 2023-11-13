@@ -7,8 +7,11 @@ from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 from alpaca.data.models.bars import BarSet
 import pandas as pd
 from pandas import DataFrame
+import yfinance as yf
 
-def get_latest_bar_data(alpaca_key, alpaca_secret_key, input_symbol):
+load_dotenv()
+
+def get_alpaca_bar_data(alpaca_key, alpaca_secret_key, input_symbol):
 
     client = StockHistoricalDataClient(alpaca_key, alpaca_secret_key)
 
@@ -23,13 +26,13 @@ def get_latest_bar_data(alpaca_key, alpaca_secret_key, input_symbol):
     )
     
     latest_bars = client.get_stock_bars(bars_request)
-    return convert(latest_bars.df)
+    bar_df = convert_alpaca_data(latest_bars.df, 2000)
+    bar_df.to_csv('latest_bars.csv')
+    return bar_df
 
-def convert(latest_bars: DataFrame):
-    # Reset the index to move the 'symbol' and 'timestamp' to columns
+def convert_alpaca_data(latest_bars: DataFrame, n_last_bars):
     df = latest_bars.reset_index()
 
-    # Rename the columns to match the desired format
     df = df.rename(columns={
         'timestamp': 't',
         'symbol': 'S',
@@ -42,14 +45,42 @@ def convert(latest_bars: DataFrame):
         'vwap': 'vw'
     })
 
-    # Add 'b' to a new column 'T' to match the format
     df['T'] = 'b'
     df['t'] = df['t'].dt.strftime('%Y-%m-%dT%H:%M:%SZ')
 
-    # Set the 't' column as the new index
     df = df.set_index('t')
-    df_last = df.tail(1)
-    df_tail = df.tail(12)
+    df_tail = df.tail(n_last_bars)
     return df_tail
 
-#print(convert(latest_bars.df))
+def get_yahoo_data(sticker, start_date: datetime, end_date: datetime, n_last_bars):
+    ticker = yf.Ticker(sticker)
+    ticker_history = ticker.history(start=start_date, end=end_date, interval='1m', period='1d', prepost=True) if ticker else None
+    converted_df = convert_yahoo_data(ticker_history, n_last_bars, sticker)
+    return converted_df
+
+def convert_yahoo_data(ticker_history: DataFrame, n_last_bars, sticker):
+    ticker_history = ticker_history.reset_index()
+    ticker_history['S'] = sticker
+
+    # Rename the columns to match the desired format
+    ticker_history = ticker_history.rename(columns={
+        'Datetime': 't',
+        'Open': 'o',
+        'High': 'h',
+        'Low': 'l',
+        'Close': 'c',
+        'Volume': 'v'
+    })
+
+    # Add 'b' to a new column 'T' to match the format
+    #df['T'] = 'b'
+    #df['t'] = df['t'].dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+    # Set the 't' column as the new index
+    ticker_history = ticker_history.set_index('t')
+    df_tail = ticker_history.tail(n_last_bars)
+    return df_tail
+
+#df = get_yahoo_data('AAPL', datetime(2023, 11, 10), datetime(2023, 11, 11), 10)
+#df.to_csv('yahoo_bars.csv')
+

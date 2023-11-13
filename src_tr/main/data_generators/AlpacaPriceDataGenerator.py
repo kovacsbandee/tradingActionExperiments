@@ -46,6 +46,19 @@ class AlpacaPriceDataGenerator(PriceDataGeneratorBase):
                     raise ValueError("Unexpected data structure for the symbol in current_data_window")
         else:
             raise ValueError("Minute bar list is empty.")
+        
+    def update_sticker_df_yahoo(self, minute_bars: DataFrame):
+        if minute_bars is not None and len(minute_bars) > 0:
+            symbol = minute_bars['S'][0]
+            #minute_bars.set_index('t', inplace=True)
+            if self.sticker_df[symbol] is None:
+                self.sticker_df[symbol] = minute_bars
+            elif isinstance(self.sticker_df[symbol], DataFrame):
+                self.sticker_df[symbol] = pd.concat([self.sticker_df[symbol], minute_bars])
+            else:
+                raise ValueError("Unexpected data structure for the symbol in current_data_window")
+        else:
+            raise ValueError("Yahoo data is empty.")
                             
     def load_watchlist_daily_price_data(self):
         if self.recommended_sticker_list is not None:

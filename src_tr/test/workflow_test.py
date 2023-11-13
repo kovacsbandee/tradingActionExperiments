@@ -9,12 +9,14 @@ from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
 from alpaca.trading.models import Position
 import pandas as pd
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 from src_tr.main.scanners.AndrewAzizRecommendedScanner import AndrewAzizRecommendedScanner
 from src_tr.main.data_generators.AlpacaPriceDataGenerator import AlpacaPriceDataGenerator
 from src_tr.main.strategies.StrategyWithStopLoss import StrategyWithStopLoss
 from src_tr.main.helpers.converter import string_to_dict_list
-from src_tr.main.helpers.get_latest_bar_data import get_latest_bar_data
+from src_tr.main.helpers.get_latest_bar_data import get_alpaca_bar_data
 from src_tr.main.enums_and_constants.trading_constants import *
 
 load_dotenv()
@@ -42,7 +44,7 @@ scanner = AndrewAzizRecommendedScanner(name="AzizScanner",
                                        )
 #scanner.calculate_filtering_stats(save_csv=False)
 #rec_st_list = scanner.recommend_premarket_watchlist()
-TEST_SYMBOL = "TSLA"
+TEST_SYMBOL = "METC"
 rec_st_list = [TEST_SYMBOL]
 #print([s for s in rec_st_list])
 
@@ -50,9 +52,6 @@ rec_st_list = [TEST_SYMBOL]
 data_generator = AlpacaPriceDataGenerator(#trading_day=trading_day,
                                           recommended_sticker_list=rec_st_list
                                           )
-prev_close_price = None
-curr_close_price = None
-curr_position = 'MSFT'
 strategy = None
 
 def on_open(ws):
@@ -170,11 +169,11 @@ def close_current_position(position):
     except Exception as e:
         print(str(e))
     
-def on_ping(ws):
-    print("ping!")
+def on_ping(ws, ping_payload):
+    print(f"Ping sent: {ping_payload}")
     
-def on_pong(ws):
-    print("pong!")
+def on_pong(ws, pong_payload):
+    print(f"Pong received: {pong_payload}")
 
 def on_close(ws, close_status_code, close_msg):
     print(f"Connection closed with status code {close_status_code}: {close_msg}")

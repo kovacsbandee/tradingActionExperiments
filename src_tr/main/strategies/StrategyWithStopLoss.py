@@ -151,10 +151,12 @@ class StrategyWithStopLoss(StrategyBase):
         # set position end
 
         expected_position = None
+        small_ind_col = self.sticker_df.loc[last_index, self.SMALL_IND_COL].iloc[1]
+        big_ind_col = self.sticker_df.loc[last_index, self.BIG_IND_COL].iloc[1]
 
         # LIVE-IMPLEMENTED:
-        if self.sticker_df.loc[last_index, self.SMALL_IND_COL] > self.epsilon \
-            and self.sticker_df.loc[last_index, self.BIG_IND_COL] > self.epsilon:
+        if small_ind_col > self.epsilon \
+            and big_ind_col > self.epsilon:
             #self.sticker_df.loc[last_index, POSITION] = POS_LONG_BUY
             expected_position = POS_LONG_BUY
         # elif self.sticker_df.iloc[-1][self.SMALL_IND_COL] < -self.epsilon \
