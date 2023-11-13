@@ -1,7 +1,7 @@
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from data_sources.add_indicators import add_gradient
+from src_tr.main.data_sources.add_indicators import add_gradient
 
 PROJ_PATH = 'F:/tradingActionExperiments'
 

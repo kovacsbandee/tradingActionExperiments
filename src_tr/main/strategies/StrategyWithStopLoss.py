@@ -41,17 +41,6 @@ class StrategyWithStopLoss(StrategyBase):
     def set_sticker_df(self, sticker_df):
         self.sticker_df = sticker_df
 
-# innentől, minden új timestamp-nél kiszámítjuk az alábbiakat és ezek alapján meghatározzuk a pozíciókat
-
-    def add_trendscalping_specific_indicators(self):
-        # NOTE: működik de csak 1 elemű lista
-        for df in self.sticker_dict.values():
-            self.SMALL_IND_COL = f'{self.ind_price}_ma{self.ma_short}_grad'
-            df[self.SMALL_IND_COL] = df[self.ind_price].rolling(window = self.ma_short, center=False).mean().diff()
-
-            self.BIG_IND_COL = f'{self.ind_price}_ma{self.ma_long}_grad'
-            df[self.BIG_IND_COL] = df[self.ind_price].rolling(window = self.ma_long, center=False).mean().diff()
-
     '''
     Ha t-1-ben nincsen pozícióban és a self.SMALL_IND_COL(t) és a self.BIG_IND_COL(t) is nagyobb mint, +epsilon, 
         -> akkor LONG_BUY(t)
@@ -80,33 +69,6 @@ class StrategyWithStopLoss(StrategyBase):
         -> akkor azonnal vásárold vissza az előző SHORT_SELL-t
         -> állítsd át a pozíciót out-ra    
     '''
-
-    def initialize_strategy_specific_fields(self):
-        filters = self.strategy_filters
-        for df in self.sticker_dict.values():
-            df[POSITION] = POS_OUT
-            # add positions
-            df.loc[filters['long_filter'].values, POSITION] = POS_LONG_BUY
-            df.loc[filters['short_filter'].values, POSITION] = POS_SHORT_SELL
-            df[TRADING_ACTION] = ''
-            df['prev_position_lagged'] = df[POSITION].shift(1)
-
-            # init prev indices
-            prev_capital_indices = list()
-            if POS_LONG_BUY in df[POSITION].unique():
-                self.prev_long_buy_position_index = df[df[POSITION] == POS_LONG_BUY].index[0]
-                prev_capital_indices.append(self.prev_long_buy_position_index)
-
-            if POS_SHORT_SELL in df[POSITION].unique():
-                self.prev_short_sell_position_index = df[df[POSITION] == POS_SHORT_SELL].index[0]
-                prev_capital_indices.append(self.prev_short_sell_position_index)
-
-            df['gain_per_position'] = 0
-            df[CURRENT_CAPITAL] = 0
-            self.prev_capital_index = min(prev_capital_indices) if len(prev_capital_indices)>0 else df.index[0]
-            df.loc[self.prev_capital_index, CURRENT_CAPITAL] = self.capital
-
-            self.tz_str = df.index[0][-6:]
         
     def initialize_additional_fields(self):
         self.SMALL_IND_COL = f'{self.ind_price}_small_ind_col'
@@ -115,60 +77,39 @@ class StrategyWithStopLoss(StrategyBase):
         self.sticker_df[TRADING_ACTION] = ACT_NO_ACTION
         self.sticker_df[CURRENT_CAPITAL] = self.capital
         self.sticker_df[STOP_LOSS_OUT_SIGNAL] = STOP_LOSS_NONE
-    
-    def apply_strategy(self, trading_client: TradingClient, symbol: str):
+        
+    def apply_combined_strategy(self, trading_client: TradingClient, symbol: str):
         # set current_capital column
         self.sticker_df.loc[self.sticker_df.index[-1], CURRENT_CAPITAL] = self.capital
 
-        # get current positions
+        # get current positions TODO: kiszervezni
         positions = trading_client.get_all_positions()
         previous_position = None
         if positions is not None and len(positions) > 0:
             p: Position = positions[0]
             if p.symbol == symbol:
                 previous_position = p.side.value
-            # loop through dict values and check if symbol is present
-            # if present, set current index's POSITION column to symbol's position
-            # else, set current index's POSITION to POS_OUT
         else:
             previous_position = POS_OUT
 
-        # calculate indicators:
+        # calculate indicators TODO: kiszervezni
         self.sticker_df[self.SMALL_IND_COL] = self.sticker_df[self.ind_price].rolling(self.ma_short, center=False).mean().diff()
         self.sticker_df[self.BIG_IND_COL] = self.sticker_df[self.ind_price].rolling(self.ma_long, center=False).mean().diff()
         last_index = self.sticker_df.index[-1]
 
-        # ORIGINAL:
-        # set position start
-        #if self.sticker_df.loc[last_index, self.SMALL_IND_COL] > self.epsilon \
-        #    and self.sticker_df.loc[last_index, self.BIG_IND_COL] > self.epsilon:
-        #    self.sticker_df.loc[last_index, POSITION] = POS_LONG_BUY
-        #elif self.sticker_df.iloc[-1][self.SMALL_IND_COL] < -self.epsilon \
-        #    and self.sticker_df.iloc[-1][self.BIG_IND_COL] < -self.epsilon:
-        #    self.sticker_df.loc[last_index, POSITION] = POS_SHORT_SELL
-        #else:
-        #    self.sticker_df.loc[last_index, POSITION] = POS_OUT
-        # set position end
-
         expected_position = None
+        
         small_ind_col = self.sticker_df.loc[last_index, self.SMALL_IND_COL].iloc[1]
         big_ind_col = self.sticker_df.loc[last_index, self.BIG_IND_COL].iloc[1]
 
-        # LIVE-IMPLEMENTED:
         if small_ind_col > self.epsilon \
             and big_ind_col > self.epsilon:
-            #self.sticker_df.loc[last_index, POSITION] = POS_LONG_BUY
             expected_position = POS_LONG_BUY
-        # elif self.sticker_df.iloc[-1][self.SMALL_IND_COL] < -self.epsilon \
-        #     and self.sticker_df.iloc[-1][self.BIG_IND_COL] < -self.epsilon:
-        #     #self.sticker_df.loc[last_index, POSITION] = POS_SHORT_SELL
-        #     to_be_position = POS_SHORT_SELL
+        elif small_ind_col < -self.epsilon \
+            and big_ind_col < -self.epsilon:
+            expected_position = POS_SHORT_SELL
         else:
-            #self.sticker_df.loc[last_index, POSITION] = POS_OUT
             expected_position = POS_OUT
-
-        #self.sticker_df.iloc[-1][POSITION] = to_be_position
-        #self.sticker_df.iloc[-2][POSITION] = previous_position
 
         self.sticker_df.loc[self.sticker_df.index[-1], POSITION] = expected_position
         self.sticker_df.loc[self.sticker_df.index[-2], POSITION] = previous_position
@@ -179,63 +120,78 @@ class StrategyWithStopLoss(StrategyBase):
 
         if self.sticker_df.iloc[-1][POSITION] == POS_LONG_BUY and self.sticker_df.iloc[-2][POSITION] != POS_LONG_BUY:
             self.sticker_df.loc[last_index, TRADING_ACTION] = ACT_BUY_NEXT_LONG
-            #self.sticker_df.loc[last_index, CURRENT_CAPITAL] = self.sticker_df.iloc[-2][CURRENT_CAPITAL]
             self.prev_long_buy_position_index = last_index
 
-        #if self.sticker_df.iloc[-1][POSITION] == POS_SHORT_SELL and self.sticker_df.iloc[-2][POSITION] != POS_SHORT_SELL:
-        #    self.sticker_df.loc[last_index, TRADING_ACTION] = ACT_SELL_NEXT_SHORT
-        #    #self.sticker_df.loc[last_index, CURRENT_CAPITAL] = self.sticker_df.iloc[-2][CURRENT_CAPITAL]
-        #    self.prev_short_sell_position_index = last_index
+        if self.sticker_df.iloc[-1][POSITION] == POS_SHORT_SELL and self.sticker_df.iloc[-2][POSITION] != POS_SHORT_SELL:
+            self.sticker_df.loc[last_index, TRADING_ACTION] = ACT_SELL_NEXT_SHORT
+            self.prev_short_sell_position_index = last_index
 
         if self.sticker_df.iloc[-2][POSITION] == POS_LONG_BUY and self.sticker_df.iloc[-1][POSITION] != POS_LONG_BUY:
             self.sticker_df.loc[last_index, TRADING_ACTION] = ACT_SELL_PREV_LONG
-            #self.sticker_df.loc[last_index, POSITION] = POS_OUT
 
-        #if self.sticker_df.iloc[-2][POSITION] == POS_SHORT_SELL and self.sticker_df.iloc[-1][POSITION] != POS_SHORT_SELL:
-        #    self.sticker_df.loc[last_index, TRADING_ACTION] = ACT_BUY_PREV_SHORT
-        #    #self.sticker_df.loc[last_index, POSITION] = POS_OUT
-        ## set trading action end
-
-        # ORIGINAL WITH CURRENT_CAPITAL CALCULATION:
-        # calculate capital and apply stop loss start
-        #if self.sticker_df.loc[last_index, POSITION] == POS_OUT and self.sticker_df.loc[last_index, TRADING_ACTION] == ACT_NO_ACTION:
-        #    self.sticker_df.loc[last_index, CURRENT_CAPITAL] = self.sticker_df.iloc[-2][CURRENT_CAPITAL]
-        #
-        #if (self.sticker_df.loc[last_index, POSITION] == POS_LONG_BUY and self.sticker_df.loc[last_index, TRADING_ACTION] == ACT_NO_ACTION) or \
-        #        self.sticker_df.loc[last_index, TRADING_ACTION] == ACT_SELL_PREV_LONG:
-        #    self.sticker_df.loc[last_index, CURRENT_CAPITAL] = self.sticker_df.loc[self.prev_short_sell_position_index, CURRENT_CAPITAL] + \
-        #                                                    (self.sticker_df.loc[last_index, self.ind_price] - self.sticker_df.loc[self.prev_short_sell_position_index, self.ind_price]) * \
-        #                                                    (self.sticker_df.loc[self.prev_short_sell_position_index, CURRENT_CAPITAL] / self.sticker_df.loc[self.prev_short_sell_position_index, self.ind_price])
-        #
-        #if (self.sticker_df.loc[last_index, POSITION] == POS_SHORT_SELL and self.sticker_df.loc[last_index, TRADING_ACTION] == ACT_NO_ACTION) or \
-        #        self.sticker_df.loc[last_index, TRADING_ACTION] == ACT_BUY_PREV_SHORT:
-        #    self.sticker_df.loc[last_index, CURRENT_CAPITAL] = self.sticker_df.loc[self.prev_long_buy_position_index, CURRENT_CAPITAL] + \
-        #                                                    (self.sticker_df.loc[self.prev_long_buy_position_index, self.ind_price] - self.sticker_df.loc[last_index, self.ind_price]) * \
-        #                                                    (self.sticker_df.loc[self.prev_long_buy_position_index, CURRENT_CAPITAL] / self.sticker_df.loc[self.prev_long_buy_position_index, self.ind_price])
-
-        if self.prev_long_buy_position_index is not None: #TODO: ide nem a prev_long_buy_position_index kell?
+        # set stop loss signal
+        if self.prev_long_buy_position_index is not None:
             if (self.sticker_df.loc[last_index, self.ind_price] < self.sticker_df.loc[self.prev_long_buy_position_index, self.ind_price]) \
                 and self.sticker_df.loc[last_index, POSITION] == POS_LONG_BUY:
-                    
                 self.sticker_df.loc[last_index, STOP_LOSS_OUT_SIGNAL] = STOP_LOSS_LONG
                 self.sticker_df.loc[last_index, TRADING_ACTION] = ACT_SELL_PREV_LONG
-                #self.sticker_df.loc[last_index, CURRENT_CAPITAL] = self.sticker_df.loc[self.prev_short_sell_position_index, CURRENT_CAPITAL] + \
-                #                                                (self.sticker_df.loc[last_index, self.ind_price] - self.sticker_df.loc[self.prev_short_sell_position_index, self.ind_price]) * \
-                #                                                (self.sticker_df.loc[self.prev_short_sell_position_index, CURRENT_CAPITAL] /
-                #                                                self.sticker_df.loc[self.prev_short_sell_position_index, self.ind_price])
-                #self.sticker_df.loc[last_index, POSITION] = POS_OUT
 
-        #if self.prev_long_buy_position_index is not None:
-        #    if (self.sticker_df.loc[last_index, self.ind_price] > self.sticker_df.loc[self.prev_long_buy_position_index, self.ind_price]) \
-        #        and self.sticker_df.loc[last_index, POSITION] == POS_SHORT_SELL:
-        #            
-        #        self.sticker_df.loc[last_index, STOP_LOSS_OUT_SIGNAL] = STOP_LOSS_SHORT
-        #        self.sticker_df.loc[last_index, TRADING_ACTION] = ACT_BUY_PREV_SHORT
-        #        #self.sticker_df.loc[last_index, CURRENT_CAPITAL] = self.sticker_df.loc[self.prev_long_buy_position_index, CURRENT_CAPITAL] + \
-        #        #                                                (self.sticker_df.loc[self.prev_long_buy_position_index, self.ind_price] - self.sticker_df.loc[last_index, self.ind_price]) * \
-        #        #                                                (self.sticker_df.loc[self.prev_long_buy_position_index, CURRENT_CAPITAL] /
-        #        #                                                self.sticker_df.loc[self.prev_long_buy_position_index, self.ind_price])
-        #        #self.sticker_df.loc[last_index, POSITION] = POS_OUT
-        #calculate capital and apply stop loss end
-        #print(self.sticker_df)
-        self.sticker_df.to_csv('sticker_df_log.csv')
+        if self.prev_short_sell_position_index is not None:
+            if (self.sticker_df.loc[last_index, self.ind_price] > self.sticker_df.loc[self.prev_short_sell_position_index, self.ind_price]) \
+                and self.sticker_df.loc[last_index, POSITION] == POS_SHORT_SELL:
+                self.sticker_df.loc[last_index, STOP_LOSS_OUT_SIGNAL] = STOP_LOSS_SHORT
+                self.sticker_df.loc[last_index, TRADING_ACTION] = ACT_BUY_PREV_SHORT
+                
+        self.sticker_df.to_csv('long_strategy_log.csv')
+    
+    def apply_long_strategy(self, trading_client: TradingClient, symbol: str):
+        # set current_capital column
+        self.sticker_df.loc[self.sticker_df.index[-1], CURRENT_CAPITAL] = self.capital
+
+        # get current positions
+        positions = trading_client.get_all_positions()
+        previous_position = None
+        if positions is not None and len(positions) > 0:
+            p: Position = positions[0]
+            if p.symbol == symbol:
+                previous_position = p.side.value
+        else:
+            previous_position = POS_OUT
+
+        # calculate indicators:
+        self.sticker_df[self.SMALL_IND_COL] = self.sticker_df[self.ind_price].rolling(self.ma_short, center=False).mean().diff()
+        self.sticker_df[self.BIG_IND_COL] = self.sticker_df[self.ind_price].rolling(self.ma_long, center=False).mean().diff()
+        last_index = self.sticker_df.index[-1]
+
+        expected_position = None
+        small_ind_col = self.sticker_df.loc[last_index, self.SMALL_IND_COL].iloc[1]
+        big_ind_col = self.sticker_df.loc[last_index, self.BIG_IND_COL].iloc[1]
+
+        # LIVE-IMPLEMENTED:
+        if small_ind_col > self.epsilon \
+            and big_ind_col > self.epsilon:
+            expected_position = POS_LONG_BUY
+        else:
+            expected_position = POS_OUT
+
+        self.sticker_df.loc[self.sticker_df.index[-1], POSITION] = expected_position
+        self.sticker_df.loc[self.sticker_df.index[-2], POSITION] = previous_position
+
+        # set trading action
+        if self.sticker_df.iloc[-1][POSITION] == self.sticker_df.iloc[-2][POSITION]:
+            self.sticker_df.loc[last_index, TRADING_ACTION] = ACT_NO_ACTION
+
+        if self.sticker_df.iloc[-1][POSITION] == POS_LONG_BUY and self.sticker_df.iloc[-2][POSITION] != POS_LONG_BUY:
+            self.sticker_df.loc[last_index, TRADING_ACTION] = ACT_BUY_NEXT_LONG
+            self.prev_long_buy_position_index = last_index
+
+        if self.sticker_df.iloc[-2][POSITION] == POS_LONG_BUY and self.sticker_df.iloc[-1][POSITION] != POS_LONG_BUY:
+            self.sticker_df.loc[last_index, TRADING_ACTION] = ACT_SELL_PREV_LONG
+            
+        if self.prev_long_buy_position_index is not None:
+            if (self.sticker_df.loc[last_index, self.ind_price] < self.sticker_df.loc[self.prev_long_buy_position_index, self.ind_price]) \
+                and self.sticker_df.loc[last_index, POSITION] == POS_LONG_BUY:
+                self.sticker_df.loc[last_index, STOP_LOSS_OUT_SIGNAL] = STOP_LOSS_LONG
+                self.sticker_df.loc[last_index, TRADING_ACTION] = ACT_SELL_PREV_LONG
+                
+        self.sticker_df.to_csv('long_strategy_log.csv')

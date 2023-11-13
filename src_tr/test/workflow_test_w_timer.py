@@ -2,7 +2,7 @@ import os
 import time as epoch_time
 from datetime import datetime, time as dt_time
 from dotenv import load_dotenv
-from checks.checks import check_trading_day
+from src_tr.main.checks.checks import check_trading_day
 from utils.utils import calculate_scanning_day, get_nasdaq_stickers
 import websocket, json
 from alpaca.trading.client import TradingClient
@@ -14,7 +14,7 @@ import pandas as pd
 #logging.basicConfig(level=logging.DEBUG)
 
 from src_tr.main.helpers.get_latest_bar_data import get_yahoo_data
-from src_tr.main.data_generators.AlpacaPriceDataGenerator import AlpacaPriceDataGenerator
+from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
 from src_tr.main.strategies.StrategyWithStopLoss import StrategyWithStopLoss
 from src_tr.main.enums_and_constants.trading_constants import *
 
@@ -28,7 +28,7 @@ trading_client = TradingClient(ALPACA_KEY, ALPACA_SECRET_KEY, paper=True)
 TEST_SYMBOL = "AAPL"
 rec_st_list = [TEST_SYMBOL]
 
-data_generator = AlpacaPriceDataGenerator(recommended_sticker_list=rec_st_list)
+data_generator = PriceDataGeneratorMain(recommended_sticker_list=rec_st_list)
 yahoo_data = get_yahoo_data(sticker=TEST_SYMBOL, 
                             start_date=datetime(2023, 11, 13), 
                             end_date=datetime(2023, 11, 14),
@@ -71,7 +71,7 @@ def run_trading():
             if sticker_df_length > str_ma_long_value:
                 strategy.set_sticker_df(data_generator.sticker_df[TEST_SYMBOL])
                 strategy.update_capital_amount(float(trading_client.get_account().cash))
-                strategy.apply_strategy(trading_client=trading_client,
+                strategy.apply_long_strategy(trading_client=trading_client,
                                         symbol=TEST_SYMBOL)
                 
                 sticker_df = strategy.sticker_df

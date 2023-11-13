@@ -3,7 +3,7 @@ from .PriceDataGeneratorBase import PriceDataGeneratorBase
 import pandas as pd
 from pandas import DataFrame
 
-class AlpacaPriceDataGenerator(PriceDataGeneratorBase):
+class PriceDataGeneratorMain(PriceDataGeneratorBase):
 
     def __init__(self, 
                  recommended_sticker_list

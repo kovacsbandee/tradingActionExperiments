@@ -1,4 +1,4 @@
-# Alpaca bar data constants
+# Bar data constants
 OPEN = 'o'
 CLOSE = 'c'
 

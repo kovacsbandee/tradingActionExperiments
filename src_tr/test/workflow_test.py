@@ -1,8 +1,8 @@
 import os
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
-from checks.checks import check_trading_day
-from utils.utils import calculate_scanning_day, get_nasdaq_stickers
+from src_tr.main.checks.checks import check_trading_day
+from src_tr.main.utils.utils import calculate_scanning_day, get_nasdaq_stickers
 import websocket, json
 from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest
@@ -13,7 +13,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 from src_tr.main.scanners.AndrewAzizRecommendedScanner import AndrewAzizRecommendedScanner
-from src_tr.main.data_generators.AlpacaPriceDataGenerator import AlpacaPriceDataGenerator
+from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
 from src_tr.main.strategies.StrategyWithStopLoss import StrategyWithStopLoss
 from src_tr.main.helpers.converter import string_to_dict_list
 from src_tr.main.helpers.get_latest_bar_data import get_alpaca_bar_data
@@ -49,7 +49,7 @@ rec_st_list = [TEST_SYMBOL]
 #print([s for s in rec_st_list])
 
 # 2) PriceDataGenerator inicializálás
-data_generator = AlpacaPriceDataGenerator(#trading_day=trading_day,
+data_generator = PriceDataGeneratorMain(#trading_day=trading_day,
                                           recommended_sticker_list=rec_st_list
                                           )
 strategy = None
@@ -100,7 +100,7 @@ def on_message(ws, message):
             if sticker_df_length > str_ma_long_value:
                 strategy.set_sticker_df(data_generator.sticker_df[TEST_SYMBOL]) #TODO: itt lehet galiba, ha nem dataframe
                 strategy.update_capital_amount(float(trading_client.get_account().cash))
-                strategy.apply_strategy(trading_client=trading_client,
+                strategy.apply_long_strategy(trading_client=trading_client,
                                         symbol=TEST_SYMBOL)
                 
                 sticker_df = strategy.sticker_df #TODO: itt lehet galiba, ha nem dataframe

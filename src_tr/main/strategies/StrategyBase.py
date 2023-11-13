@@ -16,5 +16,5 @@ class StrategyBase(ABC):
 
     
     @abstractmethod
-    def apply_strategy():
+    def apply_long_strategy():
         pass

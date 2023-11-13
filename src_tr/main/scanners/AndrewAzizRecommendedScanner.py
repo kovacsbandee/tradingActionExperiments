@@ -5,7 +5,7 @@ import pandas as pd
 from pandas import DataFrame
 import yfinance as yf
 from joblib import Parallel, delayed
-from plots.plots import create_histograms
+from src_tr.main.plots.plots import create_histograms
 
 from src_tr.main.scanners.ScannerBase import ScannerBase
 

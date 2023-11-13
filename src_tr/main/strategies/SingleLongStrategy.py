@@ -8,7 +8,7 @@ class SingleLongStrategy(StrategyBase):
         self.initial_capital = initial_capital
         self.commission_ratio = commission_ratio        
     
-    def apply_strategy(self):
+    def apply_long_strategy(self):
         results=list()
         for sticker in self.sticker_dict['stickers'].keys():
             sticker_df = self.sticker_dict['stickers'][sticker]['trading_day_data']

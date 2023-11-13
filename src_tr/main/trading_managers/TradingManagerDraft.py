@@ -4,7 +4,7 @@ import threading
 
 from .TradingManagerBase import TradingManagerBase
 
-class TradingManager(TradingManagerBase):
+class TradingManagerDraft(TradingManagerBase):
 
     def __init__(self):
         super().__init__()
