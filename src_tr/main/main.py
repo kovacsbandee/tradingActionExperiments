@@ -2,8 +2,8 @@ import os
 from dotenv import load_dotenv
 from alpaca.trading.client import TradingClient
 import websocket
-import logging
-logging.basicConfig(level=logging.DEBUG)
+#import logging
+#logging.basicConfig(level=logging.DEBUG)
 
 from src_tr.main.checks.checks import check_trading_day
 from src_tr.main.utils.utils import calculate_scanning_day, get_nasdaq_stickers
@@ -17,7 +17,7 @@ load_dotenv()
 ALPACA_KEY= os.environ["ALPACA_KEY"]
 ALPACA_SECRET_KEY= os.environ["ALPACA_SECRET_KEY"]
 SOCKET_URL= os.environ["SOCKET_URL"]
-TEST_SYMBOL = "METC"
+TEST_SYMBOL = "AAPL"
 
 trading_client = TradingClient(ALPACA_KEY, ALPACA_SECRET_KEY, paper=True)
 trading_day = check_trading_day('2023-10-16')
@@ -47,7 +47,7 @@ trading_manager = TradingManagerMain(data_generator=data_generator,
                                      trading_client=trading_client,
                                      key=ALPACA_KEY,
                                      secret_key=ALPACA_SECRET_KEY,
-                                     test_symbol=TEST_SYMBOL
+                                     symbol_list=TEST_SYMBOL # TODO: listát adunk át
                                      )
 
 ws = websocket.WebSocketApp(url=SOCKET_URL, 

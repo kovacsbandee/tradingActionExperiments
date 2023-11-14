@@ -33,7 +33,7 @@ yahoo_data = get_yahoo_data(sticker=TEST_SYMBOL,
                             start_date=datetime(2023, 11, 13), 
                             end_date=datetime(2023, 11, 14),
                             n_last_bars=1)
-data_generator.sticker_df[TEST_SYMBOL] = yahoo_data
+data_generator.sticker_dict[TEST_SYMBOL] = yahoo_data
 
 #data_generator.initialize_sticker_dict()
 #data_generator.initialize_sticker_df()
@@ -45,7 +45,7 @@ strategy = StrategyWithStopLoss(ma_short=5,
                             epsilon=0.01,
                             initial_capital=initial_capital
                             )
-strategy.set_sticker_df(data_generator.sticker_df[TEST_SYMBOL])
+strategy.set_sticker_df(data_generator.sticker_dict[TEST_SYMBOL])
 strategy.initialize_additional_fields()
 
 def run_trading():
@@ -66,10 +66,10 @@ def run_trading():
             
             print(minute_bars)
             data_generator.update_sticker_df_yahoo(minute_bars=minute_bars)
-            sticker_df_length = len(data_generator.sticker_df[TEST_SYMBOL])
+            sticker_df_length = len(data_generator.sticker_dict[TEST_SYMBOL])
             str_ma_long_value = int(strategy.ma_long)
             if sticker_df_length > str_ma_long_value:
-                strategy.set_sticker_df(data_generator.sticker_df[TEST_SYMBOL])
+                strategy.set_sticker_df(data_generator.sticker_dict[TEST_SYMBOL])
                 strategy.update_capital_amount(float(trading_client.get_account().cash))
                 strategy.apply_long_strategy(trading_client=trading_client,
                                         symbol=TEST_SYMBOL)
@@ -93,7 +93,7 @@ def run_trading():
                 #    close_current_position("Buy previous long")
                 else:
                     print(ACT_NO_ACTION)
-                print(data_generator.sticker_df[TEST_SYMBOL])
+                print(data_generator.sticker_dict[TEST_SYMBOL])
             else:
                 print("Not enough data to apply strategy")
         except Exception as e:

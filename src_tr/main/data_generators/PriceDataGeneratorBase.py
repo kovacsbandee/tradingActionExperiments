@@ -22,6 +22,7 @@ class PriceDataGeneratorBase(ABC):
         'volume_range_ratio': ... 
     }
     """
+    #TODO: redundáns?
     sticker_data: dict = dict()
     """
     sticker_data = {
@@ -45,11 +46,10 @@ class PriceDataGeneratorBase(ABC):
 
     **trading_day_sticker_stats:
     """
-    sticker_df: dict = dict()
+
+    sticker_dict: dict = dict()
     """
-    NOTE: the current_data_window is a dictionary of dataframes, 
-    where the key is the sticker symbol
-    current_data_window = {
+    sticker_dict = {
         'AAPL': [{"T":"b",
                 "S":"AAPL",
                 "o":171.68,

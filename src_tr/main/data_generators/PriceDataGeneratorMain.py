@@ -3,6 +3,8 @@ from .PriceDataGeneratorBase import PriceDataGeneratorBase
 import pandas as pd
 from pandas import DataFrame
 
+from src_tr.main.enums_and_constants.trading_constants import *
+
 class PriceDataGeneratorMain(PriceDataGeneratorBase):
 
     def __init__(self, 
@@ -11,37 +13,52 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
         super().__init__(
                         recommended_sticker_list
                         )
+        self.ind_price = OPEN
     
-    def initialize_sticker_dict(self):
+    #TODO: redundáns?
+    def initialize_sticker_data(self):
         #self.sticker_data['trading_day'] = self.trading_day.strftime('%Y-%m-%d')
         self.sticker_data['stickers'] = dict()
         if self.recommended_sticker_list is not None:
-            for stckr in self.recommended_sticker_list:
-                self.sticker_data['stickers'][stckr] = dict()
-                self.sticker_data['stickers'][stckr]['trading_day_data'] = None
-                self.sticker_data['stickers'][stckr]['trading_day_sticker_stats'] = None
+            for symbol in self.recommended_sticker_list:
+                self.sticker_data['stickers'][symbol] = dict()
+                self.sticker_data['stickers'][symbol]['trading_day_data'] = None
+                self.sticker_data['stickers'][symbol]['trading_day_sticker_stats'] = None
         else:
             raise ValueError("Recommended sticker list is empty.")
                 
-    def initialize_sticker_df(self):
+    def initialize_sticker_dict(self):
         if self.recommended_sticker_list is not None:
-            for stckr in self.recommended_sticker_list:
-                self.sticker_df[stckr] = None
+            for symbol in self.recommended_sticker_list:
+                self.sticker_dict[symbol] = {
+                    STICKER_DF : None,
+                    PREV_LONG_BUY_POSITION_INDEX : None,
+                    PREV_SHORT_SELL_POSITION_INDEX : None,
+                    IND_PRICE : self.ind_price
+                }
         else:
             raise ValueError("Recommended sticker list is empty.")
+        
+    def initialize_additional_columns(self, symbol):
+        self.sticker_dict[symbol][STICKER_DF][POSITION] = POS_OUT
+        self.sticker_dict[symbol][STICKER_DF][TRADING_ACTION] = ACT_NO_ACTION
+        self.sticker_dict[symbol][STICKER_DF][CURRENT_CAPITAL] = 0.0 #TODO: check!
+        self.sticker_dict[symbol][STICKER_DF][STOP_LOSS_OUT_SIGNAL] = STOP_LOSS_NONE
+        self.sticker_dict[symbol][STICKER_DF][OPEN_SMALL_IND_COL] = None
+        self.sticker_dict[symbol][STICKER_DF][OPEN_BIG_IND_COL] = None
                 
     def update_sticker_df(self, minute_bars: List[dict]):
-        #TODO: ne vegyük el az első sort, ne legyen data_window size és legyen benne pozíció oszlop
         if minute_bars is not None and len(minute_bars) > 0:
             for bar in minute_bars:
                 symbol = bar['S']
                 bar_df = DataFrame([bar])
                 bar_df.set_index('t', inplace=True)
 
-                if self.sticker_df[symbol] is None:
-                    self.sticker_df[symbol] = bar_df
-                elif isinstance(self.sticker_df[symbol], DataFrame):
-                    self.sticker_df[symbol] = pd.concat([self.sticker_df[symbol], bar_df])
+                if self.sticker_dict[symbol][STICKER_DF] is None:
+                    self.sticker_dict[symbol][STICKER_DF] = bar_df
+                    self.initialize_additional_columns(symbol)
+                elif isinstance(self.sticker_dict[symbol][STICKER_DF], DataFrame):
+                    self.sticker_dict[symbol][STICKER_DF] = pd.concat([self.sticker_dict[symbol][STICKER_DF], bar_df])
                 else:
                     raise ValueError("Unexpected data structure for the symbol in current_data_window")
         else:
@@ -51,10 +68,10 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
         if minute_bars is not None and len(minute_bars) > 0:
             symbol = minute_bars['S'][0]
             #minute_bars.set_index('t', inplace=True)
-            if self.sticker_df[symbol] is None:
-                self.sticker_df[symbol] = minute_bars
-            elif isinstance(self.sticker_df[symbol], DataFrame):
-                self.sticker_df[symbol] = pd.concat([self.sticker_df[symbol], minute_bars])
+            if self.sticker_dict[symbol] is None:
+                self.sticker_dict[symbol] = minute_bars
+            elif isinstance(self.sticker_dict[symbol], DataFrame):
+                self.sticker_dict[symbol] = pd.concat([self.sticker_dict[symbol], minute_bars])
             else:
                 raise ValueError("Unexpected data structure for the symbol in current_data_window")
         else:
@@ -64,12 +81,12 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
         if self.recommended_sticker_list is not None:
             for symbol in self.recommended_sticker_list:
 
-                avg_close = self.sticker_df[symbol]["c"].mean()
-                avg_volume = self.sticker_df[symbol]["v"].mean()
-                max_high = self.sticker_df[symbol]["h"].max()
-                min_low = self.sticker_df[symbol]["l"].min()
-                max_volume = self.sticker_df[symbol]["v"].max()
-                min_volume = self.sticker_df[symbol]["v"].min()
+                avg_close = self.sticker_dict[symbol]["c"].mean()
+                avg_volume = self.sticker_dict[symbol]["v"].mean()
+                max_high = self.sticker_dict[symbol]["h"].max()
+                min_low = self.sticker_dict[symbol]["l"].min()
+                max_volume = self.sticker_dict[symbol]["v"].max()
+                min_volume = self.sticker_dict[symbol]["v"].min()
                
                 self.trading_day_sticker_stats = {
                     'avg_close': avg_close,
@@ -78,7 +95,7 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
                     'volume_range_ratio': (max_volume - min_volume) / avg_volume
                     }
                 
-                self.sticker_data['stickers'][symbol]['trading_day_data'] = pd.DataFrame(self.sticker_df[symbol])
+                self.sticker_data['stickers'][symbol]['trading_day_data'] = pd.DataFrame(self.sticker_dict[symbol])
                 self.sticker_data['stickers'][symbol]['trading_day_sticker_stats'] = pd.DataFrame.from_dict(self.trading_day_sticker_stats)
         else: 
             raise ValueError('recommended_sticker_list is empty or None!')

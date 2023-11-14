@@ -57,8 +57,8 @@ strategy = None
 def on_open(ws):
     global strategy
     print("opened")
+    data_generator.initialize_sticker_data()
     data_generator.initialize_sticker_dict()
-    data_generator.initialize_sticker_df()
     auth_data = {"action": "auth", "key": f"{ALPACA_KEY}", "secret": f"{ALPACA_SECRET_KEY}"}
 
     ws.send(json.dumps(auth_data))
@@ -95,10 +95,10 @@ def on_message(ws, message):
             data_generator.update_sticker_df(minute_bars=minute_bars)       
             #ITT JÖN A MEDZSIK
             #TODO: data_generator.sticker_df most akkor egy DataFrame, vagy dict? úgy tűnik, hogy dict
-            sticker_df_length = len(data_generator.sticker_df[TEST_SYMBOL])
+            sticker_df_length = len(data_generator.sticker_dict[TEST_SYMBOL])
             str_ma_long_value = int(strategy.ma_long)
             if sticker_df_length > str_ma_long_value:
-                strategy.set_sticker_df(data_generator.sticker_df[TEST_SYMBOL]) #TODO: itt lehet galiba, ha nem dataframe
+                strategy.set_sticker_df(data_generator.sticker_dict[TEST_SYMBOL]) #TODO: itt lehet galiba, ha nem dataframe
                 strategy.update_capital_amount(float(trading_client.get_account().cash))
                 strategy.apply_long_strategy(trading_client=trading_client,
                                         symbol=TEST_SYMBOL)

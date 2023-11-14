@@ -1,3 +1,7 @@
+# sticker_dict constants
+STICKER_DF = 'sticker_dataframe'
+IND_PRICE = 'indicator_price'
+
 # Bar data constants
 OPEN = 'o'
 CLOSE = 'c'
@@ -7,6 +11,8 @@ POSITION = 'position'
 TRADING_ACTION = 'trading_action'
 CURRENT_CAPITAL = 'current_capital'
 STOP_LOSS_OUT_SIGNAL = 'stop_loss_out_signal'
+OPEN_SMALL_IND_COL = 'open_small_indicator'
+OPEN_BIG_IND_COL = 'open_big_indicator'
 
 # sticker_df column value constants:
 POS_OUT = 'out'
@@ -22,3 +28,7 @@ ACT_SELL_NEXT_SHORT = 'sell_next_short_position'
 STOP_LOSS_NONE = 'no_stop_loss_out_signal'
 STOP_LOSS_LONG = 'stop_loss_long'
 STOP_LOSS_SHORT = 'stop_loss_short'
+
+# sticker position index constants:
+PREV_LONG_BUY_POSITION_INDEX = 'previous_long_buy_position_index'
+PREV_SHORT_SELL_POSITION_INDEX = 'previous_short_sell_position_index'
