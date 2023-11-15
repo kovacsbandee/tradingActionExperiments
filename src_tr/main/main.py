@@ -30,9 +30,9 @@ scanner = AndrewAzizRecommendedScanner(name="AzizScanner",
                                        upper_price_boundary=400,
                                        price_range_perc_cond=10,
                                        avg_volume_cond=25000,
-                                       #std_close_lower_boundary_cond=0.25
+                                       #std_close_lower_boundary_cond=0.25 #TODO: ezt számoljuk az előző napi Yahoo-adatokból
                                        )
-rec_st_list = [TEST_SYMBOL]
+rec_st_list = [TEST_SYMBOL] # TODO: ennek kell majd a scannerből jönnie (pl. scanner.recommended_sticker_list)
 
 data_generator = PriceDataGeneratorMain(recommended_sticker_list=rec_st_list)
 initial_capital = float(trading_client.get_account().cash)
@@ -46,8 +46,7 @@ trading_manager = TradingManagerMain(data_generator=data_generator,
                                      strategy=strategy,
                                      trading_client=trading_client,
                                      key=ALPACA_KEY,
-                                     secret_key=ALPACA_SECRET_KEY,
-                                     symbol_list=TEST_SYMBOL # TODO: listát adunk át
+                                     secret_key=ALPACA_SECRET_KEY
                                      )
 
 ws = websocket.WebSocketApp(url=SOCKET_URL, 

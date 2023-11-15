@@ -149,13 +149,14 @@ class StrategyWithStopLoss(StrategyBase):
         # calculate indicators:
         sticker_df[OPEN_SMALL_IND_COL] = sticker_df[ind_price].rolling(self.ma_short, center=False).mean().diff()
         sticker_df[OPEN_BIG_IND_COL] = sticker_df[ind_price].rolling(self.ma_long, center=False).mean().diff()
+        #TODO: az indikátorokon is meg kell futtatni a mozgóátlag-számítást
         last_index = sticker_df.index[-1]
 
         expected_position = None
         small_ind_col = sticker_df.loc[last_index, OPEN_SMALL_IND_COL]
         big_ind_col = sticker_df.loc[last_index, OPEN_BIG_IND_COL]
 
-        # LIVE-IMPLEMENTED:
+        # set expected positions:
         if small_ind_col > self.epsilon \
             and big_ind_col > self.epsilon:
             expected_position = POS_LONG_BUY
@@ -181,8 +182,9 @@ class StrategyWithStopLoss(StrategyBase):
                 and sticker_df.loc[last_index, POSITION] == POS_LONG_BUY:
                 sticker_df.loc[last_index, STOP_LOSS_OUT_SIGNAL] = STOP_LOSS_LONG
                 sticker_df.loc[last_index, TRADING_ACTION] = ACT_SELL_PREV_LONG
-                
-        sticker_df.to_csv(f'{sticker_dict[symbol]}_long_strategy_log.csv')
-        sticker_dict[STICKER_DF] = sticker_df
         
+        sticker_df.to_csv(f'{sticker_dict[symbol]}_long_strategy_log.csv')
+        
+        # update the current sticker DataFrame
+        sticker_dict[STICKER_DF] = sticker_df
         return sticker_dict
