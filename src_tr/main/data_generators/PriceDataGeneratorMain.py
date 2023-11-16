@@ -15,6 +15,13 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
                         )
         self.ind_price = OPEN
     
+    def get_out_positions(self):
+        count = 0
+        for value in self.sticker_dict.values():
+            if value[STICKER_DF].iloc[-1][POSITION] == POS_OUT:
+                count = count+1
+        return count
+
     #TODO: redundáns?
     def initialize_sticker_data(self):
         #self.sticker_data['trading_day'] = self.trading_day.strftime('%Y-%m-%d')

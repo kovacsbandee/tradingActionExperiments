@@ -17,7 +17,8 @@ load_dotenv()
 ALPACA_KEY= os.environ["ALPACA_KEY"]
 ALPACA_SECRET_KEY= os.environ["ALPACA_SECRET_KEY"]
 SOCKET_URL= os.environ["SOCKET_URL"]
-TEST_SYMBOL = "AAPL"
+
+nasdaq_stickers = ['AAPL']
 
 trading_client = TradingClient(ALPACA_KEY, ALPACA_SECRET_KEY, paper=True)
 trading_day = check_trading_day('2023-10-16')
@@ -25,14 +26,14 @@ scanning_day = calculate_scanning_day(trading_day)
 scanner = AndrewAzizRecommendedScanner(name="AzizScanner",
                                        trading_day=trading_day,
                                        scanning_day=scanning_day,
-                                       stickers=[TEST_SYMBOL],
+                                       stickers=nasdaq_stickers,
                                        lower_price_boundary=10,
                                        upper_price_boundary=400,
                                        price_range_perc_cond=10,
                                        avg_volume_cond=25000,
                                        #std_close_lower_boundary_cond=0.25 #TODO: ezt számoljuk az előző napi Yahoo-adatokból
                                        )
-rec_st_list = [TEST_SYMBOL] # TODO: ennek kell majd a scannerből jönnie (pl. scanner.recommended_sticker_list)
+rec_st_list = ['AAPL', 'TSLA'] # TODO: ennek kell majd a scannerből jönnie (pl. scanner.recommended_sticker_list)
 
 data_generator = PriceDataGeneratorMain(recommended_sticker_list=rec_st_list)
 initial_capital = float(trading_client.get_account().cash)
@@ -45,13 +46,13 @@ strategy = StrategyWithStopLoss(ma_short=5,
 trading_manager = TradingManagerMain(data_generator=data_generator,
                                      strategy=strategy,
                                      trading_client=trading_client,
-                                     key=ALPACA_KEY,
+                                     api_key=ALPACA_KEY,
                                      secret_key=ALPACA_SECRET_KEY
                                      )
 
 ws = websocket.WebSocketApp(url=SOCKET_URL, 
                             on_open=trading_manager.on_open,
-                            on_message=trading_manager.on_message,
+                            on_message=trading_manager.handle_message,
                             on_close=trading_manager.on_close,
                             on_error=trading_manager.on_error,
                             on_ping=trading_manager.on_ping,

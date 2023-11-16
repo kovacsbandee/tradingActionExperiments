@@ -172,18 +172,18 @@ class StrategyWithStopLoss(StrategyBase):
 
         if sticker_df.iloc[-1][POSITION] == POS_LONG_BUY and sticker_df.iloc[-2][POSITION] != POS_LONG_BUY:
             sticker_df.loc[last_index, TRADING_ACTION] = ACT_BUY_NEXT_LONG
-            self.prev_long_buy_position_index = last_index
+            sticker_dict[PREV_LONG_BUY_POSITION_INDEX] = last_index
 
         if sticker_df.iloc[-2][POSITION] == POS_LONG_BUY and sticker_df.iloc[-1][POSITION] != POS_LONG_BUY:
             sticker_df.loc[last_index, TRADING_ACTION] = ACT_SELL_PREV_LONG
             
-        if self.prev_long_buy_position_index is not None:
-            if (sticker_df.loc[last_index, ind_price] < sticker_df.loc[self.prev_long_buy_position_index, ind_price]) \
+        if sticker_dict[PREV_LONG_BUY_POSITION_INDEX] is not None:
+            if (sticker_df.loc[last_index, ind_price] < sticker_df.loc[sticker_dict[PREV_LONG_BUY_POSITION_INDEX], ind_price]) \
                 and sticker_df.loc[last_index, POSITION] == POS_LONG_BUY:
                 sticker_df.loc[last_index, STOP_LOSS_OUT_SIGNAL] = STOP_LOSS_LONG
                 sticker_df.loc[last_index, TRADING_ACTION] = ACT_SELL_PREV_LONG
         
-        sticker_df.to_csv(f'{sticker_dict[symbol]}_long_strategy_log.csv')
+        sticker_df.to_csv(f'{symbol}_long_strategy_log.csv')
         
         # update the current sticker DataFrame
         sticker_dict[STICKER_DF] = sticker_df
