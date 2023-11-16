@@ -15,6 +15,11 @@ def get_nasdaq_stickers(path: str='F:/tradingActionExperiments'):
     return list(daily_nasdaq_stickers['Symbol'].unique())
 
 
+class preMarketGappers:
+    def __init__(self):
+        pass
+
+
 class andrewAzizRecommendedScanner:
 
     def __init__(self,
