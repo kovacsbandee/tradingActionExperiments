@@ -12,7 +12,7 @@ import pandas as pd
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
-from src_tr.main.scanners.AndrewAzizRecommendedScanner import AndrewAzizRecommendedScanner
+from src_tr.main.scanners.AndrewAzizRecommendedScanner import PreMarketScanner
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
 from src_tr.main.strategies.StrategyWithStopLoss import StrategyWithStopLoss
 from src_tr.main.helpers.converter import string_to_dict_list
@@ -32,7 +32,7 @@ trading_client = TradingClient(ALPACA_KEY, ALPACA_SECRET_KEY, paper=True)
 trading_day = check_trading_day('2023-10-16')
 scanning_day = calculate_scanning_day(trading_day)
 stickers = get_nasdaq_stickers(project_path=PROJECT_PATH, file_path=STICKER_CSV_PATH)
-scanner = AndrewAzizRecommendedScanner(name="AzizScanner",
+scanner = PreMarketScanner(name="AzizScanner",
                                        trading_day=trading_day,
                                        scanning_day=scanning_day,
                                        stickers=stickers,

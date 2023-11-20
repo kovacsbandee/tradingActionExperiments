@@ -7,41 +7,32 @@ from src_tr.main.enums_and_constants.trading_constants import *
 
 class PriceDataGeneratorMain(PriceDataGeneratorBase):
 
-    def __init__(self, 
-                 recommended_sticker_list
-                 ):
-        super().__init__(
-                        recommended_sticker_list
-                        )
+    def __init__(self, recommended_sticker_list):
+        super().__init__(recommended_sticker_list)
         self.ind_price = OPEN
+        self.out_positions = len(recommended_sticker_list) # TODO: le kell kérni az Alpacáról minden indításnál!
     
     def get_out_positions(self):
-        count = 0
-        for value in self.sticker_dict.values():
-            if value[STICKER_DF].iloc[-1][POSITION] == POS_OUT:
-                count = count+1
-        return count
+        return self.out_positions
 
-    #TODO: redundáns?
-    def initialize_sticker_data(self):
-        #self.sticker_data['trading_day'] = self.trading_day.strftime('%Y-%m-%d')
-        self.sticker_data['stickers'] = dict()
-        if self.recommended_sticker_list is not None:
-            for symbol in self.recommended_sticker_list:
-                self.sticker_data['stickers'][symbol] = dict()
-                self.sticker_data['stickers'][symbol]['trading_day_data'] = None
-                self.sticker_data['stickers'][symbol]['trading_day_sticker_stats'] = None
-        else:
-            raise ValueError("Recommended sticker list is empty.")
+    def increase_out_positions(self):
+        self.out_positions = self.out_positions + 1
+
+    def decrease_out_positions(self):
+        self.out_positions = self.out_positions - 1
                 
     def initialize_sticker_dict(self):
         if self.recommended_sticker_list is not None:
-            for symbol in self.recommended_sticker_list:
-                self.sticker_dict[symbol] = {
+            for e in self.recommended_sticker_list:
+                self.sticker_dict[e[SYMBOL]] = {
                     STICKER_DF : None,
                     PREV_LONG_BUY_POSITION_INDEX : None,
                     PREV_SHORT_SELL_POSITION_INDEX : None,
-                    IND_PRICE : self.ind_price
+                    IND_PRICE : OPEN,
+                    PREV_DAY_DATA : {
+                        AVG_OPEN : e[AVG_OPEN],
+                        STD_OPEN: e[STD_OPEN]
+                    }
                 }
         else:
             raise ValueError("Recommended sticker list is empty.")
@@ -51,8 +42,18 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
         self.sticker_dict[symbol][STICKER_DF][TRADING_ACTION] = ACT_NO_ACTION
         self.sticker_dict[symbol][STICKER_DF][CURRENT_CAPITAL] = 0.0 #TODO: check!
         self.sticker_dict[symbol][STICKER_DF][STOP_LOSS_OUT_SIGNAL] = STOP_LOSS_NONE
+        self.sticker_dict[symbol][STICKER_DF][RSI] = None
         self.sticker_dict[symbol][STICKER_DF][OPEN_SMALL_IND_COL] = None
         self.sticker_dict[symbol][STICKER_DF][OPEN_BIG_IND_COL] = None
+        self.sticker_dict[symbol][STICKER_DF][GAIN_LOSS] = None
+        self.sticker_dict[symbol][STICKER_DF][GAIN] = None
+        self.sticker_dict[symbol][STICKER_DF][LOSS] = None
+        self.sticker_dict[symbol][STICKER_DF][AVG_GAIN] = None
+        self.sticker_dict[symbol][STICKER_DF][AVG_LOSS] = None
+        self.sticker_dict[symbol][STICKER_DF][RSI] = None
+        #-----TODO-----
+        self.sticker_dict[symbol][STICKER_DF][AMOUNT_SOLD] = None
+        self.sticker_dict[symbol][STICKER_DF][AMOUNT_BOUGHT] = None
                 
     def update_sticker_df(self, minute_bars: List[dict]):
         if minute_bars is not None and len(minute_bars) > 0:

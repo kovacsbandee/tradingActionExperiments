@@ -1,4 +1,5 @@
 import os
+from typing import List
 from dotenv import load_dotenv
 from alpaca.trading.client import TradingClient
 import websocket
@@ -7,7 +8,7 @@ import websocket
 
 from src_tr.main.checks.checks import check_trading_day
 from src_tr.main.utils.utils import calculate_scanning_day, get_nasdaq_stickers
-from src_tr.main.scanners.AndrewAzizRecommendedScanner import AndrewAzizRecommendedScanner
+from src_tr.main.scanners.PreMarketScanner import PreMarketScanner
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
 from src_tr.main.strategies.StrategyWithStopLoss import StrategyWithStopLoss
 from src_tr.main.trading_managers.TradingManagerMain import TradingManagerMain
@@ -17,37 +18,42 @@ load_dotenv()
 ALPACA_KEY= os.environ["ALPACA_KEY"]
 ALPACA_SECRET_KEY= os.environ["ALPACA_SECRET_KEY"]
 SOCKET_URL= os.environ["SOCKET_URL"]
+STICKER_CSV_PATH = os.environ["STICKER_CSV_PATH"]
 
-nasdaq_stickers = ['AAPL']
+nasdaq_stickers = get_nasdaq_stickers(file_path=STICKER_CSV_PATH)
 
 trading_client = TradingClient(ALPACA_KEY, ALPACA_SECRET_KEY, paper=True)
-trading_day = check_trading_day('2023-10-16')
+trading_day = check_trading_day('2023-11-20')
 scanning_day = calculate_scanning_day(trading_day)
-scanner = AndrewAzizRecommendedScanner(name="AzizScanner",
-                                       trading_day=trading_day,
-                                       scanning_day=scanning_day,
-                                       stickers=nasdaq_stickers,
-                                       lower_price_boundary=10,
-                                       upper_price_boundary=400,
-                                       price_range_perc_cond=10,
-                                       avg_volume_cond=25000,
-                                       #std_close_lower_boundary_cond=0.25 #TODO: ezt számoljuk az előző napi Yahoo-adatokból
-                                       )
-rec_st_list = ['AAPL', 'TSLA'] # TODO: ennek kell majd a scannerből jönnie (pl. scanner.recommended_sticker_list)
+scanner = PreMarketScanner(trading_day=trading_day,
+                           scanning_day=scanning_day,
+                           stickers=nasdaq_stickers,
+                           lower_price_boundary=10,
+                           upper_price_boundary=400,
+                           price_range_perc_cond=10,
+                           avg_volume_cond=25000)
+# initialize sticker list:
+scanner.calculate_filtering_stats()
+recommended_sticker_list: List[dict] = scanner.recommend_premarket_watchlist()
 
-data_generator = PriceDataGeneratorMain(recommended_sticker_list=rec_st_list)
+# rec_st_list = ['AAPL', 'TSLA']
+
+data_generator = PriceDataGeneratorMain(recommended_sticker_list=recommended_sticker_list)
 initial_capital = float(trading_client.get_account().cash)
 strategy = StrategyWithStopLoss(ma_short=5,
                         ma_long=12,
+                        rsi_len=12,
                         stop_loss_perc=0.0,
-                        epsilon=0.01,
+                        epsilon=0.0015,
                         initial_capital=initial_capital
                         )
 trading_manager = TradingManagerMain(data_generator=data_generator,
                                      strategy=strategy,
                                      trading_client=trading_client,
                                      api_key=ALPACA_KEY,
-                                     secret_key=ALPACA_SECRET_KEY
+                                     secret_key=ALPACA_SECRET_KEY,
+                                     rsi_threshold=20,
+                                     minutes_before_trading_start=45
                                      )
 
 ws = websocket.WebSocketApp(url=SOCKET_URL, 
@@ -68,4 +74,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(e)
         print("WebSocket connection closed.")
-        ws.close()
+        #ws.close()

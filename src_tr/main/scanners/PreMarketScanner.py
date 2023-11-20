@@ -5,14 +5,14 @@ import pandas as pd
 from pandas import DataFrame
 import yfinance as yf
 from joblib import Parallel, delayed
-from src_tr.main.plots.plots import create_histograms
 
+from src_tr.main.enums_and_constants.trading_constants import AVG_OPEN, STD_OPEN, SYMBOL, PRICE_RANGE_PERC, AVG_VOLUME, VOLUME_RANGE_RATIO
+from src_tr.main.plots.plots import create_histograms
 from src_tr.main.scanners.ScannerBase import ScannerBase
 
-class AndrewAzizRecommendedScanner(ScannerBase):
+class PreMarketScanner(ScannerBase):
 
     def __init__(self, 
-                 name, 
                  trading_day, 
                  scanning_day, 
                  stickers,
@@ -20,33 +20,36 @@ class AndrewAzizRecommendedScanner(ScannerBase):
                  upper_price_boundary=250, 
                  price_range_perc_cond=10, 
                  avg_volume_cond=25000): # ez csak bele van kókányolva, mert függ a tőkétől és a részvény ártól is! újra kell gondolni
-        super().__init__(name, trading_day, scanning_day, stickers)
+        super().__init__(trading_day, scanning_day, stickers)
         self.lower_price_boundary = lower_price_boundary
         self.upper_price_boundary = upper_price_boundary
         self.price_range_perc_cond = price_range_perc_cond
         self.avg_volume_cond = avg_volume_cond
-    
-    def get_pre_market_stats(self, sticker: str) -> dict:
+
+    def _download_sticker_history(self, sticker: str):
         start_date = self.scanning_day
         end_date = self.trading_day
-        
-        #NOTE: nem muszáj ezzel a megoldással letölteni, csak így jobban tudtam debugolni
         try:
-            ticker = yf.Ticker(sticker)
-            ticker_history = ticker.history(start=start_date, end=end_date, interval='1h', period='1d') if ticker else None
+            sticker: yf.Ticker = yf.Ticker(sticker)
+            return sticker.history(start=start_date, end=end_date, interval='1m', period='1d') if sticker else None
+        except Exception as e:
+            print(str(e))
+            return None
+    
+    def get_pre_market_stats(self, sticker: str) -> dict:
+        try:
+            sticker_history = self._download_sticker_history(sticker=sticker)
             
-            if ticker_history is not None and not ticker_history.empty:
-                #TODO: kell még az 
-                # index (DateTimeIndex)
-                # adatok a megelőző ÉS a trading napról
-                # itt csak a megelőző napot számoljuk, így kell a tz_localize(None) és szűrés
+            if sticker_history is not None and not sticker_history.empty:
                 
-                avg_close = ticker_history['Close'].mean()
-                high_max = ticker_history['High'].max()
-                low_min = ticker_history['Low'].min()
-                avg_volume = ticker_history['Volume'].mean()
-                volume_max = ticker_history['Volume'].max()
-                volume_min = ticker_history['Volume'].min()
+                avg_close = sticker_history['Close'].mean() # TODO: nem kell?
+                avg_open = sticker_history['Open'].mean()
+                std_open = sticker_history['Open'].std()
+                high_max = sticker_history['High'].max()
+                low_min = sticker_history['Low'].min()
+                avg_volume = sticker_history['Volume'].mean()
+                volume_max = sticker_history['Volume'].max()
+                volume_min = sticker_history['Volume'].min()
                 price_range_perc = 0
                 volume_range_ratio = 0
                 
@@ -55,16 +58,18 @@ class AndrewAzizRecommendedScanner(ScannerBase):
                     volume_range_ratio = (volume_max - volume_min) / avg_volume
                     
                 return {
-                    'sticker': sticker, # TODO: ref -> generate_price_data -> továbbadhatnánk az oda kellő adatokat is
-                    'avg_close': avg_close,
-                    'avg_volume': avg_volume,
-                    'price_range_perc': price_range_perc,
-                    'volume_range_ratio': volume_range_ratio
+                    SYMBOL: sticker,
+                    'avg_close': avg_close, # TODO: nem kell?
+                    AVG_OPEN : avg_open,
+                    STD_OPEN : std_open,
+                    AVG_VOLUME: avg_volume,
+                    PRICE_RANGE_PERC: price_range_perc,
+                    VOLUME_RANGE_RATIO: volume_range_ratio
                     }
             else:
                 return None
         except Exception as e:
-            print(f"No data available for sticker: {sticker}")
+            print(str(e))
             return None
 
     def calculate_filtering_stats(self, save_csv: bool = False) -> List:
@@ -89,7 +94,7 @@ class AndrewAzizRecommendedScanner(ScannerBase):
         try:   
             return pd.DataFrame.from_records(pre_market_sticker_stats)
         except Exception as e:
-            print(f'Failed to create pre_market_stats DataFrame: {str(e)}') #Exception string helyett valami beszédesebb legyen
+            print(f'Failed to create pre_market_stats DataFrame: {str(e)}')
             return None
     
     def save_stats_to_csv(self, save_date):
@@ -100,19 +105,25 @@ class AndrewAzizRecommendedScanner(ScannerBase):
                 os.remove(os.listdir(f'{data_path}/{f}'))
         self.pre_market_stats.to_csv(path_or_buf=f'{self.project_path}/data_store/pre_market_stats_{save_date}', index=False)
         
-    def recommend_premarket_watchlist(self) -> List[str]:
-        self.recommended_stickers = self.pre_market_stats[
-            (self.lower_price_boundary < self.pre_market_stats['avg_close']) & \
-            (self.pre_market_stats['avg_close'] < self.upper_price_boundary) & \
-            (self.price_range_perc_cond < self.pre_market_stats['price_range_perc']) & \
-            (self.avg_volume_cond < self.pre_market_stats['avg_volume'])]
+    def recommend_premarket_watchlist(self) -> List[dict]:
+        self.recommended_stickers: pd.DataFrame = self.pre_market_stats[
+            (self.lower_price_boundary < self.pre_market_stats[AVG_OPEN]) & \
+            (self.pre_market_stats[AVG_OPEN] < self.upper_price_boundary) & \
+            (self.price_range_perc_cond < self.pre_market_stats[PRICE_RANGE_PERC]) & \
+            (self.avg_volume_cond < self.pre_market_stats[AVG_VOLUME])]
         print(f'The recommended watchlist for {self.trading_day} is the following DataFrame: {self.recommended_stickers}')
-        sticker_string_list = [] # TODO: ez így kókányolás, ki kell találni valami jobbat, illetve kérdés, hogy a Scannerből kell-e az összes adat, 
+        sticker_dict_list = []
         if self.recommended_stickers is not None:
             for index, row in self.recommended_stickers.iterrows():
-                sticker_string_list.append(row['sticker'])
+                st_dict = {
+                    SYMBOL : row[SYMBOL],
+                    AVG_OPEN : row[AVG_OPEN],
+                    STD_OPEN : row[STD_OPEN]
+                }
+                sticker_dict_list.append(st_dict)
+                #sticker_dict_list.append(row['sticker'])
         
-        return sticker_string_list
+        return sticker_dict_list
 
 
 

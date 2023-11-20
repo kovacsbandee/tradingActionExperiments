@@ -1,6 +1,15 @@
+# generic constants
+SYMBOL = 'symbol'
+
 # sticker_dict constants
 STICKER_DF = 'sticker_dataframe'
 IND_PRICE = 'indicator_price'
+PREV_DAY_DATA = 'prev_day_data'
+PRICE_RANGE_PERC = 'price_range_perc'
+AVG_VOLUME = 'avg_volume'
+VOLUME_RANGE_RATIO = 'volume_range_ratio'
+AVG_OPEN = 'avg_open'
+STD_OPEN = 'std_open'
 
 # Bar data constants
 OPEN = 'o'
@@ -13,6 +22,15 @@ CURRENT_CAPITAL = 'current_capital'
 STOP_LOSS_OUT_SIGNAL = 'stop_loss_out_signal'
 OPEN_SMALL_IND_COL = 'open_small_indicator'
 OPEN_BIG_IND_COL = 'open_big_indicator'
+OPEN_NORM = 'open_norm'
+RSI = 'rsi'
+GAIN = 'gain'
+LOSS = 'loss'
+GAIN_LOSS = 'gain_loss'
+AVG_GAIN = 'avg_gain'
+AVG_LOSS = 'avg_loss'
+AMOUNT_SOLD = 'amount_sold'
+AMOUNT_BOUGHT = 'amount_bought'
 
 # sticker_df column value constants:
 POS_OUT = 'out'

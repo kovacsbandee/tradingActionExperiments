@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import pandas as pd
+import numpy as np
 
 from alpaca.trading.client import TradingClient
 from alpaca.trading.models import Position
@@ -15,23 +16,21 @@ class StrategyWithStopLoss(StrategyBase):
     def __init__(self,
                  ma_short, 
                  ma_long,
+                 rsi_len,
                  stop_loss_perc, 
                  initial_capital, 
                  epsilon):
         super().__init__()
         self.ma_short = ma_short
         self.ma_long = ma_long
+        self.rsi_len = rsi_len
         self.stop_loss_perc = stop_loss_perc
         self.comission_ratio = 0.0
         self.epsilon = epsilon
         self.capital = initial_capital
 
     def update_capital_amount(self, account_cash):
-        # TradingClient.get_account().cash
         self.capital = account_cash
-
-    #def set_sticker_df(self, sticker_df):
-    #    sticker_df = sticker_df
 
     '''
     Ha t-1-ben nincsen pozícióban és a self.SMALL_IND_COL(t) és a self.BIG_IND_COL(t) is nagyobb mint, +epsilon, 
@@ -133,6 +132,7 @@ class StrategyWithStopLoss(StrategyBase):
     def apply_long_strategy(self, trading_client: TradingClient, symbol: str, sticker_dict: dict):
         sticker_df: pd.DataFrame = sticker_dict[STICKER_DF]
         ind_price: str = sticker_dict[IND_PRICE]
+
         # set current_capital column
         sticker_df.loc[sticker_df.index[-1], CURRENT_CAPITAL] = self.capital
 
@@ -140,16 +140,31 @@ class StrategyWithStopLoss(StrategyBase):
         positions = trading_client.get_all_positions()
         previous_position = None
         if positions is not None and len(positions) > 0:
-            p: Position = positions[0]
-            if p.symbol == symbol:
-                previous_position = p.side.value
+            for p in positions:
+                if p.symbol == symbol:
+                    previous_position = p.side.value
+                    break
+                else:
+                    previous_position = POS_OUT
         else:
             previous_position = POS_OUT
 
-        # calculate indicators:
-        sticker_df[OPEN_SMALL_IND_COL] = sticker_df[ind_price].rolling(self.ma_short, center=False).mean().diff()
-        sticker_df[OPEN_BIG_IND_COL] = sticker_df[ind_price].rolling(self.ma_long, center=False).mean().diff()
-        #TODO: az indikátorokon is meg kell futtatni a mozgóátlag-számítást
+        # calculate indicators:        
+        sticker_df.loc[sticker_df.index[-1], OPEN_NORM] = \
+            (sticker_df.loc[sticker_df.index[-1], ind_price] - sticker_dict[PREV_DAY_DATA][AVG_OPEN]) / sticker_dict[PREV_DAY_DATA][STD_OPEN]
+        
+        sticker_df[OPEN_SMALL_IND_COL] = sticker_df[OPEN_NORM].rolling(self.ma_short, center=False).mean().diff()
+        sticker_df[OPEN_BIG_IND_COL] = sticker_df[OPEN_NORM].rolling(self.ma_long, center=False).mean().diff()
+        
+        sticker_df[OPEN_SMALL_IND_COL] = sticker_df[OPEN_SMALL_IND_COL].rolling(self.ma_short, center=False).mean()
+        sticker_df[OPEN_BIG_IND_COL] = sticker_df[OPEN_BIG_IND_COL].rolling(self.ma_long, center=False).mean()
+
+        sticker_df[GAIN_LOSS] = sticker_df[ind_price].diff(1)
+        sticker_df[GAIN] = np.where(sticker_df[GAIN_LOSS] > 0.0, sticker_df[GAIN_LOSS], 0.0)
+        sticker_df[LOSS] = -1 * np.where(sticker_df[GAIN_LOSS] < 0.0, sticker_df[GAIN_LOSS], 0.0)
+        sticker_df[AVG_GAIN] = sticker_df[GAIN].rolling(self.rsi_len, center=False).mean()
+        sticker_df[AVG_LOSS] = sticker_df[LOSS].rolling(self.rsi_len, center=False).mean()
+        sticker_df[RSI] = 100 - (100 / (1 + sticker_df[AVG_GAIN] / sticker_df[AVG_LOSS]))
         last_index = sticker_df.index[-1]
 
         expected_position = None
@@ -157,8 +172,7 @@ class StrategyWithStopLoss(StrategyBase):
         big_ind_col = sticker_df.loc[last_index, OPEN_BIG_IND_COL]
 
         # set expected positions:
-        if small_ind_col > self.epsilon \
-            and big_ind_col > self.epsilon:
+        if small_ind_col > self.epsilon and big_ind_col > self.epsilon:
             expected_position = POS_LONG_BUY
         else:
             expected_position = POS_OUT

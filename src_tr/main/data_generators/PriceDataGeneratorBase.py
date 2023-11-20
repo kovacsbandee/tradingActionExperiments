@@ -22,31 +22,6 @@ class PriceDataGeneratorBase(ABC):
         'volume_range_ratio': ... 
     }
     """
-    #TODO: redundáns?
-    sticker_data: dict = dict()
-    """
-    sticker_data = {
-        "trading_day" : ...,
-        "stickers" : {
-                "AAPL" : {
-                    "trading_day_data"* : DataFrame,
-                    "trading_day_sticker_stats"** : DataFrame
-                    },
-                "MSFT" : {},
-        }
-    }
-
-    *trading_day_data:
-                                open     high      low    close  adj close  volume                                                                       
-    2023-09-11 09:30:00-04:00  10.760  11.0000  10.7600  10.9999    10.9999  204654
-    2023-09-11 09:31:00-04:00  10.960  11.4500  10.9580  11.2500    11.2500   75499
-    2023-09-11 09:32:00-04:00  11.240  11.2501  10.9400  11.0800    11.0800   52771
-    2023-09-11 09:33:00-04:00  11.090  11.1100  11.0201  11.0300    11.0300   25000
-    2023-09-11 09:34:00-04:00  11.030  11.0539  10.9674  10.9900    10.9900   41203
-
-    **trading_day_sticker_stats:
-    """
-
     sticker_dict: dict = dict()
     """
     sticker_dict = {
