@@ -129,25 +129,12 @@ class StrategyWithStopLoss(StrategyBase):
         sticker_df.to_csv('combined_strategy_log.csv')
         '''
     
-    def apply_long_strategy(self, trading_client: TradingClient, symbol: str, sticker_dict: dict):
+    def apply_long_strategy(self, previous_position: str, symbol: str, sticker_dict: dict):
         sticker_df: pd.DataFrame = sticker_dict[STICKER_DF]
         ind_price: str = sticker_dict[IND_PRICE]
 
         # set current_capital column
         sticker_df.loc[sticker_df.index[-1], CURRENT_CAPITAL] = self.capital
-
-        # get current positions
-        positions = trading_client.get_all_positions()
-        previous_position = None
-        if positions is not None and len(positions) > 0:
-            for p in positions:
-                if p.symbol == symbol:
-                    previous_position = p.side.value
-                    break
-                else:
-                    previous_position = POS_OUT
-        else:
-            previous_position = POS_OUT
 
         # calculate indicators:        
         sticker_df.loc[sticker_df.index[-1], OPEN_NORM] = \

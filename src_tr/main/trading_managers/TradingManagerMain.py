@@ -74,57 +74,76 @@ class TradingManagerMain():
             
             # apply strategy on all stickers --- TODO: kiszervezni külön metódusba
             for symbol, value_dict in self.data_generator.sticker_dict.items():
-                if len(value_dict[STICKER_DF]) >= int(self.strategy.ma_long):
-                    self.strategy.update_capital_amount(float(self.trading_client.get_account().cash))
-                    self.data_generator.sticker_dict[symbol] = self.strategy.apply_long_strategy(trading_client=self.trading_client, 
-                                                                            symbol=symbol,  
-                                                                            sticker_dict=value_dict)
-                    
+                sticker_df_length = len(value_dict[STICKER_DF])
+                ma_long_value = self.strategy.ma_long
+                if sticker_df_length >= ma_long_value:
+                    current_capital = self.get_current_capital()
+                    self.strategy.update_capital_amount(current_capital)
+                    previous_position = self.get_previous_position(symbol)
+                    self.data_generator.sticker_dict[symbol] = self.strategy.apply_long_strategy(previous_position=previous_position, 
+                                                                                                 symbol=symbol,  
+                                                                                                 sticker_dict=value_dict)
                     current_df: pd.DataFrame = value_dict[STICKER_DF]
                     if len(current_df) >= self.minutes_before_trading_start:
                         if not self.rsi_filtered and current_df[RSI].mean() > self.rsi_threshold:
                             self.stickers_to_delete.append(symbol)
-                        
                         if self.rsi_filtered:
-                            trading_action = current_df.iloc[-1][TRADING_ACTION]
-                            current_position = current_df.iloc[-2][POSITION]
-
-                            # divide capital with amount of OUT positions:
-                            out_positions = self.data_generator.get_out_positions()
-                            quantity_buy_long = current_df.iloc[-1][CURRENT_CAPITAL] / out_positions / current_df.iloc[-1][CLOSE]
-
-                            #NOTE sell only a percentage of divided capital
-                            quantity_sell_short = (current_df.iloc[-1][CURRENT_CAPITAL] / out_positions * 0.15) / current_df.iloc[-1][CLOSE]
-
-                            if trading_action == ACT_BUY_NEXT_LONG and current_position == POS_OUT:
-                                self.place_buy_order(quantity_buy_long, symbol)
-                            elif trading_action == ACT_SELL_NEXT_SHORT and current_position == POS_OUT:
-                                self.place_sell_order(quantity_sell_short, symbol)
-                            elif trading_action == ACT_SELL_PREV_LONG and current_position == POS_LONG_BUY:
-                                self.close_current_position("Sell previous long", symbol)
-                            elif trading_action == ACT_BUY_PREV_SHORT and current_position == POS_SHORT_SELL:
-                                self.close_current_position("Buy previous long", symbol)
-                            else:
-                                print(ACT_NO_ACTION)
+                            self.execute_trading_action(symbol, current_df)
                     else:
                         print("Collecting live data for RSI filtering, no trading is executed")
                 else:
                     print("Not enough data to apply strategy")
             
             # filter out stickers by RSI value
-            if not self.rsi_filtered and len(self.rsi_filter_stickers) > 0:
+            if not self.rsi_filtered and len(self.stickers_to_delete) > 0:
                 self.rsi_filter_stickers() 
                 print(f"Sticker dictionary filtered by RSI at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")       
 
         except Exception as e:
             print(str(e))
+            
+    def get_current_capital(self):
+        return float(self.trading_client.get_account().cash)
+    
+    def get_previous_position(self, symbol):
+        positions = self.trading_client.get_all_positions()
+        if positions is not None and len(positions) > 0:
+            for p in positions:
+                if p.symbol == symbol:
+                    return p.side.value
+                else:
+                    return POS_OUT
+        else:
+            return POS_OUT
+        
+    def execute_trading_action(self, symbol, current_df):
+        trading_action = current_df.iloc[-1][TRADING_ACTION]
+        current_position = current_df.iloc[-2][POSITION]
+
+        # divide capital with amount of OUT positions:
+        out_positions = self.data_generator.get_out_positions()
+        quantity_buy_long = current_df.iloc[-1][CURRENT_CAPITAL] / out_positions / current_df.iloc[-1][CLOSE]
+
+        #NOTE sell only a percentage of divided capital
+        quantity_sell_short = (current_df.iloc[-1][CURRENT_CAPITAL] / out_positions * 0.15) / current_df.iloc[-1][CLOSE]
+
+        if trading_action == ACT_BUY_NEXT_LONG and current_position == POS_OUT:
+            self.place_buy_order(quantity_buy_long, symbol)
+        elif trading_action == ACT_SELL_NEXT_SHORT and current_position == POS_OUT:
+            self.place_sell_order(quantity_sell_short, symbol)
+        elif trading_action == ACT_SELL_PREV_LONG and current_position == POS_LONG_BUY:
+            self.close_current_position(position="Sell previous long", symbol=symbol)
+        elif trading_action == ACT_BUY_PREV_SHORT and current_position == POS_SHORT_SELL:
+            self.close_current_position(position="Buy previous long", symbol=symbol)
+        else:
+            print(ACT_NO_ACTION)
 
     def rsi_filter_stickers(self):
         for sticker in self.stickers_to_delete:
             del self.data_generator.sticker_dict[sticker]
         self.rsi_filtered = True
             
-    def place_buy_order(self, quantity, symbol):
+    def place_buy_order(self, quantity, symbol, price=None):
         try:
             market_order_data = MarketOrderRequest(
                             symbol=symbol,
@@ -138,7 +157,7 @@ class TradingManagerMain():
         except Exception as e:
             print(str(e))
 
-    def place_sell_order(self, quantity, symbol):
+    def place_sell_order(self, quantity, symbol, price=None):
         try:
             market_order_data = MarketOrderRequest(
                             symbol=symbol,
@@ -152,7 +171,7 @@ class TradingManagerMain():
         except Exception as e:
             print(str(e))
 
-    def close_current_position(self, position, symbol):
+    def close_current_position(self, symbol, position=None, price=None):
         try:
             self.trading_client.close_position(symbol)
             self.data_generator.increase_out_positions()
