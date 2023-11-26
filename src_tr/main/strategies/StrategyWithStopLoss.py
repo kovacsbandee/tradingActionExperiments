@@ -10,15 +10,11 @@ from src_tr.main.enums_and_constants.trading_constants import *
 
 class StrategyWithStopLoss(StrategyBase):
 
-    SMALL_IND_COL: str = None
-    BIG_IND_COL: str = None
-
     def __init__(self,
                  ma_short, 
                  ma_long,
                  rsi_len,
-                 stop_loss_perc, 
-                 initial_capital, 
+                 stop_loss_perc,
                  epsilon):
         super().__init__()
         self.ma_short = ma_short
@@ -27,7 +23,6 @@ class StrategyWithStopLoss(StrategyBase):
         self.stop_loss_perc = stop_loss_perc
         self.comission_ratio = 0.0
         self.epsilon = epsilon
-        self.capital = initial_capital
 
     def update_capital_amount(self, account_cash):
         self.capital = account_cash
@@ -136,10 +131,7 @@ class StrategyWithStopLoss(StrategyBase):
         # set current_capital column
         sticker_df.loc[sticker_df.index[-1], CURRENT_CAPITAL] = self.capital
 
-        # calculate indicators:        
-        sticker_df.loc[sticker_df.index[-1], OPEN_NORM] = \
-            (sticker_df.loc[sticker_df.index[-1], ind_price] - sticker_dict[PREV_DAY_DATA][AVG_OPEN]) / sticker_dict[PREV_DAY_DATA][STD_OPEN]
-        
+        # calculate indicators:           
         sticker_df[OPEN_SMALL_IND_COL] = sticker_df[OPEN_NORM].rolling(self.ma_short, center=False).mean().diff()
         sticker_df[OPEN_BIG_IND_COL] = sticker_df[OPEN_NORM].rolling(self.ma_long, center=False).mean().diff()
         

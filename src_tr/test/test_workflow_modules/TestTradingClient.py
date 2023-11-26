@@ -1,3 +1,5 @@
+from typing import List
+
 from src_tr.main.enums_and_constants.trading_constants import POS_OUT, POS_LONG_BUY
 
 class TestTradingClient():
@@ -5,7 +7,7 @@ class TestTradingClient():
     def __init__(self, init_cash, sticker_list) -> None:
         self.cash: int = init_cash
         self.positions: dict = {}
-        self.sticker_list = sticker_list
+        self.sticker_list: List[dict] = sticker_list
     
     """
         self.positions = {
@@ -17,8 +19,8 @@ class TestTradingClient():
     """
     
     def initialize_positions(self):
-        for symbol in self.sticker_list:
-            self.positions[symbol] = {
+        for e in self.sticker_list:
+            self.positions[e['symbol']] = {
                 'qty': 0,
                 'side': POS_OUT
             }

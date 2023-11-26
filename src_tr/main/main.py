@@ -39,13 +39,11 @@ recommended_sticker_list: List[dict] = scanner.recommend_premarket_watchlist()
 # rec_st_list = ['AAPL', 'TSLA']
 
 data_generator = PriceDataGeneratorMain(recommended_sticker_list=recommended_sticker_list)
-initial_capital = float(trading_client.get_account().cash)
 strategy = StrategyWithStopLoss(ma_short=5,
                         ma_long=5,
                         rsi_len=12,
                         stop_loss_perc=0.0,
                         epsilon=0.0015,
-                        initial_capital=initial_capital
                         )
 trading_manager = TradingManagerMain(data_generator=data_generator,
                                      strategy=strategy,

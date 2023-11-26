@@ -45,6 +45,7 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
         self.sticker_dict[symbol][STICKER_DF][RSI] = None
         self.sticker_dict[symbol][STICKER_DF][OPEN_SMALL_IND_COL] = None
         self.sticker_dict[symbol][STICKER_DF][OPEN_BIG_IND_COL] = None
+        self.sticker_dict[symbol][STICKER_DF][OPEN_NORM] = None
         self.sticker_dict[symbol][STICKER_DF][GAIN_LOSS] = None
         self.sticker_dict[symbol][STICKER_DF][GAIN] = None
         self.sticker_dict[symbol][STICKER_DF][LOSS] = None

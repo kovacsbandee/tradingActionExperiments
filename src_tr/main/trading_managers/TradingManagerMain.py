@@ -31,6 +31,7 @@ class TradingManagerMain():
         self.minute_bars = []
         self.stickers_to_delete = []
         self.rsi_filtered = False
+        self.rsi_counter = 0
         self.minutes_before_trading_start = minutes_before_trading_start
         self.rsi_threshold = rsi_threshold
         #self.market_open = market_open
@@ -74,9 +75,13 @@ class TradingManagerMain():
             
             # apply strategy on all stickers --- TODO: kiszervezni külön metódusba
             for symbol, value_dict in self.data_generator.sticker_dict.items():
+                # normalize open price
+                value_dict[STICKER_DF].loc[value_dict[STICKER_DF].index[-1], OPEN_NORM] = \
+                (value_dict[STICKER_DF].loc[value_dict[STICKER_DF].index[-1], OPEN] - value_dict[PREV_DAY_DATA][AVG_OPEN]) / value_dict[PREV_DAY_DATA][STD_OPEN]
+                
                 sticker_df_length = len(value_dict[STICKER_DF])
                 ma_long_value = self.strategy.ma_long
-                if sticker_df_length >= ma_long_value:
+                if sticker_df_length > ma_long_value:
                     current_capital = self.get_current_capital()
                     self.strategy.update_capital_amount(current_capital)
                     previous_position = self.get_previous_position(symbol)
@@ -84,20 +89,25 @@ class TradingManagerMain():
                                                                                                  symbol=symbol,  
                                                                                                  sticker_dict=value_dict)
                     current_df: pd.DataFrame = value_dict[STICKER_DF]
-                    if len(current_df) >= self.minutes_before_trading_start:
-                        if not self.rsi_filtered and current_df[RSI].mean() > self.rsi_threshold:
+                    if len(current_df) > self.minutes_before_trading_start:
+                        if not self.rsi_filtered and current_df[RSI].mean() < self.rsi_threshold: #NOTE: megfordítottam a >-t!
                             self.stickers_to_delete.append(symbol)
+                        elif not self.rsi_filtered and current_df[RSI].mean() >= self.rsi_threshold:
+                            self.rsi_counter += 1
                         if self.rsi_filtered:
                             self.execute_trading_action(symbol, current_df)
                     else:
                         print("Collecting live data for RSI filtering, no trading is executed")
                 else:
-                    print("Not enough data to apply strategy")
+                    print(f"Not enough data to apply strategy. Symbol: {symbol}")
             
             # filter out stickers by RSI value
             if not self.rsi_filtered and len(self.stickers_to_delete) > 0:
                 self.rsi_filter_stickers() 
-                print(f"Sticker dictionary filtered by RSI at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")       
+                print(f"Sticker dictionary filtered by RSI at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            elif not self.rsi_filtered and self.rsi_counter == len(self.data_generator.recommended_sticker_list):
+                self.rsi_filtered = True
+                print(f"No RSI filtering required, trading cycle started at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
         except Exception as e:
             print(str(e))
@@ -122,10 +132,10 @@ class TradingManagerMain():
 
         # divide capital with amount of OUT positions:
         out_positions = self.data_generator.get_out_positions()
-        quantity_buy_long = current_df.iloc[-1][CURRENT_CAPITAL] / out_positions / current_df.iloc[-1][CLOSE]
+        quantity_buy_long = current_df.iloc[-1][CURRENT_CAPITAL] / out_positions / current_df.iloc[-1][OPEN]
 
         #NOTE sell only a percentage of divided capital
-        quantity_sell_short = (current_df.iloc[-1][CURRENT_CAPITAL] / out_positions * 0.15) / current_df.iloc[-1][CLOSE]
+        quantity_sell_short = (current_df.iloc[-1][CURRENT_CAPITAL] / out_positions * 0.15) / current_df.iloc[-1][OPEN]
 
         if trading_action == ACT_BUY_NEXT_LONG and current_position == POS_OUT:
             self.place_buy_order(quantity_buy_long, symbol)

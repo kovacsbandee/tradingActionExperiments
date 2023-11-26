@@ -1,4 +1,5 @@
 import pandas as pd
+from typing import List
 
 from src_tr.main.trading_managers.TradingManagerMain import TradingManagerMain
 from src_tr.main.helpers.converter import string_to_dict_list
@@ -7,19 +8,13 @@ from src_tr.main.enums_and_constants.trading_constants import *
 class TestTradingManager(TradingManagerMain):
     
     #Override
-    def handle_message(self, ws, message):
+    def handle_message(self, ws, message: List[dict]):
         try:
-            #TODO: implement Yahoo conversion
-            minute_bars = string_to_dict_list(message) 
-            if minute_bars[0]['T'] == 'b':
-                for item in minute_bars:
-                    self.minute_bars.append(item)
-                    if len(self.minute_bars) == len(self.data_generator.recommended_sticker_list):
-                        self.execute_all()
-                        self.minute_bars = []
-                        print('Data available, execute_all() called')
-            else:
-                print('Authentication and data initialization')
+            for item in message:
+                self.minute_bars.append(item)
+                if len(self.minute_bars) == len(self.data_generator.recommended_sticker_list):
+                    self.execute_all()
+                    self.minute_bars = []
         except Exception as e:
             print(str(e))
 
@@ -43,12 +38,12 @@ class TestTradingManager(TradingManagerMain):
 
         # divide capital with amount of OUT positions:
         out_positions = self.data_generator.get_out_positions()
-        quantity_buy_long = current_df.iloc[-1][CURRENT_CAPITAL] / out_positions / current_df.iloc[-1][CLOSE]
+        quantity_buy_long = current_df.iloc[-1][CURRENT_CAPITAL] / out_positions / current_df.iloc[-1][OPEN]
 
         if trading_action == ACT_BUY_NEXT_LONG and current_position == POS_OUT:
-            self.place_buy_order(symbol=symbol, quantity=quantity_buy_long, price=current_df.iloc[-1][CLOSE])
+            self.place_buy_order(symbol=symbol, quantity=quantity_buy_long, price=current_df.iloc[-1][OPEN])
         elif trading_action == ACT_SELL_PREV_LONG and current_position == POS_LONG_BUY:
-            self.close_current_position(symbol=symbol, price=current_df.iloc[-1][CLOSE])
+            self.close_current_position(symbol=symbol, price=current_df.iloc[-1][OPEN])
         else:
             print(ACT_NO_ACTION)
             
@@ -57,7 +52,6 @@ class TestTradingManager(TradingManagerMain):
         try:
             self.trading_client.submit_order(symbol=symbol, qty=quantity, price=price)
             self.data_generator.decrease_out_positions()
-            print('Buy order completed')
         except Exception as e:
             print(str(e))
             

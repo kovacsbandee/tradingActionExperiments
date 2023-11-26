@@ -20,10 +20,15 @@ timeframe = TimeFrame(amount=1, unit=TimeFrameUnit.Minute)
 
 bars_request = StockBarsRequest(
     symbol_or_symbols=symbol,
-    timeframe=timeframe
+    timeframe=timeframe,
+    start=datetime(2023, 11, 17, 9, 30),
+    end=datetime(2023, 11, 17, 16, 30)
 )
 
-latest_bars = client.get_stock_bars(bars_request)
+latest_bars = client.get_stock_bars(bars_request).data
+element = latest_bars['AAPL'][0].close
+print(element)
+print(latest_bars)
 
 def convert(latest_bars: DataFrame):
         # Reset the index to move the 'symbol' and 'timestamp' to columns
