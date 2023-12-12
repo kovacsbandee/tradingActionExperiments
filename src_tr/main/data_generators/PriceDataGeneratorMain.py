@@ -51,7 +51,6 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
         self.sticker_dict[symbol][STICKER_DF][LOSS] = None
         self.sticker_dict[symbol][STICKER_DF][AVG_GAIN] = None
         self.sticker_dict[symbol][STICKER_DF][AVG_LOSS] = None
-        self.sticker_dict[symbol][STICKER_DF][RSI] = None
         #-----TODO-----
         self.sticker_dict[symbol][STICKER_DF][AMOUNT_SOLD] = None
         self.sticker_dict[symbol][STICKER_DF][AMOUNT_BOUGHT] = None

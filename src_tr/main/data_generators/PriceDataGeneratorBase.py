@@ -13,33 +13,26 @@ class PriceDataGeneratorBase(ABC):
     lower_volume_boundary: int
     prev_day_data: DataFrame
     prev_day_sticker_stats: dict
-    trading_day_sticker_stats: dict
-    """
-    trading_day_sticker_stats = {
-        'avg_close': ...,
-        'avg_volume': ...,
-        'price_range_perc': ...,
-        'volume_range_ratio': ... 
-    }
-    """
+    trading_day_sticker_stats: dict #nem köll?
+    
     sticker_dict: dict = dict()
     """
     sticker_dict = {
-        'AAPL': [{"T":"b",
-                "S":"AAPL",
-                "o":171.68,
-                "h":171.68,
-                "l":171.585,
-                "c":171.605,
-                "v":1961,
-                "t":"2023-10-03T18:16:00Z",
-                "n":22,
-                "vw":171.618957}],
+        'AAPL': 'sticker_df' : DataFrame [{"T":"b",
+                                        "S":"AAPL",
+                                        "o":171.68,
+                                        "h":171.68,
+                                        "l":171.585,
+                                        "c":171.605,
+                                        "v":1961,
+                                        "t":"2023-10-03T18:16:00Z",
+                                        "n":22,
+                                        "vw":171.618957}],
         'MSFT': [],
         'TSLA': []
     }
     """
-    data_window_size: int
+    data_window_size: int #nem köll?
     
     def __init__(self,
                  recommended_sticker_list):

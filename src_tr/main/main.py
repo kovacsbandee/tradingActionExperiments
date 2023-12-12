@@ -40,7 +40,7 @@ recommended_sticker_list: List[dict] = scanner.recommend_premarket_watchlist()
 
 data_generator = PriceDataGeneratorMain(recommended_sticker_list=recommended_sticker_list)
 strategy = StrategyWithStopLoss(ma_short=5,
-                        ma_long=5,
+                        ma_long=12,
                         rsi_len=12,
                         stop_loss_perc=0.0,
                         epsilon=0.0015,
