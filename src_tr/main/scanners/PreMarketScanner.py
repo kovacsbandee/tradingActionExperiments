@@ -73,12 +73,11 @@ class PreMarketScanner(ScannerBase):
 
     def calculate_filtering_stats(self) -> List:
         self.pre_market_stats = self._create_pre_market_stats()
-        save_date = self.scanning_day.strftime('%Y-%m-%d')
         return self.pre_market_stats
         
     def _create_pre_market_stats(self) -> DataFrame:
         pre_market_sticker_stats = \
-            Parallel(n_jobs=16)(delayed(self.get_pre_market_stats)(sticker) for sticker in self.stickers)
+            Parallel(n_jobs=-1)(delayed(self.get_pre_market_stats)(sticker) for sticker in self.stickers)
                  
         pre_market_sticker_stats = [stats for stats in pre_market_sticker_stats if stats is not None]
         
@@ -87,14 +86,6 @@ class PreMarketScanner(ScannerBase):
         except Exception as e:
             print(f'Failed to create pre_market_stats DataFrame: {str(e)}')
             return None
-    
-    def save_stats_to_csv(self, save_date):
-        data_path = f'{self.project_path}/data_store'
-        files_to_remove = [f for f in data_path if f'pre_market_stats_{save_date}' in f]
-        if len(os.listdir(data_path)):
-            for f in files_to_remove:
-                os.remove(os.listdir(f'{data_path}/{f}'))
-        self.pre_market_stats.to_csv(path_or_buf=f'{self.project_path}/data_store/pre_market_stats_{save_date}', index=False)
         
     def recommend_premarket_watchlist(self) -> List[dict]:
         self.recommended_stickers: pd.DataFrame = self.pre_market_stats[
