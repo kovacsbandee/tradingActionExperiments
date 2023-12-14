@@ -13,6 +13,7 @@ from src_tr.main.utils.utils import calculate_scanning_day, get_nasdaq_stickers
 from src_tr.main.scanners.PreMarketScanner import PreMarketScanner
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
 from src_tr.main.strategies.StrategyWithStopLoss import StrategyWithStopLoss
+from src_tr.main.strategies.StrategyWithStopLossPrevPrice import StrategyWithStopLossPrevPrice
 from src_tr.test.test_workflow_modules.TestTradingManager import TestTradingManager
 
 # 1) Scanner inicializálása -> watchlist létrehozás
@@ -45,7 +46,16 @@ recommended_sticker_list: List[dict] = scanner.recommend_premarket_watchlist()
 trading_client = TestTradingClient(init_cash=26000, sticker_list=recommended_sticker_list)
 trading_client.initialize_positions()
 data_generator = PriceDataGeneratorMain(recommended_sticker_list=recommended_sticker_list)
-strategy = StrategyWithStopLoss(ma_short=5,
+
+# Strategy with stop loss compared to the last price when opening the position:
+#strategy = StrategyWithStopLoss(ma_short=5,
+#                                ma_long=12,
+#                                rsi_len=12,
+#                                stop_loss_perc=0.0,
+#                                epsilon=0.0015)
+
+# Strategy with stop loss compared to the previous price:
+strategy = StrategyWithStopLossPrevPrice(ma_short=5,
                                 ma_long=12,
                                 rsi_len=12,
                                 stop_loss_perc=0.0,
