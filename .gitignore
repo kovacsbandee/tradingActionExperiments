@@ -1,2 +1,5 @@
+.vscode/
+.env
 /data_store/
 /plots/plot_store/
+__pycache__/
