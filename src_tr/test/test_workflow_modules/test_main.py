@@ -43,7 +43,8 @@ scanning_day = calculate_scanning_day(trading_day)
 
 # Dumb scanner:
 #dumb_stickers = ['MARA', 'RIOT', 'MVIS', 'SOS', 'CAN', 'EBON', 'BTBT', 'HUT', 'EQOS', 'MOGO', 'SUNW', 'XNET', 'PHUN', 'IDEX', 'ZKIN', 'SIFY', 'SNDL', 'NCTY', 'OCGN', 'NIO', 'FCEL', 'PLUG', 'TSLA', 'AAPL', 'AMZN', 'MSFT', 'GOOG', 'FB', 'GOOGL', 'NVDA', 'PYPL', 'ADBE', 'INTC', 'CMCSA', 'CSCO', 'NFLX', 'PEP', 'AVGO', 'TXN', 'COST', 'QCOM', 'TMUS', 'AMGN', 'CHTR', 'SBUX', 'AMD', 'INTU', 'ISRG', 'AMAT', 'MU', 'BKNG', 'MDLZ', 'ADP', 'GILD', 'CSX', 'FISV', 'VRTX', 'ATVI', 'ADSK', 'REGN', 'ILMN', 'BIIB', 'MELI', 'LRCX', 'JD', 'ADI', 'NXPI', 'ASML', 'KHC', 'MRNA', 'EA', 'BIDU', 'WBA', 'MAR', 'LULU', 'EXC', 'ROST', 'WDAY', 'KLAC', 'CTSH', 'ORLY', 'SNPS', 'DOCU', 'IDXX', 'SGEN', 'DXCM', 'PCAR', 'CDNS', 'XLNX', 'ANSS', 'NTES', 'MNST', 'VRSK', 'ALXN', 'FAST', 'SPLK', 'CPRT', 'CDW', 'PAYX', 'MXIM', 'SWKS', 'INCY', 'CHKP', 'TCOM', 'CTXS', 'VRSN', 'SGMS', 'DLTR', 'CERN', 'ULTA', 'FOXA', 'FOX', 'NTAP', 'WDC', 'TTWO', 'EXPE', 'XEL', 'MCHP', 'CTAS', 'MXL', 'WLTW', 'ANET', 'BMRN']
-dumb_stickers = ['COIN', 'MARA'] #NOTE: csak MARA önmagában termel 28600-at, COIN-nal együtt már nem
+# profitot termelők: MARA, COIN, RIOT, SOS
+dumb_stickers = ['NFLX'] #NOTE: csak MARA önmagában termel 28600-at, COIN-nal együtt már nem
 scanner = PreMarketDumbScanner(trading_day=trading_day,
                            scanning_day=scanning_day,
                            stickers=dumb_stickers,
@@ -79,7 +80,7 @@ trading_manager = TestTradingManager(data_generator=data_generator,
                                      trading_client=trading_client,
                                      api_key='test_key',
                                      secret_key='test_secret',
-                                     rsi_threshold=20,
+                                     rsi_threshold=20, #NOTE: lehet, hogy lejjebb kell venni
                                      minutes_before_trading_start=45)
 
 data_generator.initialize_sticker_dict()
