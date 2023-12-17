@@ -23,10 +23,11 @@ STICKER_CSV_PATH = os.environ["STICKER_CSV_PATH"]
 ALPACA_KEY = os.environ["ALPACA_KEY"]
 ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
 
+# Mit csinál ez a 'client' objektum, nem látom, hogy máshol használnánk?
 client = StockHistoricalDataClient(ALPACA_KEY, ALPACA_SECRET_KEY)
 
-start = datetime(2023, 12, 13, 0, 0)
-end = datetime(2023, 12, 13, 23, 59)
+start = datetime(2023, 12, 12, 0, 0)
+end = datetime(2023, 12, 12, 23, 59)
 
 trading_day = check_trading_day(start.strftime('%Y-%m-%d'))
 scanning_day = calculate_scanning_day(trading_day)
@@ -43,7 +44,7 @@ scanning_day = calculate_scanning_day(trading_day)
 
 # Dumb scanner:
 #dumb_stickers = ['MARA', 'RIOT', 'MVIS', 'SOS', 'CAN', 'EBON', 'BTBT', 'HUT', 'EQOS', 'MOGO', 'SUNW', 'XNET', 'PHUN', 'IDEX', 'ZKIN', 'SIFY', 'SNDL', 'NCTY', 'OCGN', 'NIO', 'FCEL', 'PLUG', 'TSLA', 'AAPL', 'AMZN', 'MSFT', 'GOOG', 'FB', 'GOOGL', 'NVDA', 'PYPL', 'ADBE', 'INTC', 'CMCSA', 'CSCO', 'NFLX', 'PEP', 'AVGO', 'TXN', 'COST', 'QCOM', 'TMUS', 'AMGN', 'CHTR', 'SBUX', 'AMD', 'INTU', 'ISRG', 'AMAT', 'MU', 'BKNG', 'MDLZ', 'ADP', 'GILD', 'CSX', 'FISV', 'VRTX', 'ATVI', 'ADSK', 'REGN', 'ILMN', 'BIIB', 'MELI', 'LRCX', 'JD', 'ADI', 'NXPI', 'ASML', 'KHC', 'MRNA', 'EA', 'BIDU', 'WBA', 'MAR', 'LULU', 'EXC', 'ROST', 'WDAY', 'KLAC', 'CTSH', 'ORLY', 'SNPS', 'DOCU', 'IDXX', 'SGEN', 'DXCM', 'PCAR', 'CDNS', 'XLNX', 'ANSS', 'NTES', 'MNST', 'VRSK', 'ALXN', 'FAST', 'SPLK', 'CPRT', 'CDW', 'PAYX', 'MXIM', 'SWKS', 'INCY', 'CHKP', 'TCOM', 'CTXS', 'VRSN', 'SGMS', 'DLTR', 'CERN', 'ULTA', 'FOXA', 'FOX', 'NTAP', 'WDC', 'TTWO', 'EXPE', 'XEL', 'MCHP', 'CTAS', 'MXL', 'WLTW', 'ANET', 'BMRN']
-dumb_stickers = ['COIN', 'MARA'] #NOTE: csak MARA önmagában termel 28600-at, COIN-nal együtt már nem
+dumb_stickers = ['TSLA']#, 'MARA'] #NOTE: csak MARA önmagában termel 28600-at, COIN-nal együtt már nem
 scanner = PreMarketDumbScanner(trading_day=trading_day,
                            scanning_day=scanning_day,
                            stickers=dumb_stickers,
@@ -61,18 +62,20 @@ trading_client.initialize_positions()
 data_generator = PriceDataGeneratorMain(recommended_sticker_list=recommended_sticker_list)
 
 # Strategy with stop loss compared to the last price when opening the position:
-#strategy = StrategyWithStopLoss(ma_short=5,
-#                                ma_long=12,
-#                                rsi_len=12,
-#                                stop_loss_perc=0.0,
-#                                epsilon=0.0015)
-
-# Strategy with stop loss compared to the previous price:
-strategy = StrategyWithStopLossPrevPrice(ma_short=5,
+strategy = StrategyWithStopLoss(ma_short=5,
                                 ma_long=12,
                                 rsi_len=12,
                                 stop_loss_perc=0.0,
-                                epsilon=0.0015)
+                                epsilon=0.0015,
+                                trading_day=trading_day)
+
+# Strategy with stop loss compared to the previous price:
+# strategy = StrategyWithStopLossPrevPrice(ma_short=5,
+#                                          ma_long=12,
+#                                          rsi_len=12,
+#                                          stop_loss_perc=0.0,
+#                                          epsilon=0.0015,
+#                                          trading_day=trading_day)
 
 trading_manager = TestTradingManager(data_generator=data_generator,
                                      strategy=strategy,
@@ -104,7 +107,11 @@ def _convert_data(latest_bars: dict, symbol: str):
         'T': 'b',
         't': e.timestamp.strftime('%Y-%m-%dT%H:%M:%SZ'),
         'S': e.symbol,
-        'o': e.open
+        'o': e.open,
+        'c': e.close,
+        'h': e.high,
+        'l': e.low,
+        'v': e.volume
     })
     return bar_list
 
@@ -113,7 +120,7 @@ all_stickers_daily_data: List[List] = []
 for symbol in recommended_sticker_list:
     daily_data = download_daily_data(symbol=symbol['symbol'], start=start, end=end)
     all_stickers_daily_data.append(daily_data)
-    
+
 i = 0
 while i < len(all_stickers_daily_data[0]):
     minute_bars = []

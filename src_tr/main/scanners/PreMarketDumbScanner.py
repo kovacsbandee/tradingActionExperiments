@@ -6,7 +6,7 @@ from pandas import DataFrame
 import yfinance as yf
 from joblib import Parallel, delayed
 
-from src_tr.main.enums_and_constants.trading_constants import AVG_OPEN, STD_OPEN, SYMBOL, PRICE_RANGE_PERC, AVG_VOLUME, VOLUME_RANGE_RATIO
+from src_tr.main.enums_and_constants.trading_constants import AVG_OPEN, STD_OPEN, SYMBOL, PRICE_RANGE_PERC, AVG_VOLUME, VOLUME_RANGE_RATIO, SCANNING_DAY
 from src_tr.main.scanners.ScannerBase import ScannerBase
 
 class PreMarketDumbScanner(ScannerBase):
@@ -56,6 +56,7 @@ class PreMarketDumbScanner(ScannerBase):
                     volume_range_ratio = (volume_max - volume_min) / avg_volume
                     
                 return {
+                    SCANNING_DAY: self.scanning_day,
                     SYMBOL: sticker,
                     AVG_OPEN : avg_open,
                     STD_OPEN : std_open,
@@ -79,7 +80,8 @@ class PreMarketDumbScanner(ScannerBase):
                  
         pre_market_sticker_stats = [stats for stats in pre_market_sticker_stats if stats is not None]
         
-        try:   
+        try:
+            # Itt ki kéne menteni az adatbázisba a scanner-t minden napra, amikor futtatjuk!
             return pd.DataFrame.from_records(pre_market_sticker_stats)
         except Exception as e:
             print(f'Failed to create pre_market_stats DataFrame: {str(e)}')
@@ -91,7 +93,9 @@ class PreMarketDumbScanner(ScannerBase):
         #    (self.pre_market_stats[AVG_OPEN] < self.upper_price_boundary) & \
         #    (self.price_range_perc_cond < self.pre_market_stats[PRICE_RANGE_PERC]) & \
         #    (self.avg_volume_cond < self.pre_market_stats[AVG_VOLUME])]
-        
+
+        # Itt miért van kihagyva a szűrés? Ha nem kerül bele symbol a tesztelés során, akkor a paramétereket kell állítani,
+        # hogy gyengébbek legyenek a feltételek.
         self.recommended_stickers: pd.DataFrame = self.pre_market_stats
         print(f'The recommended watchlist for {self.trading_day} is the following DataFrame: {self.recommended_stickers}')
         sticker_dict_list = []
@@ -102,6 +106,8 @@ class PreMarketDumbScanner(ScannerBase):
                     AVG_OPEN : row[AVG_OPEN],
                     STD_OPEN : row[STD_OPEN]
                 }
+                # Itt azt gondolom, hogy érdemes lenne beletenni minden statisztikát, amit számolunk,
+                # így lenne lehetőség arra, hogy vizsgáljuk az összefüggéseket a premarket scanner statisztikái és a kereskedés eredményei között
                 sticker_dict_list.append(st_dict)
                 #sticker_dict_list.append(row['sticker'])
         

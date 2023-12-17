@@ -10,6 +10,7 @@ AVG_VOLUME = 'avg_volume'
 VOLUME_RANGE_RATIO = 'volume_range_ratio'
 AVG_OPEN = 'avg_open'
 STD_OPEN = 'std_open'
+SCANNING_DAY = 'scanning_day'
 
 # Bar data constants
 OPEN = 'o'
@@ -34,6 +35,7 @@ AMOUNT_BOUGHT = 'amount_bought'
 
 # sticker_df column value constants:
 POS_OUT = 'out'
+# itt javaslom, hogy a 'buy' és 'sell' szó lekerüljön innen, mert megtévesztő a pozíció leírása esetlében, hogy action is társul hozzá
 POS_LONG_BUY = 'long'
 POS_SHORT_SELL = 'short'
 

@@ -11,6 +11,11 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
         super().__init__(recommended_sticker_list)
         self.ind_price = OPEN
         self.out_positions = len(recommended_sticker_list) # TODO: le kell kérni az Alpacáról minden indításnál!
+        # Ezt miért kell lekérni minden indításnál?
+        #   - nap elején biztosan nem leszünk pozícióban, mert nap végén le kell zárni minden nyitott pozíciót
+        #    ha nem zárjuk le őket az aznapi nyereséget elviheti a premarket gap! Az megoldható, ha meghal a program, akkor azonnal kijöjjön minden pozícióból?
+        # Lehet csinálni valami teljesen más programot, ami figyeli a kapcsolatot?
+        #   - azt meg jó lenne elkerülni, hogy nap közben leálljon a program, de ha mégis megtörténik, azt szeretnénk evvel kezelni?
     
     def get_out_positions(self):
         return self.out_positions
@@ -20,7 +25,13 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
 
     def decrease_out_positions(self):
         self.out_positions = self.out_positions - 1
-                
+
+
+    # Mi lenne ha nem lenne külön sticker_list és sticker_dict?
+    # hanem csak egy adattároló, amit elkezdünk feltölteni először a premarket scanner-rel,
+    # utána folytatjuk a kereskedés inicializálással, gyakorlatilag evvel ami itt van,
+    # majd folyamatosan töltjük a bejövő adatokkal és a pozíciókkal,
+    # a végén pedig jó lenne kimenteni (valami olyan adatbázisba, amit mindenki elér) mindent, hogy utána lehessen rajtuk elemzéseket végezni
     def initialize_sticker_dict(self):
         if self.recommended_sticker_list is not None:
             for e in self.recommended_sticker_list:
@@ -29,6 +40,7 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
                     PREV_LONG_BUY_POSITION_INDEX : None,
                     PREV_SHORT_SELL_POSITION_INDEX : None,
                     IND_PRICE : OPEN,
+                    # itt talán nem érdemes az IND_PRICE-ot szerepeltetni, hiszen a PDP-ben implementált stratégia az open-nel működik jól
                     PREV_DAY_DATA : {
                         AVG_OPEN : e[AVG_OPEN],
                         STD_OPEN: e[STD_OPEN]
@@ -52,6 +64,7 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
         self.sticker_dict[symbol][STICKER_DF][AVG_GAIN] = None
         self.sticker_dict[symbol][STICKER_DF][AVG_LOSS] = None
         #-----TODO-----
+        # Mi az AMOUNT_SOLD és az AMOUNT_BOUGHT definíciója? Mit értünk alattuk?
         self.sticker_dict[symbol][STICKER_DF][AMOUNT_SOLD] = None
         self.sticker_dict[symbol][STICKER_DF][AMOUNT_BOUGHT] = None
                 
@@ -71,7 +84,8 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
                     raise ValueError("Unexpected data structure for the symbol in current_data_window")
         else:
             raise ValueError("Minute bar list is empty.")
-        
+
+    # Ezt hol használjuk és mire való?
     def update_sticker_df_yahoo(self, minute_bars: DataFrame):
         if minute_bars is not None and len(minute_bars) > 0:
             symbol = minute_bars['S'][0]
@@ -84,7 +98,7 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
                 raise ValueError("Unexpected data structure for the symbol in current_data_window")
         else:
             raise ValueError("Yahoo data is empty.")
-                            
+    # Ezt hol használjuk?
     def load_watchlist_daily_price_data(self):
         if self.recommended_sticker_list is not None:
             for symbol in self.recommended_sticker_list:
