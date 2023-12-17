@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from datetime import datetime
 
 from src_tr.main.strategies.StrategyBase import StrategyBase
 from src_tr.main.enums_and_constants.trading_constants import *
@@ -11,7 +12,8 @@ class StrategyWithStopLoss(StrategyBase):
                  ma_long,
                  rsi_len,
                  stop_loss_perc,
-                 epsilon):
+                 epsilon,
+                 trading_day):
         super().__init__()
         self.ma_short = ma_short
         self.ma_long = ma_long
@@ -19,6 +21,7 @@ class StrategyWithStopLoss(StrategyBase):
         self.stop_loss_perc = stop_loss_perc
         self.comission_ratio = 0.0
         self.epsilon = epsilon
+        self.trading_day = trading_day.strftime('%Y-%m-%d')
 
     def update_capital_amount(self, account_cash):
         self.capital = account_cash
@@ -75,7 +78,7 @@ class StrategyWithStopLoss(StrategyBase):
                 sticker_df.loc[last_index, STOP_LOSS_OUT_SIGNAL] = STOP_LOSS_LONG
                 sticker_df.loc[last_index, TRADING_ACTION] = ACT_SELL_PREV_LONG
         
-        sticker_df.to_csv(f'{symbol}_long_stop_loss_last_in_position.csv')
+        sticker_df.to_csv(f'{symbol}_{self.trading_day}_{self.epsilon}_long_stop_loss_last_in_position.csv')
         
         # update the current sticker DataFrame
         sticker_dict[STICKER_DF] = sticker_df

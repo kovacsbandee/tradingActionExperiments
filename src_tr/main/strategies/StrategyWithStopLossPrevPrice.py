@@ -11,7 +11,8 @@ class StrategyWithStopLossPrevPrice(StrategyBase):
                  ma_long,
                  rsi_len,
                  stop_loss_perc,
-                 epsilon):
+                 epsilon,
+                 trading_day):
         super().__init__()
         self.ma_short = ma_short
         self.ma_long = ma_long
@@ -19,6 +20,7 @@ class StrategyWithStopLossPrevPrice(StrategyBase):
         self.stop_loss_perc = stop_loss_perc
         self.comission_ratio = 0.0
         self.epsilon = epsilon
+        self.trading_day = trading_day.strftime('%Y-%m-%d')
 
     def update_capital_amount(self, account_cash):
         self.capital = account_cash
@@ -76,7 +78,7 @@ class StrategyWithStopLossPrevPrice(StrategyBase):
                 sticker_df.loc[last_index, STOP_LOSS_OUT_SIGNAL] = STOP_LOSS_LONG
                 sticker_df.loc[last_index, TRADING_ACTION] = ACT_SELL_PREV_LONG
         
-        sticker_df.to_csv(f'{symbol}_long_stop_loss_previous_price.csv')
+        sticker_df.to_csv(f'{symbol}_{self.trading_day}_{self.epsilon}_long_stop_loss_previous_price.csv')
         
         # update the current sticker DataFrame
         sticker_dict[STICKER_DF] = sticker_df
