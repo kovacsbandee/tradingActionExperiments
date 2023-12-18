@@ -1,15 +1,16 @@
 import os
 from typing import List
-from datetime import timedelta
+from datetime import datetime
 import pandas as pd
 from pandas import DataFrame
 import yfinance as yf
+from polygon import RESTClient
 from joblib import Parallel, delayed
 
 from src_tr.main.enums_and_constants.trading_constants import AVG_OPEN, STD_OPEN, SYMBOL, PRICE_RANGE_PERC, AVG_VOLUME, VOLUME_RANGE_RATIO
 from src_tr.main.scanners.ScannerBase import ScannerBase
 
-class PreMarketScanner(ScannerBase):
+class PreMarketPolygonScanner(ScannerBase):
 
     def __init__(self, 
                  trading_day, 
@@ -25,30 +26,49 @@ class PreMarketScanner(ScannerBase):
         self.price_range_perc_cond = price_range_perc_cond
         self.avg_volume_cond = avg_volume_cond
 
-    def _download_sticker_history(self, sticker: str):
+    def _download_sticker_history(self, ticker: str):
         start_date = self.scanning_day
         end_date = self.trading_day
+        aggs = []
+        client = RESTClient(api_key="Rdcy29x7wooeMAlqKIsnTfDiHOaz0J_d")
+        aggregate_list = client.list_aggs(ticker=ticker, multiplier=1, timespan="minute", from_=start_date, to=end_date, limit=50000)
         try:
-            sticker: yf.Ticker = yf.Ticker(sticker)
-            return sticker.history(start=start_date, end=end_date, interval='1m', period='1d') if sticker else None
-        except Exception as e:
-            print(str(e))
-            return None
+            for a in aggregate_list:
+                a_dict = a.__dict__
+                ts = int(a.timestamp)
+                ts /= 1000
+                convert_ts = datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+                a_dict['timestamp'] = convert_ts
+                a_dict['symbol'] = ticker
+                aggs.append(a_dict)
+        except Exception as ex:
+            print(f'Error: {ex}')
+            
+        if len(aggs) > 0:
+            bar_dict_list = []
+            for i in aggs:
+                bar_dict_list.append(i)
+                
+            if bar_dict_list:
+                bar_df = pd.DataFrame(bar_dict_list)
+                bar_df.set_index('timestamp', inplace=True)
+            
+            return bar_df
     
     def get_pre_market_stats(self, sticker: str) -> dict:
         try:
-            sticker_history = self._download_sticker_history(sticker=sticker)
+            sticker_history = self._download_sticker_history(ticker=sticker)
             
             if sticker_history is not None and not sticker_history.empty:
                 
-                avg_close = sticker_history['Close'].mean() # TODO: nem kell?
-                avg_open = sticker_history['Open'].mean()
-                std_open = sticker_history['Open'].std()
-                high_max = sticker_history['High'].max()
-                low_min = sticker_history['Low'].min()
-                avg_volume = sticker_history['Volume'].mean()
-                volume_max = sticker_history['Volume'].max()
-                volume_min = sticker_history['Volume'].min()
+                avg_close = sticker_history['close'].mean() # TODO: nem kell?
+                avg_open = sticker_history['open'].mean()
+                std_open = sticker_history['open'].std()
+                high_max = sticker_history['high'].max()
+                low_min = sticker_history['low'].min()
+                avg_volume = sticker_history['volume'].mean()
+                volume_max = sticker_history['volume'].max()
+                volume_min = sticker_history['volume'].min()
                 price_range_perc = 0
                 volume_range_ratio = 0
                 
