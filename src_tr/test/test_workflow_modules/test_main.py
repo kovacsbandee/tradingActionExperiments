@@ -45,12 +45,12 @@ nasdaq_stickers = get_nasdaq_stickers(file_path=STICKER_CSV_PATH)
 
 # Polygon scanner:
 scanner = PreMarketPolygonScanner(trading_day=trading_day,
-                           scanning_day=scanning_day,
-                           stickers=nasdaq_stickers,
-                           lower_price_boundary=10,
-                           upper_price_boundary=400,
-                           price_range_perc_cond=10,
-                           avg_volume_cond=25000)
+                                  scanning_day=scanning_day,
+                                  stickers=nasdaq_stickers,
+                                  lower_price_boundary=10,
+                                  upper_price_boundary=400,
+                                  price_range_perc_cond=10,
+                                  avg_volume_cond=25000)
 
 # Dumb scanner:
 #dumb_stickers = ['MARA', 'RIOT', 'MVIS', 'SOS', 'CAN', 'EBON', 'BTBT', 'HUT', 'EQOS', 'MOGO', 'SUNW', 'XNET', 'PHUN', 'IDEX', 'ZKIN', 'SIFY', 'SNDL', 'NCTY', 'OCGN', 'NIO', 'FCEL', 'PLUG', 'TSLA', 'AAPL', 'AMZN', 'MSFT', 'GOOG', 'FB', 'GOOGL', 'NVDA', 'PYPL', 'ADBE', 'INTC', 'CMCSA', 'CSCO', 'NFLX', 'PEP', 'AVGO', 'TXN', 'COST', 'QCOM', 'TMUS', 'AMGN', 'CHTR', 'SBUX', 'AMD', 'INTU', 'ISRG', 'AMAT', 'MU', 'BKNG', 'MDLZ', 'ADP', 'GILD', 'CSX', 'FISV', 'VRTX', 'ATVI', 'ADSK', 'REGN', 'ILMN', 'BIIB', 'MELI', 'LRCX', 'JD', 'ADI', 'NXPI', 'ASML', 'KHC', 'MRNA', 'EA', 'BIDU', 'WBA', 'MAR', 'LULU', 'EXC', 'ROST', 'WDAY', 'KLAC', 'CTSH', 'ORLY', 'SNPS', 'DOCU', 'IDXX', 'SGEN', 'DXCM', 'PCAR', 'CDNS', 'XLNX', 'ANSS', 'NTES', 'MNST', 'VRSK', 'ALXN', 'FAST', 'SPLK', 'CPRT', 'CDW', 'PAYX', 'MXIM', 'SWKS', 'INCY', 'CHKP', 'TCOM', 'CTXS', 'VRSN', 'SGMS', 'DLTR', 'CERN', 'ULTA', 'FOXA', 'FOX', 'NTAP', 'WDC', 'TTWO', 'EXPE', 'XEL', 'MCHP', 'CTAS', 'MXL', 'WLTW', 'ANET', 'BMRN']
@@ -66,6 +66,8 @@ scanner = PreMarketPolygonScanner(trading_day=trading_day,
 scanner.calculate_filtering_stats()
 recommended_sticker_list: List[dict] = scanner.recommend_premarket_watchlist()
 
+# javaslom, hogy a teszteléshez minden sticker-re tegyünk nap elején 1000 dollárt, az elején úgyis ekkora nagyságrenddel megyünk
+# ráadásul ezt könnyebb lesz ellenőrizni ránézésre
 trading_client = TestTradingClient(init_cash=26000, sticker_list=recommended_sticker_list)
 trading_client.initialize_positions()
 data_generator = PriceDataGeneratorMain(recommended_sticker_list=recommended_sticker_list)
