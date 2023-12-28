@@ -2,11 +2,13 @@ from datetime import datetime, timedelta
 import pandas as pd
 
 '''
- itt lehetne egy get_dates() metódus, ami visszadja a trading_day-t és a scanning_day-t a program futtatásának napjára,
- ebbe kéne bele építeni a check-et is.
+ itt lehetne egy get_dates() metódus, ami visszadja a trading_day-t és a scanning_day-t a megfelelő ellenőrzésekkel,
 '''
 
 def calculate_scanning_day(trading_day: datetime) -> datetime:
+    '''
+    If the previous day is sunday it returns the date for friday as a scanning day
+    '''
     previous_day = (trading_day - timedelta(days=1)).strftime('%A')
     if previous_day == 'Sunday':
         return trading_day - timedelta(days=3)

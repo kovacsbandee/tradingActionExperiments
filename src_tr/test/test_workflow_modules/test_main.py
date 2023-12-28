@@ -1,3 +1,5 @@
+# Javaslom, hogy a 'sticker' megnevezést cseréljük le 'symbol'-ra mindenhol!
+
 import os
 from typing import List
 from dotenv import load_dotenv
@@ -32,6 +34,8 @@ end = datetime(2023, 12, 12, 23, 59)
 
 trading_day = check_trading_day(start.strftime('%Y-%m-%d'))
 scanning_day = calculate_scanning_day(trading_day)
+# itt nem is a nasdaq sticker-eket kellene visszadni, hanem csak a tőzsde nevét, amin aznap csinálni akarunk valamit,
+# ahhoz kell kiválasztani a sticker-eket.
 nasdaq_stickers = get_nasdaq_stickers(file_path=STICKER_CSV_PATH)
 
 # Professional scanner:
@@ -82,11 +86,11 @@ data_generator = PriceDataGeneratorMain(recommended_sticker_list=recommended_sti
 
 # Strategy with stop loss compared to the previous price:
 strategy = StrategyWithStopLossPrevPrice(ma_short=5,
-                                          ma_long=12,
-                                          rsi_len=12,
-                                          stop_loss_perc=0.0,
-                                          epsilon=0.0015,
-                                          trading_day=trading_day)
+                                         ma_long=12,
+                                         rsi_len=12,
+                                         stop_loss_perc=0.0,
+                                         epsilon=0.0015,
+                                         trading_day=trading_day)
 
 trading_manager = TestTradingManager(data_generator=data_generator,
                                      strategy=strategy,
@@ -99,6 +103,9 @@ trading_manager = TestTradingManager(data_generator=data_generator,
 data_generator.initialize_sticker_dict()
 
 def download_daily_data(symbol, start, end):
+    '''
+    Downloads the daily data in minute resolution from Alpaca.
+    '''
     timeframe = TimeFrame(amount=1, unit=TimeFrameUnit.Minute)
 
     bars_request = StockBarsRequest(
@@ -112,6 +119,9 @@ def download_daily_data(symbol, start, end):
     return daily_data_list
 
 def _convert_data(latest_bars: dict, symbol: str):
+    '''
+    Creates a list of bar data from the daily data.
+    '''
     bar_list = []
     for e in latest_bars[symbol]:
         bar_list.append({

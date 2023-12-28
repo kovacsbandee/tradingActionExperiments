@@ -16,7 +16,8 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
         #    ha nem zárjuk le őket az aznapi nyereséget elviheti a premarket gap! Az megoldható, ha meghal a program, akkor azonnal kijöjjön minden pozícióból?
         # Lehet csinálni valami teljesen más programot, ami figyeli a kapcsolatot?
         #   - azt meg jó lenne elkerülni, hogy nap közben leálljon a program, de ha mégis megtörténik, azt szeretnénk evvel kezelni?
-    
+
+
     def get_out_positions(self):
         return self.out_positions
 
@@ -40,7 +41,6 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
                     PREV_LONG_BUY_POSITION_INDEX : None,
                     PREV_SHORT_SELL_POSITION_INDEX : None,
                     IND_PRICE : OPEN,
-                    # itt talán nem érdemes az IND_PRICE-ot szerepeltetni, hiszen a PDP-ben implementált stratégia az open-nel működik jól
                     PREV_DAY_DATA : {
                         AVG_OPEN : e[AVG_OPEN],
                         STD_OPEN: e[STD_OPEN]
@@ -98,6 +98,7 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
                 raise ValueError("Unexpected data structure for the symbol in current_data_window")
         else:
             raise ValueError("Yahoo data is empty.")
+
     # Ezt hol használjuk?
     def load_watchlist_daily_price_data(self):
         if self.recommended_sticker_list is not None:

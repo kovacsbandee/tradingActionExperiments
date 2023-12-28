@@ -2,6 +2,7 @@
 SYMBOL = 'symbol'
 
 # sticker_dict constants
+# ennek inkább 'daily_price_data_df'-nek kéne lennie
 STICKER_DF = 'sticker_dataframe'
 IND_PRICE = 'indicator_price'
 PREV_DAY_DATA = 'prev_day_data'

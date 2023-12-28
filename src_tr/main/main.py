@@ -23,7 +23,7 @@ STICKER_CSV_PATH = os.environ["STICKER_CSV_PATH"]
 nasdaq_stickers = get_nasdaq_stickers(file_path=STICKER_CSV_PATH)
 
 trading_client = TradingClient(ALPACA_KEY, ALPACA_SECRET_KEY, paper=True)
-trading_day = check_trading_day('2023-11-20')
+trading_day = check_trading_day('2023-12-28')
 scanning_day = calculate_scanning_day(trading_day)
 
 scanner = PreMarketScanner(trading_day=trading_day,
@@ -46,7 +46,8 @@ strategy = StrategyWithStopLoss(ma_short=5,
                                 ma_long=12,
                                 rsi_len=12,
                                 stop_loss_perc=0.0,
-                                epsilon=0.0015)
+                                epsilon=0.0015,
+                                trading_day=trading_day)
 
 trading_manager = TradingManagerMain(data_generator=data_generator,
                                      strategy=strategy,
