@@ -198,6 +198,7 @@ class TradingManagerMain():
         print(f"Pong received: {pong_payload}")
 
     def on_close(self, ws, close_status_code, close_msg):
+        # Ide bele kell tenni a daily_price_data_df ábrázolását!
         print(f"Connection closed with status code {close_status_code}: {close_msg}")
 
     def on_error(self, ws, error):

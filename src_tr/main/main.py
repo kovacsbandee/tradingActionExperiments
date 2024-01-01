@@ -1,3 +1,9 @@
+'''
+Vajon meg lehetne oldani, hogy ha már van aznapra scanner_stats és kimentett daily_price_df a kiválasztott symbol-okra,
+akkor ha kézzel befejezzük a program futását és űjra elindítjuk, akkor check-olja, hogy mi van már meg és onna folytatja?
+Ez sokat tudna dobni a fejlesztésen szerinte, de nem tudom, hogy meg lehet-e csinálni....
+'''
+
 import os
 from typing import List
 from dotenv import load_dotenv

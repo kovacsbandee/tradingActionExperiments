@@ -10,6 +10,8 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
     def __init__(self, recommended_sticker_list):
         super().__init__(recommended_sticker_list)
         self.ind_price = OPEN
+        # Mi a definíciója az out_position-nek? Ha azt jelenti, hogy hány symbol nincsen pozícióban,
+        # akkor nem lenne egyszerűbb azt nézni hány symbol van pozícióban?
         self.out_positions = len(recommended_sticker_list) # TODO: le kell kérni az Alpacáról minden indításnál!
         # Ezt miért kell lekérni minden indításnál?
         #   - nap elején biztosan nem leszünk pozícióban, mert nap végén le kell zárni minden nyitott pozíciót
@@ -100,6 +102,7 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
             raise ValueError("Yahoo data is empty.")
 
     # Ezt hol használjuk?
+    # Ha jól értem, hogy ez a trading_day-re vontakozó scanner statisztika, akkor ez is kiszámítható az általános kiszervezett statisztika számolóval majd.
     def load_watchlist_daily_price_data(self):
         if self.recommended_sticker_list is not None:
             for symbol in self.recommended_sticker_list:

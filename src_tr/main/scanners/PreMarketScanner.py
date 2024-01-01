@@ -107,6 +107,7 @@ class PreMarketScanner(ScannerBase):
 
     def calculate_filtering_stats(self) -> List:
         self.pre_market_stats = self._create_pre_market_stats()
+        self.pre_market_stats.to_csv(f'pre_market_stats_{self.trading_day}')
         return self.pre_market_stats
         
     def _create_pre_market_stats(self) -> DataFrame:
