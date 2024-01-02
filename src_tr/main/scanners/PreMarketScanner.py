@@ -122,8 +122,6 @@ class PreMarketScanner(ScannerBase):
             print(f'Failed to create pre_market_stats DataFrame: {str(e)}')
             return None
 
-    # Mit gondoltok? Mi lenne ha a szűrést nem itt implementálnánk?
-    # A scanner-het úgyis mindig kelleni fog az adatok letöltése és a scanner statisztikák kiszámítása, de a szűrésről a döntést feljebb lehetne vinni talán.
     def recommend_premarket_watchlist(self) -> List[dict]:
         '''
         Filters the pre_market_stats dataframe with, price boundaries and price ranges and volume.

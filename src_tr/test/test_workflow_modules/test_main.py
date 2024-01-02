@@ -26,17 +26,20 @@ STICKER_CSV_PATH = os.environ["STICKER_CSV_PATH"]
 ALPACA_KEY = os.environ["ALPACA_KEY"]
 ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
 
-# Mit csinál ez a 'client' objektum, nem látom, hogy máshol használnánk?
 client = StockHistoricalDataClient(ALPACA_KEY, ALPACA_SECRET_KEY)
 
 start = datetime(2023, 12, 13, 0, 0)
-end = datetime(2023, 12, 13, 23, 59)
 
+
+end = datetime(2023, 12, 13, 23, 59)
 trading_day = check_trading_day(start.strftime('%Y-%m-%d'))
 scanning_day = calculate_scanning_day(trading_day)
+
+
 # itt nem is a nasdaq sticker-eket kellene visszadni,
 # hanem csak a tőzsde nevét kéne bemenetként kezelni, amin aznap csinálni akarunk valamit,
 # ahhoz kéne kilistázni a symbol-okat.
+
 nasdaq_stickers = get_nasdaq_stickers(file_path=STICKER_CSV_PATH)
 
 #Professional scanner:
