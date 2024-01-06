@@ -16,23 +16,26 @@ ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
 client = StockHistoricalDataClient(ALPACA_KEY, ALPACA_SECRET_KEY)
 
 #symbol = ["COIN", "MARA", "AAPL", "TSLA"]
-symbol = ["MARA"]
+symbol = ["AAPL"]
 timeframe = TimeFrame(amount=1, unit=TimeFrameUnit.Minute)
 
 quotes_request = StockQuotesRequest(
     symbol_or_symbols=symbol,
     timeframe=timeframe,
-    start=datetime(2023, 11, 17, 9, 30),
-    end=datetime(2023, 11, 17, 16, 30)
+    start=datetime(2024, 1, 5, 9, 30),
+    end=datetime(2024, 1, 5, 16, 30)
 )
 
 quotes = client.get_stock_quotes(quotes_request).data
 quotes_part = {
                'MARA': quotes['MARA'][:12]
                }
-#element = quotes['AAPL'][0].close
-#print(element)
-#print(quotes)
+
+element = quotes['AAPL'][0]
+print(element)
+
+
+df = pd.DataFrame.from_dict([dict(e) for e in quotes['AAPL']])
 
 def convert_quotes_to_df(quotes: dict):
     quotes_df = pd.DataFrame()  # Initialize an empty DataFrame

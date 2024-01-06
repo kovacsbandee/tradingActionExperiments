@@ -5,6 +5,7 @@ import os
 from typing import List
 from datetime import timedelta
 import pandas as pd
+import numpy as np
 from pandas import DataFrame
 import yfinance as yf
 from joblib import Parallel, delayed
@@ -64,6 +65,10 @@ class PreMarketScanner(ScannerBase):
 
                 high_max = sticker_history['High'].max()
                 low_min = sticker_history['Low'].min()
+                minute_oc_price_diff = sticker_history['Open'] - sticker_history['Close']
+                minute_oc_price_diff_avg = np.mean(minute_oc_price_diff)
+                minute_oc_price_diff_median = np.median(minute_oc_price_diff)
+                minute_oc_price_diff_std = np.std( minute_oc_price_diff)
 
                 avg_volume = sticker_history['Volume'].mean()
                 median_volume = sticker_history['Volume'].median()
@@ -90,6 +95,9 @@ class PreMarketScanner(ScannerBase):
                     'median_close': median_close,
                     'high_max': high_max,
                     'low_min' : low_min,
+                    'minute_oc_price_diff_avg': minute_oc_price_diff_avg,
+                    'minute_oc_price_diff_median': minute_oc_price_diff_median,
+                    'minute_oc_price_diff_std': minute_oc_price_diff_std,
                     AVG_VOLUME: avg_volume,
                     'median_volume': median_volume,
                     'max_volume': volume_max,
@@ -107,7 +115,9 @@ class PreMarketScanner(ScannerBase):
 
     def calculate_filtering_stats(self) -> List:
         self.pre_market_stats = self._create_pre_market_stats()
-        self.pre_market_stats.to_csv(f'pre_market_stats_{self.trading_day}')
+        proj_path = os.environ['PROJECT_PATH']
+        date = self.trading_day.strftime('%Y_%m_%d')
+        self.pre_market_stats.to_csv(f'{proj_path}_database/scanner_stats/pre_market_stats_{date}.csv', index=False)
         return self.pre_market_stats
         
     def _create_pre_market_stats(self) -> DataFrame:
