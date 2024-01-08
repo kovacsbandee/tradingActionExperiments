@@ -98,6 +98,7 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
                 raise ValueError("Unexpected data structure for the symbol in current_data_window")
         else:
             raise ValueError("Yahoo data is empty.")
+
     # Ezt hol használjuk?
     def load_watchlist_daily_price_data(self):
         if self.recommended_sticker_list is not None:

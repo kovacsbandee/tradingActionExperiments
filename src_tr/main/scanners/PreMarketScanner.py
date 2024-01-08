@@ -94,6 +94,7 @@ class PreMarketScanner(ScannerBase):
             (self.price_range_perc_cond < self.pre_market_stats[PRICE_RANGE_PERC]) & \
             (self.avg_volume_cond < self.pre_market_stats[AVG_VOLUME])]
         print(f'The recommended watchlist for {self.trading_day} is the following DataFrame: {self.recommended_stickers}')
+
         sticker_dict_list = []
         if self.recommended_stickers is not None:
             for index, row in self.recommended_stickers.iterrows():
@@ -104,7 +105,6 @@ class PreMarketScanner(ScannerBase):
                 }
                 sticker_dict_list.append(st_dict)
                 #sticker_dict_list.append(row['sticker'])
-        
         return sticker_dict_list
 
 

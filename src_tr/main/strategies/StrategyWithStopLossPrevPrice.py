@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from dotenv import load_dotenv
 
 from src_tr.main.strategies.StrategyBase import StrategyBase
 from src_tr.main.enums_and_constants.trading_constants import *
@@ -9,18 +10,25 @@ class StrategyWithStopLossPrevPrice(StrategyBase):
     def __init__(self,
                  ma_short, 
                  ma_long,
+                 epsilon,
                  rsi_len,
                  stop_loss_perc,
-                 epsilon,
-                 trading_day):
+                 trading_day,
+                 run_id,
+                 db_path):
         super().__init__()
         self.ma_short = ma_short
         self.ma_long = ma_long
+        self.epsilon = epsilon
         self.rsi_len = rsi_len
         self.stop_loss_perc = stop_loss_perc
         self.comission_ratio = 0.0
-        self.epsilon = epsilon
-        self.trading_day = trading_day.strftime('%Y-%m-%d')
+        self.trading_day = trading_day.strftime('%Y_%m_%d')
+        self.run_id = run_id
+        load_dotenv()
+        self.db_path = db_path
+        self.name = 'strategy_with_stoploss_prev_price'
+        self.daily_dir_name = self.run_id + '_' + 'trading_day' + '_' + self.trading_day
 
     def update_capital_amount(self, account_cash):
         self.capital = account_cash
@@ -78,7 +86,7 @@ class StrategyWithStopLossPrevPrice(StrategyBase):
                 sticker_df.loc[last_index, STOP_LOSS_OUT_SIGNAL] = STOP_LOSS_LONG
                 sticker_df.loc[last_index, TRADING_ACTION] = ACT_SELL_PREV_LONG
         
-        sticker_df.to_csv(f'{symbol}_{self.trading_day}_{self.epsilon}_long_stop_loss_previous_price.csv')
+        sticker_df.to_csv(f'{self.db_path}/{self.daily_dir_name}/daily_files/csvs/{symbol}_{self.trading_day}_{self.name}.csv')
         
         # update the current sticker DataFrame
         sticker_dict[STICKER_DF] = sticker_df

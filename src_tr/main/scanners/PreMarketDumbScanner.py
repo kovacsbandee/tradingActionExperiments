@@ -81,7 +81,6 @@ class PreMarketDumbScanner(ScannerBase):
         pre_market_sticker_stats = [stats for stats in pre_market_sticker_stats if stats is not None]
         
         try:
-            # Itt ki kéne menteni az adatbázisba a scanner-t minden napra, amikor futtatjuk!
             return pd.DataFrame.from_records(pre_market_sticker_stats)
         except Exception as e:
             print(f'Failed to create pre_market_stats DataFrame: {str(e)}')
@@ -94,8 +93,6 @@ class PreMarketDumbScanner(ScannerBase):
         #    (self.price_range_perc_cond < self.pre_market_stats[PRICE_RANGE_PERC]) & \
         #    (self.avg_volume_cond < self.pre_market_stats[AVG_VOLUME])]
 
-        # Itt miért van kihagyva a szűrés? Ha nem kerül bele symbol a tesztelés során, akkor a paramétereket kell állítani,
-        # hogy gyengébbek legyenek a feltételek.
         self.recommended_stickers: pd.DataFrame = self.pre_market_stats
         print(f'The recommended watchlist for {self.trading_day} is the following DataFrame: {self.recommended_stickers}')
         sticker_dict_list = []

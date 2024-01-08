@@ -7,7 +7,7 @@ def calculate_scanning_day(trading_day: datetime) -> datetime:
         return trading_day - timedelta(days=3)
     else:
         return trading_day - timedelta(days=1)
-    
+
 def get_nasdaq_stickers(file_path: str=None) -> list:
     if not file_path:
         raise ValueError(f"No files found with path '{file_path}'")
