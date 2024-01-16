@@ -1,6 +1,7 @@
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from src_tr.main.enums_and_constants.trading_constants import *
 
 def plot_daily_statistics(data_man):
     plot_df = pd.read_csv(f'{data_man.db_path}/{data_man.daily_dir}/recommended_symbols_pre_market_stats.csv')
@@ -18,7 +19,7 @@ def create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiment
 
     for symbol in data_gen.sticker_dict.keys():
         plot_df = data_gen.sticker_dict[symbol]['sticker_dataframe']
-        fig = make_subplots(rows=4, cols=1, shared_xaxes=True,
+        fig = make_subplots(rows=5, cols=1, shared_xaxes=True,
                             specs=[[{"secondary_y": False}],
                                    [{"secondary_y": True}],
                                    [{"secondary_y": False}],
@@ -44,15 +45,20 @@ def create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiment
                       secondary_y=True, row=2, col=1)
         fig.update_yaxes(title = 'number of transactions', title_font=dict(color='red'), autorange = 'reversed', secondary_y=True, row=2, col=1)
         fig.add_trace(go.Scatter(x=plot_df.index,
+                                 y=plot_df[OPEN_NORM],
+                                 name='normalized price',
+                                 mode='lines',
+                                 connectgaps=True), row=3, col=1)
+        fig.add_trace(go.Scatter(x=plot_df.index,
                                  y=plot_df['open_small_indicator'],
                                  name='small_indicator',
                                  mode='lines',
-                                 connectgaps=True), row=3, col=1)
+                                 connectgaps=True), row=4, col=1)
         fig.add_trace(go.Scatter(x=plot_df.index,
                                  y=plot_df['open_big_indicator'],
                                  name='big_indicator',
                                  mode='lines',
-                                 connectgaps=True), row=4, col=1)
+                                 connectgaps=True), row=5, col=1)
         fig.update_xaxes(showticklabels=True)
         title_date = date.replace('-', '.')
         fig.update_layout(title=f'{symbol} {title_date}.', title_font=dict(size=18), xaxis_rangeslider_visible=False, height=1500)
