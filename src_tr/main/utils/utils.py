@@ -14,7 +14,7 @@ def calculate_scanning_day(trading_day: datetime) -> datetime:
         return trading_day - timedelta(days=3)
     else:
         return trading_day - timedelta(days=1)
-    
+
 def get_nasdaq_stickers(file_path: str=None) -> list:
     '''
     Reads in a csv file downloaded from: https://www.nasdaq.com/market-activity/stocks/screener

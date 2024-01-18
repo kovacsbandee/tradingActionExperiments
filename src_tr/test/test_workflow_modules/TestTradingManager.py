@@ -42,7 +42,8 @@ class TestTradingManager(TradingManagerMain):
         # VAGYIS CSAK AZ out_position-nel VALÓ OSZTÁST KELL KIVENNI.
         # divide capital with amount of OUT positions:
         out_positions = self.data_generator.get_out_positions()
-        quantity_buy_long = current_df.iloc[-1][CURRENT_CAPITAL] / out_positions / current_df.iloc[-1][OPEN]
+        #quantity_buy_long = current_df.iloc[-1][CURRENT_CAPITAL] / out_positions / current_df.iloc[-1][OPEN]
+        quantity_buy_long = current_df.iloc[-1][CURRENT_CAPITAL] / current_df.iloc[-1][OPEN]
 
         if trading_action == ACT_BUY_NEXT_LONG and current_position == POS_OUT:
             self.place_buy_order(symbol=symbol, quantity=quantity_buy_long, price=current_df.iloc[-1][OPEN])
