@@ -1,3 +1,9 @@
+'''
+Vajon meg lehetne oldani, hogy ha már van aznapra scanner_stats és kimentett daily_price_df a kiválasztott symbol-okra,
+akkor ha kézzel befejezzük a program futását és űjra elindítjuk, akkor check-olja, hogy mi van már meg és onna folytatja?
+Ez sokat tudna dobni a fejlesztésen szerinte, de nem tudom, hogy meg lehet-e csinálni....
+'''
+
 import os
 from typing import List
 from dotenv import load_dotenv
@@ -23,8 +29,9 @@ STICKER_CSV_PATH = os.environ["STICKER_CSV_PATH"]
 nasdaq_stickers = get_nasdaq_stickers(file_path=STICKER_CSV_PATH)
 
 trading_client = TradingClient(ALPACA_KEY, ALPACA_SECRET_KEY, paper=True)
-trading_day = check_trading_day('2023-11-20')
+trading_day = check_trading_day('2023-12-28')
 scanning_day = calculate_scanning_day(trading_day)
+
 scanner = PreMarketScanner(trading_day=trading_day,
                            scanning_day=scanning_day,
                            stickers=nasdaq_stickers,
@@ -32,6 +39,7 @@ scanner = PreMarketScanner(trading_day=trading_day,
                            upper_price_boundary=400,
                            price_range_perc_cond=10,
                            avg_volume_cond=25000)
+
 # initialize sticker list:
 scanner.calculate_filtering_stats()
 recommended_sticker_list: List[dict] = scanner.recommend_premarket_watchlist()
@@ -39,20 +47,21 @@ recommended_sticker_list: List[dict] = scanner.recommend_premarket_watchlist()
 # rec_st_list = ['AAPL', 'TSLA']
 
 data_generator = PriceDataGeneratorMain(recommended_sticker_list=recommended_sticker_list)
+
 strategy = StrategyWithStopLoss(ma_short=5,
-                        ma_long=12,
-                        rsi_len=12,
-                        stop_loss_perc=0.0,
-                        epsilon=0.0015,
-                        )
+                                ma_long=12,
+                                rsi_len=12,
+                                stop_loss_perc=0.0,
+                                epsilon=0.0015,
+                                trading_day=trading_day)
+
 trading_manager = TradingManagerMain(data_generator=data_generator,
                                      strategy=strategy,
                                      trading_client=trading_client,
                                      api_key=ALPACA_KEY,
                                      secret_key=ALPACA_SECRET_KEY,
                                      rsi_threshold=20,
-                                     minutes_before_trading_start=2
-                                     )
+                                     minutes_before_trading_start=2)
 
 ws = websocket.WebSocketApp(url=SOCKET_URL, 
                             on_open=trading_manager.on_open,
@@ -60,8 +69,7 @@ ws = websocket.WebSocketApp(url=SOCKET_URL,
                             on_close=trading_manager.on_close,
                             on_error=trading_manager.on_error,
                             on_ping=trading_manager.on_ping,
-                            on_pong=trading_manager.on_pong
-                            )
+                            on_pong=trading_manager.on_pong)
 
 #FONTOS!
 # TRADING DAY-T UPDATELNI KELL (NAPONTA, NYILVÁN)

@@ -1,3 +1,5 @@
+# Javaslom, hogy a 'sticker' megnevezést cseréljük le 'symbol'-ra mindenhol!
+
 import os
 from typing import List
 from dotenv import load_dotenv
@@ -10,8 +12,8 @@ from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 
 from src_tr.main.checks.checks import check_trading_day
 from src_tr.main.utils.utils import calculate_scanning_day, get_nasdaq_stickers
-#from src_tr.main.scanners.PreMarketScanner import PreMarketScanner
-#from src_tr.main.scanners.PreMarketDumbScanner import PreMarketDumbScanner
+from src_tr.main.scanners.PreMarketScanner import PreMarketScanner
+from src_tr.main.scanners.PreMarketDumbScanner import PreMarketDumbScanner
 from src_tr.main.scanners.PreMarketPolygonScanner import PreMarketPolygonScanner
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
 #from src_tr.main.strategies.StrategyWithStopLoss import StrategyWithStopLoss
@@ -24,37 +26,41 @@ STICKER_CSV_PATH = os.environ["STICKER_CSV_PATH"]
 ALPACA_KEY = os.environ["ALPACA_KEY"]
 ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
 
-# Mit csinál ez a 'client' objektum, nem látom, hogy máshol használnánk?
 client = StockHistoricalDataClient(ALPACA_KEY, ALPACA_SECRET_KEY)
 
-start = datetime(2023, 12, 12, 0, 0)
-end = datetime(2023, 12, 12, 23, 59)
-
+start = datetime(2023, 12, 13, 0, 0)
+end = datetime(2023, 12, 13, 23, 59)
 trading_day = check_trading_day(start.strftime('%Y-%m-%d'))
 scanning_day = calculate_scanning_day(trading_day)
+
+
+# itt nem is a nasdaq sticker-eket kellene visszadni,
+# hanem csak a tőzsde nevét kéne bemenetként kezelni, amin aznap csinálni akarunk valamit,
+# ahhoz kéne kilistázni a symbol-okat.
+
 nasdaq_stickers = get_nasdaq_stickers(file_path=STICKER_CSV_PATH)
 
-# Professional scanner:
-#scanner = PreMarketScanner(trading_day=trading_day,
-#                           scanning_day=scanning_day,
-#                           stickers=nasdaq_stickers,
-#                           lower_price_boundary=10,
-#                           upper_price_boundary=400,
-#                           price_range_perc_cond=10,
-#                           avg_volume_cond=25000)
+#Professional scanner:
+scanner = PreMarketScanner(trading_day=trading_day,
+                          scanning_day=scanning_day,
+                          stickers=nasdaq_stickers,
+                          lower_price_boundary=10,
+                          upper_price_boundary=400,
+                          price_range_perc_cond=5,
+                          avg_volume_cond=25000)
 
-# Polygon scanner:
-scanner = PreMarketPolygonScanner(trading_day=trading_day,
-                           scanning_day=scanning_day,
-                           stickers=nasdaq_stickers,
-                           lower_price_boundary=10,
-                           upper_price_boundary=400,
-                           price_range_perc_cond=10,
-                           avg_volume_cond=25000)
+# # Polygon scanner:
+# scanner = PreMarketPolygonScanner(trading_day=trading_day,
+#                                   scanning_day=scanning_day,
+#                                   stickers=nasdaq_stickers,
+#                                   lower_price_boundary=10,
+#                                   upper_price_boundary=400,
+#                                   price_range_perc_cond=10,
+#                                   avg_volume_cond=25000)
 
 # Dumb scanner:
-#dumb_stickers = ['MARA', 'RIOT', 'MVIS', 'SOS', 'CAN', 'EBON', 'BTBT', 'HUT', 'EQOS', 'MOGO', 'SUNW', 'XNET', 'PHUN', 'IDEX', 'ZKIN', 'SIFY', 'SNDL', 'NCTY', 'OCGN', 'NIO', 'FCEL', 'PLUG', 'TSLA', 'AAPL', 'AMZN', 'MSFT', 'GOOG', 'FB', 'GOOGL', 'NVDA', 'PYPL', 'ADBE', 'INTC', 'CMCSA', 'CSCO', 'NFLX', 'PEP', 'AVGO', 'TXN', 'COST', 'QCOM', 'TMUS', 'AMGN', 'CHTR', 'SBUX', 'AMD', 'INTU', 'ISRG', 'AMAT', 'MU', 'BKNG', 'MDLZ', 'ADP', 'GILD', 'CSX', 'FISV', 'VRTX', 'ATVI', 'ADSK', 'REGN', 'ILMN', 'BIIB', 'MELI', 'LRCX', 'JD', 'ADI', 'NXPI', 'ASML', 'KHC', 'MRNA', 'EA', 'BIDU', 'WBA', 'MAR', 'LULU', 'EXC', 'ROST', 'WDAY', 'KLAC', 'CTSH', 'ORLY', 'SNPS', 'DOCU', 'IDXX', 'SGEN', 'DXCM', 'PCAR', 'CDNS', 'XLNX', 'ANSS', 'NTES', 'MNST', 'VRSK', 'ALXN', 'FAST', 'SPLK', 'CPRT', 'CDW', 'PAYX', 'MXIM', 'SWKS', 'INCY', 'CHKP', 'TCOM', 'CTXS', 'VRSN', 'SGMS', 'DLTR', 'CERN', 'ULTA', 'FOXA', 'FOX', 'NTAP', 'WDC', 'TTWO', 'EXPE', 'XEL', 'MCHP', 'CTAS', 'MXL', 'WLTW', 'ANET', 'BMRN']
-#scanner = PreMarketDumbScanner(trading_day=trading_day,
+# dumb_stickers = ['MARA', 'RIOT', 'MVIS', 'SOS', 'CAN', 'EBON', 'BTBT', 'HUT', 'EQOS', 'MOGO', 'SUNW', 'XNET', 'PHUN', 'IDEX', 'ZKIN', 'SIFY', 'SNDL', 'NCTY', 'OCGN', 'NIO', 'FCEL', 'PLUG', 'TSLA', 'AAPL', 'AMZN', 'MSFT', 'GOOG', 'FB', 'GOOGL', 'NVDA', 'PYPL', 'ADBE', 'INTC', 'CMCSA', 'CSCO', 'NFLX', 'PEP', 'AVGO', 'TXN', 'COST', 'QCOM', 'TMUS', 'AMGN', 'CHTR', 'SBUX', 'AMD', 'INTU', 'ISRG', 'AMAT', 'MU', 'BKNG', 'MDLZ', 'ADP', 'GILD', 'CSX', 'FISV', 'VRTX', 'ATVI', 'ADSK', 'REGN', 'ILMN', 'BIIB', 'MELI', 'LRCX', 'JD', 'ADI', 'NXPI', 'ASML', 'KHC', 'MRNA', 'EA', 'BIDU', 'WBA', 'MAR', 'LULU', 'EXC', 'ROST', 'WDAY', 'KLAC', 'CTSH', 'ORLY', 'SNPS', 'DOCU', 'IDXX', 'SGEN', 'DXCM', 'PCAR', 'CDNS', 'XLNX', 'ANSS', 'NTES', 'MNST', 'VRSK', 'ALXN', 'FAST', 'SPLK', 'CPRT', 'CDW', 'PAYX', 'MXIM', 'SWKS', 'INCY', 'CHKP', 'TCOM', 'CTXS', 'VRSN', 'SGMS', 'DLTR', 'CERN', 'ULTA', 'FOXA', 'FOX', 'NTAP', 'WDC', 'TTWO', 'EXPE', 'XEL', 'MCHP', 'CTAS', 'MXL', 'WLTW', 'ANET', 'BMRN']
+# scanner = PreMarketDumbScanner(trading_day=trading_day,
 #                           scanning_day=scanning_day,
 #                           stickers=dumb_stickers,
 #                           lower_price_boundary=10,
@@ -66,7 +72,9 @@ scanner = PreMarketPolygonScanner(trading_day=trading_day,
 scanner.calculate_filtering_stats()
 recommended_sticker_list: List[dict] = scanner.recommend_premarket_watchlist()
 
-trading_client = TestTradingClient(init_cash=26000, sticker_list=recommended_sticker_list)
+# javaslom, hogy a teszteléshez minden sticker-re tegyünk nap elején 1000 dollárt, az elején úgyis ekkora nagyságrenddel megyünk
+# ráadásul ezt könnyebb lesz ellenőrizni ránézésre
+trading_client = TestTradingClient(init_cash=10000, sticker_list=recommended_sticker_list)
 trading_client.initialize_positions()
 data_generator = PriceDataGeneratorMain(recommended_sticker_list=recommended_sticker_list)
 
@@ -80,11 +88,11 @@ data_generator = PriceDataGeneratorMain(recommended_sticker_list=recommended_sti
 
 # Strategy with stop loss compared to the previous price:
 strategy = StrategyWithStopLossPrevPrice(ma_short=5,
-                                          ma_long=12,
-                                          rsi_len=12,
-                                          stop_loss_perc=0.0,
-                                          epsilon=0.0015,
-                                          trading_day=trading_day)
+                                         ma_long=12,
+                                         rsi_len=12,
+                                         stop_loss_perc=0.0,
+                                         epsilon=0.0015,
+                                         trading_day=trading_day)
 
 trading_manager = TestTradingManager(data_generator=data_generator,
                                      strategy=strategy,
@@ -97,6 +105,9 @@ trading_manager = TestTradingManager(data_generator=data_generator,
 data_generator.initialize_sticker_dict()
 
 def download_daily_data(symbol, start, end):
+    '''
+    Downloads the daily data in minute resolution from Alpaca.
+    '''
     timeframe = TimeFrame(amount=1, unit=TimeFrameUnit.Minute)
 
     bars_request = StockBarsRequest(
@@ -110,6 +121,9 @@ def download_daily_data(symbol, start, end):
     return daily_data_list
 
 def _convert_data(latest_bars: dict, symbol: str):
+    '''
+    Creates a list of bar data from the daily data.
+    '''
     bar_list = []
     for e in latest_bars[symbol]:
         bar_list.append({

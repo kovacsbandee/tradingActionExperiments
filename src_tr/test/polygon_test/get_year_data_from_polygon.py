@@ -42,7 +42,7 @@ def get_bar_data(ticker: str, from_: str, to: str):
         print(f'Error: {ex}')
     return aggs
 
-bar_data_list_per_symbol = Parallel(n_jobs=-1, verbose=10)(delayed(get_bar_data)(ticker=e, from_="2022-12-01", to="2023-12-01") for e in nasdaq_stickers)
+bar_data_list_per_symbol = Parallel(n_jobs=-10, verbose=10)(delayed(get_bar_data)(ticker=e, from_="2022-12-01", to="2023-12-01") for e in nasdaq_stickers)
 
 for e in bar_data_list_per_symbol:
     if len(e) > 0:

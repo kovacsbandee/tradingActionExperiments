@@ -34,36 +34,61 @@ class PreMarketDumbScanner(ScannerBase):
         except Exception as e:
             print(str(e))
             return None
-    
+
     def get_pre_market_stats(self, sticker: str) -> dict:
+        '''
+        Downloads the sticker price data and calculates the scanner statistics and returns a dictionary with them.
+        '''
         try:
             sticker_history = self._download_sticker_history(sticker=sticker)
-            
+
             if sticker_history is not None and not sticker_history.empty:
-                
+
+                # TODO: itt ki kell találni milyen egyéb statisztikákat akarunk még nézni.
                 avg_open = sticker_history['Open'].mean()
+                median_open = sticker_history['Open'].median()
                 std_open = sticker_history['Open'].std()
+
+                avg_close = sticker_history['Close'].mean()
+                median_close = sticker_history['Close'].median()
+
                 high_max = sticker_history['High'].max()
                 low_min = sticker_history['Low'].min()
+
                 avg_volume = sticker_history['Volume'].mean()
+                median_volume = sticker_history['Volume'].median()
                 volume_max = sticker_history['Volume'].max()
                 volume_min = sticker_history['Volume'].min()
+
                 price_range_perc = 0
                 volume_range_ratio = 0
-                
-                if not pd.isnull(avg_volume) and avg_volume != 0: 
+                close_monetary_avg_volume = 0
+                close_monetary_min_volume = (sticker_history['Close'] * sticker_history['Volume']).min()
+
+                if not pd.isnull(avg_volume) and avg_volume != 0:
                     price_range_perc = (high_max - low_min) / ((high_max + low_min) / 2) * 100
                     volume_range_ratio = (volume_max - volume_min) / avg_volume
-                    
+                    close_monetary_avg_volume = median_close * median_volume
+
+                # itt mindig minden statisztikát vissza kell adni, amit kiszámolunk!
                 return {
-                    SCANNING_DAY: self.scanning_day,
                     SYMBOL: sticker,
-                    AVG_OPEN : avg_open,
-                    STD_OPEN : std_open,
+                    AVG_OPEN: avg_open,
+                    'median_open': median_open,
+                    STD_OPEN: std_open,
+                    'avg_close': avg_close,
+                    'median_close': median_close,
+                    'high_max': high_max,
+                    'low_min': low_min,
                     AVG_VOLUME: avg_volume,
+                    'median_volume': median_volume,
+                    'max_volume': volume_max,
+                    'min_volume': volume_min,
+                    'close_monetary_avg_volume': close_monetary_avg_volume,
+                    'close_monetary_min_volume': close_monetary_min_volume,
                     PRICE_RANGE_PERC: price_range_perc,
                     VOLUME_RANGE_RATIO: volume_range_ratio
-                    }
+                }
             else:
                 return None
         except Exception as e:
@@ -72,8 +97,11 @@ class PreMarketDumbScanner(ScannerBase):
 
     def calculate_filtering_stats(self) -> List:
         self.pre_market_stats = self._create_pre_market_stats()
+        proj_path = os.environ['PROJECT_PATH']
+        date = self.trading_day.strftime('%Y_%m_%d')
+        self.pre_market_stats.to_csv(f'{proj_path}_database/scanner_stats/pre_market_stats_{date}.csv', index=False)
         return self.pre_market_stats
-        
+
     def _create_pre_market_stats(self) -> DataFrame:
         pre_market_sticker_stats = \
             Parallel(n_jobs=-1)(delayed(self.get_pre_market_stats)(sticker) for sticker in self.stickers)

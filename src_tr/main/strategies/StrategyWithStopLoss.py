@@ -77,8 +77,9 @@ class StrategyWithStopLoss(StrategyBase):
                 and sticker_df.loc[last_index, POSITION] == POS_LONG_BUY:
                 sticker_df.loc[last_index, STOP_LOSS_OUT_SIGNAL] = STOP_LOSS_LONG
                 sticker_df.loc[last_index, TRADING_ACTION] = ACT_SELL_PREV_LONG
-        
-        sticker_df.to_csv(f'{symbol}_{self.trading_day}_{self.epsilon}_long_stop_loss_last_in_position.csv')
+
+        symbol_out_csv_name = f'{symbol}_{self.trading_day}_{self.epsilon}_long_stop_loss_last_in_position.csv'
+        sticker_df.to_csv(symbol_out_csv_name)
         
         # update the current sticker DataFrame
         sticker_dict[STICKER_DF] = sticker_df

@@ -10,13 +10,16 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
     def __init__(self, recommended_sticker_list):
         super().__init__(recommended_sticker_list)
         self.ind_price = OPEN
+        # Mi a definíciója az out_position-nek? Ha azt jelenti, hogy hány symbol nincsen pozícióban,
+        # akkor nem lenne egyszerűbb azt nézni hány symbol van pozícióban?
         self.out_positions = len(recommended_sticker_list) # TODO: le kell kérni az Alpacáról minden indításnál!
         # Ezt miért kell lekérni minden indításnál?
         #   - nap elején biztosan nem leszünk pozícióban, mert nap végén le kell zárni minden nyitott pozíciót
         #    ha nem zárjuk le őket az aznapi nyereséget elviheti a premarket gap! Az megoldható, ha meghal a program, akkor azonnal kijöjjön minden pozícióból?
         # Lehet csinálni valami teljesen más programot, ami figyeli a kapcsolatot?
         #   - azt meg jó lenne elkerülni, hogy nap közben leálljon a program, de ha mégis megtörténik, azt szeretnénk evvel kezelni?
-    
+
+
     def get_out_positions(self):
         return self.out_positions
 
@@ -40,7 +43,6 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
                     PREV_LONG_BUY_POSITION_INDEX : None,
                     PREV_SHORT_SELL_POSITION_INDEX : None,
                     IND_PRICE : OPEN,
-                    # itt talán nem érdemes az IND_PRICE-ot szerepeltetni, hiszen a PDP-ben implementált stratégia az open-nel működik jól
                     PREV_DAY_DATA : {
                         AVG_OPEN : e[AVG_OPEN],
                         STD_OPEN: e[STD_OPEN]
@@ -98,7 +100,9 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
                 raise ValueError("Unexpected data structure for the symbol in current_data_window")
         else:
             raise ValueError("Yahoo data is empty.")
+
     # Ezt hol használjuk?
+    # Ha jól értem, hogy ez a trading_day-re vontakozó scanner statisztika, akkor ez is kiszámítható az általános kiszervezett statisztika számolóval majd.
     def load_watchlist_daily_price_data(self):
         if self.recommended_sticker_list is not None:
             for symbol in self.recommended_sticker_list:

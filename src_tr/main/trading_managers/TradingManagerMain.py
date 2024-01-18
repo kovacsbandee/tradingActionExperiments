@@ -155,6 +155,8 @@ class TradingManagerMain():
             
     def place_buy_order(self, quantity, symbol, price=None):
         try:
+            # https://alpaca.markets/learn/13-order-types-you-should-know-about/
+            # a link szerint a time_in_force-nak inkább 'ioc'-nak kéne lennie szerintem.
             market_order_data = MarketOrderRequest(
                             symbol=symbol,
                             qty=quantity,
@@ -196,6 +198,7 @@ class TradingManagerMain():
         print(f"Pong received: {pong_payload}")
 
     def on_close(self, ws, close_status_code, close_msg):
+        # Ide bele kell tenni a daily_price_data_df ábrázolását!
         print(f"Connection closed with status code {close_status_code}: {close_msg}")
 
     def on_error(self, ws, error):

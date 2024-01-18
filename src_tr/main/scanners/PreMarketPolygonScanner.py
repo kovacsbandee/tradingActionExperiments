@@ -26,6 +26,9 @@ class PreMarketPolygonScanner(ScannerBase):
         self.price_range_perc_cond = price_range_perc_cond
         self.avg_volume_cond = avg_volume_cond
 
+    # Ha jól értem ezt kellene megoldani az aiohttp-vel, akkor aszinkron tudnánk küldeni az API hívásokat, itt a Paralelle nem használ.
+    # Illetve akkor azt is tudni kell majd, hogy hány API hívást tudunk csinálni egy nap!
+    # Ezek mellett az is fontos kérdés, hogy hogyan tudjuk ellenőrizni, hogy melyik tőzsdéről jön az adat?
     def _download_sticker_history(self, ticker: str):
         start_date = self.scanning_day
         end_date = self.trading_day
@@ -91,6 +94,7 @@ class PreMarketPolygonScanner(ScannerBase):
             print(str(e))
             return None
 
+    # Itt miért kell a calculate_filtering_stats és a _create_pre_market_stats is?
     def calculate_filtering_stats(self) -> List:
         self.pre_market_stats = self._create_pre_market_stats()
         return self.pre_market_stats
@@ -116,6 +120,8 @@ class PreMarketPolygonScanner(ScannerBase):
         print(f'The recommended watchlist for {self.trading_day} is the following DataFrame: {self.recommended_stickers}')
         sticker_dict_list = []
         if self.recommended_stickers is not None:
+            # általában nem jó ötlet pandas dataframe-en iterálni, van benne egy csomó okos vektor művelet, ami sokkal gyorsabb pl.:
+            # sticker_dict_list.append(recommended_stickers.to_dict('records')
             for index, row in self.recommended_stickers.iterrows():
                 st_dict = {
                     SYMBOL : row[SYMBOL],
