@@ -36,6 +36,10 @@ class TestTradingManager(TradingManagerMain):
         trading_action = current_df.iloc[-1][TRADING_ACTION]
         current_position = current_df.iloc[-2][POSITION]
 
+        # IGEN EZ NE LEGYEN, MERT SZERINTEM NAGYON MEGNEHEZÍTI AZ EGÉSZ ÉRTELMEZÉSÉT TESZELÉS SORÁN!
+        # NYILVÁN VALAMIT MAJD TŐKE MANAGELÉSÉRE KI KELL TALÁLNI,
+        # DE EZ EGY NEHÉZ KÉRDÉS LESZ ÉS SZERINTEM MAJD BE KELL EMELNI A STRATÉGIÁBA A SCANNER ÉS AZ ALGORITMUS SZINTJÉRE
+        # VAGYIS CSAK AZ out_position-nel VALÓ OSZTÁST KELL KIVENNI.
         # divide capital with amount of OUT positions:
         out_positions = self.data_generator.get_out_positions()
         #quantity_buy_long = current_df.iloc[-1][CURRENT_CAPITAL] / out_positions / current_df.iloc[-1][OPEN]

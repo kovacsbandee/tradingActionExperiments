@@ -1,3 +1,5 @@
+# Javaslom, hogy a 'sticker' megnevezést cseréljük le 'symbol'-ra mindenhol!
+
 import os
 from typing import List
 from dotenv import load_dotenv
@@ -14,6 +16,8 @@ from src_tr.main.utils.data_management import DataManager
 from src_tr.main.utils.plots import create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiments, plot_daily_statistics
 from src_tr.main.scanners.PreMarketScanner import PreMarketScanner
 #from src_tr.main.scanners.PreMarketDumbScanner import PreMarketDumbScanner
+from src_tr.main.scanners.PreMarketPolygonScanner import PreMarketPolygonScanner
+
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
 from src_tr.main.strategies.StrategyWithStopLoss import StrategyWithStopLoss
 from src_tr.main.strategies.StrategyWithStopLossPrevPrice import StrategyWithStopLossPrevPrice

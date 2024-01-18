@@ -19,6 +19,9 @@ class TestTradingClient():
     """
     
     def initialize_positions(self):
+        '''
+        Initializes the position dictionary, with quantity 0, and side out.
+        '''
         for e in self.sticker_list:
             self.positions[e['symbol']] = {
                 'qty': 0,
@@ -26,9 +29,15 @@ class TestTradingClient():
             }
     
     def get_position_by_symbol(self, symbol: str):
+        '''
+        Returns the latest side for each symbol.
+        '''
         return self.positions[symbol]['side']
     
     def submit_order(self, symbol: str, qty: int, price: float):
+        '''
+        Emulates submitting the order to the trading client.
+        '''
         long_amount = qty * price
         self.cash -= long_amount
         self.positions[symbol] = {
@@ -38,6 +47,9 @@ class TestTradingClient():
         print(f"Buy order completed. \nSymbol:{symbol} \nPrice at buy:{price} \nAmount bought:{qty} \nCurrent cash: {self.cash}")
     
     def close_position(self, symbol: str, price: float):
+        '''
+        Emualtes closing the position for a symbol.
+        '''
         sell_amount = self.positions[symbol]['qty'] * price
         self.cash += sell_amount
         self.positions[symbol]['qty'] = 0

@@ -19,12 +19,12 @@ print(account.cash)
 #print(position)
 
 # preparing orders
-#market_order_data = MarketOrderRequest(
-#                    symbol="AAPL",
-#                    qty=200,
-#                    side=OrderSide.BUY,
-#                    time_in_force=TimeInForce.DAY
-#                    )
+market_order_data = MarketOrderRequest(
+                   symbol="AAPL",
+                   qty=200,
+                   side=OrderSide.BUY,
+                   time_in_force=TimeInForce.DAY
+                   )
 
 stop_order_data = StopOrderRequest(
                     symbol="AAPL",
