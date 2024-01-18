@@ -65,10 +65,10 @@ class PreMarketScanner(ScannerBase):
 
                 high_max = sticker_history['High'].max()
                 low_min = sticker_history['Low'].min()
-                minute_oc_price_diff = sticker_history['Open'] - sticker_history['Close']
-                minute_oc_price_diff_avg = np.mean(minute_oc_price_diff)
-                minute_oc_price_diff_median = np.median(minute_oc_price_diff)
-                minute_oc_price_diff_std = np.std( minute_oc_price_diff)
+                minute_open_close_price_diff = sticker_history['Open'] - sticker_history['Close']
+                minute_open_close_price_diff_avg = np.mean(minute_open_close_price_diff)
+                minute_open_close_price_diff_median = np.median(minute_open_close_price_diff)
+                minute_open_close_price_diff_std = np.std( minute_open_close_price_diff)
 
                 avg_volume = sticker_history['Volume'].mean()
                 median_volume = sticker_history['Volume'].median()
@@ -85,44 +85,41 @@ class PreMarketScanner(ScannerBase):
                     volume_range_ratio = (volume_max - volume_min) / avg_volume
                     close_monetary_avg_volume = median_close * median_volume
 
+                bear_candle_ratio = len(sticker_history[sticker_history['Close'] < sticker_history['Open']]) / len(sticker_history)
+                bull_candle_ratio = len(sticker_history[sticker_history['Close'] > sticker_history['Open']]) / len(sticker_history)
+
                 # itt mindig minden statisztikát vissza kell adni, amit kiszámolunk!
                 return {
                     SYMBOL: sticker,
-                    AVG_OPEN: avg_open,
-                    'median_open': median_open,
-                    STD_OPEN: std_open,
-                    'avg_close': avg_close,
-                    'median_close': median_close,
-                    'high_max': high_max,
-                    'low_min' : low_min,
-                    'minute_oc_price_diff_avg': minute_oc_price_diff_avg,
-                    'minute_oc_price_diff_median': minute_oc_price_diff_median,
-                    'minute_oc_price_diff_std': minute_oc_price_diff_std,
-                    AVG_VOLUME: avg_volume,
-                    'median_volume': median_volume,
-                    'max_volume': volume_max,
-                    'min_volume': volume_min,
-                    'close_monetary_avg_volume': close_monetary_avg_volume,
-                    'close_monetary_min_volume': close_monetary_min_volume,
-                    PRICE_RANGE_PERC: price_range_perc,
-                    VOLUME_RANGE_RATIO: volume_range_ratio
-                    }
+                    f'{AVG_OPEN}_sd': avg_open,
+                    'median_open_sd': median_open,
+                    f'{STD_OPEN}_sd': std_open,
+                    'avg_close_sd': avg_close,
+                    'median_close_sd': median_close,
+                    'high_max_sd': high_max,
+                    'low_min_sd' : low_min,
+                    'minute_oc_price_diff_avg_sd': minute_open_close_price_diff_avg,
+                    'minute_oc_price_diff_median_sd': minute_open_close_price_diff_median,
+                    'minute_oc_price_diff_std_sd': minute_open_close_price_diff_std,
+                    f'{AVG_VOLUME}_sd': avg_volume,
+                    'median_volume_sd': median_volume,
+                    'max_volume_sd': volume_max,
+                    'min_volume_sd': volume_min,
+                    'close_monetary_avg_volume_sd': close_monetary_avg_volume,
+                    'close_monetary_min_volume_sd': close_monetary_min_volume,
+                    f'{PRICE_RANGE_PERC}_sd': price_range_perc,
+                    f'{VOLUME_RANGE_RATIO}_sd': volume_range_ratio,
+                    'bear_candle_ratio_sd': bear_candle_ratio,
+                    'bull_candle_ratio_sd': bull_candle_ratio
+                }
             else:
                 return None
         except Exception as e:
             print(str(e))
             return None
 
-    def calculate_filtering_stats(self) -> List:
-        self.pre_market_stats = self._create_pre_market_stats()
-        proj_path = os.environ['PROJECT_PATH']
-        date = self.trading_day.strftime('%Y_%m_%d')
-        self.pre_market_stats.to_csv(f'{proj_path}_database/scanner_stats/pre_market_stats_{date}.csv', index=False)
-        return self.pre_market_stats
-        
     def _create_pre_market_stats(self) -> DataFrame:
-        pre_market_sticker_stats = \
-            Parallel(n_jobs=-1)(delayed(self.get_pre_market_stats)(sticker) for sticker in self.stickers)
+        pre_market_sticker_stats = Parallel(n_jobs=-1)(delayed(self.get_pre_market_stats)(sticker) for sticker in self.stickers)
                  
         pre_market_sticker_stats = [stats for stats in pre_market_sticker_stats if stats is not None]
         
@@ -132,15 +129,22 @@ class PreMarketScanner(ScannerBase):
             print(f'Failed to create pre_market_stats DataFrame: {str(e)}')
             return None
 
+    def calculate_filtering_stats(self) -> List:
+        self.pre_market_stats = self._create_pre_market_stats()
+        proj_path = os.environ['PROJECT_PATH']
+        date = self.trading_day.strftime('%Y_%m_%d')
+        self.pre_market_stats.to_csv(f'{proj_path}_database/scanner_stats/pre_market_stats_{date}.csv', index=False)
+        return self.pre_market_stats
+
     def recommend_premarket_watchlist(self) -> List[dict]:
         '''
         Filters the pre_market_stats dataframe with, price boundaries and price ranges and volume.
         '''
         self.recommended_stickers: pd.DataFrame = self.pre_market_stats[
-            (self.lower_price_boundary < self.pre_market_stats[AVG_OPEN]) & \
-            (self.pre_market_stats[AVG_OPEN] < self.upper_price_boundary) & \
-            (self.price_range_perc_cond < self.pre_market_stats[PRICE_RANGE_PERC]) & \
-            (self.avg_volume_cond < self.pre_market_stats[AVG_VOLUME])]
+            (self.lower_price_boundary < self.pre_market_stats[f'{AVG_OPEN}_sd']) & \
+            (self.pre_market_stats[f'{AVG_OPEN}_sd'] < self.upper_price_boundary) & \
+            (self.price_range_perc_cond < self.pre_market_stats[f'{PRICE_RANGE_PERC}_sd']) & \
+            (self.avg_volume_cond < self.pre_market_stats[f'{AVG_VOLUME}_sd'])]
         print(f'The recommended watchlist for {self.trading_day} is the following DataFrame: {self.recommended_stickers}')
 
         sticker_dict_list = []
@@ -148,8 +152,8 @@ class PreMarketScanner(ScannerBase):
             for index, row in self.recommended_stickers.iterrows():
                 st_dict = {
                     SYMBOL : row[SYMBOL],
-                    AVG_OPEN : row[AVG_OPEN],
-                    STD_OPEN : row[STD_OPEN]
+                    AVG_OPEN : row[f'{AVG_OPEN}_sd'],
+                    STD_OPEN : row[f'{STD_OPEN}_sd']
                 }
                 sticker_dict_list.append(st_dict)
                 #sticker_dict_list.append(row['sticker'])

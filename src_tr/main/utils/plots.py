@@ -3,17 +3,22 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from src_tr.main.enums_and_constants.trading_constants import *
 
-def plot_daily_statistics(data_man):
-    plot_df = pd.read_csv(f'{data_man.db_path}/{data_man.daily_dir_name}/recommended_symbols_pre_market_stats.csv')
+def plot_daily_statistics(plot_df, db_path, daily_dir_name):
     statistics_variables = [c for c in plot_df.columns if c != 'symbol']
-
     fig = make_subplots(rows=len(statistics_variables), cols=1, subplot_titles=statistics_variables)
     for i, stat in enumerate(statistics_variables):
         fig.add_trace(go.Bar(x=plot_df['symbol'],
                              y=plot_df[stat],
                              name=stat), row=i+1, col=1)
     fig.update_layout(height=len(statistics_variables) * 200)
-    fig.write_html(f'{data_man.db_path}/{data_man.daily_dir_name}/daily_statistics.html')
+    fig.write_html(f'{db_path}/{daily_dir_name}/daily_statistics.html')
+
+def plot_daily_statistics_correlation_matrix(plot_df, db_path, daily_dir_name):
+    corr_df = plot_df[[c for c in plot_df.columns if c != 'symbol']].corr()
+    fig = go.Figure(data=go.Heatmap(x=corr_df.columns,
+                                    y=corr_df.index,
+                                    z=corr_df))
+    fig.write_html(f'{db_path}/{daily_dir_name}/daily_correlation_matrix.html')
 
 
 def create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiments(data_gen, data_man):
@@ -35,8 +40,8 @@ def create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiment
                                      name=symbol), row=1, col=1)
         fig.add_trace(go.Bar(x=plot_df.index,
                              y=plot_df['v'],
-                             showlegend=False,
-                             hovertext='volume',
+                             showlegend=True,
+                             name='volume',
                              marker={'color': 'blue'}),
                       secondary_y=False, row=2, col=1)
         fig.update_yaxes(title='volume', title_font=dict(color='blue'), secondary_y=False, row=2, col=1)
