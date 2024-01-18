@@ -29,15 +29,11 @@ STICKER_CSV_PATH = os.environ["STICKER_CSV_PATH"]
 ALPACA_KEY = os.environ["ALPACA_KEY"]
 ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
 DB_PATH = os.environ['DB_PATH']
-RUN_ID = 'DEV_RUN_ID'
+RUN_ID = 'DEV_RUN_ID_broader_scan'
 
-for start in [datetime(2023, 12, 1, 0, 0), datetime(2023, 12, 2, 0, 0), datetime(2023, 12, 3, 0, 0), datetime(2023, 12, 4, 0, 0), datetime(2023, 12, 5, 0, 0),
-              datetime(2023, 12, 6, 0, 0), datetime(2023, 12, 7, 0, 0), datetime(2023, 12, 8, 0, 0), datetime(2023, 12, 9, 0, 0), datetime(2023, 12, 9, 0, 0),
-              datetime(2023, 12, 10, 0, 0), datetime(2023, 12, 11, 0, 0), datetime(2023, 12, 12, 0, 0), datetime(2023, 12, 13, 0, 0), datetime(2023, 12, 14, 0, 0),
-              datetime(2023, 12, 15, 0, 0), datetime(2023, 12, 16, 0, 0), datetime(2023, 12, 17, 0, 0), datetime(2023, 12, 18, 0, 0), datetime(2023, 12, 19, 0, 0),
-              datetime(2023, 12, 20, 0, 0), datetime(2023, 12, 21, 0, 0), datetime(2023, 12, 22, 0, 0), datetime(2023, 12, 23, 0, 0), datetime(2023, 12, 27, 0, 0),
-              datetime(2023, 12, 28, 0, 0), datetime(2023, 12, 29, 0, 0), datetime(2023, 12, 30, 0, 0),
-              datetime(2024, 1, 2, 0, 0), datetime(2024, 1, 3, 0, 0), datetime(2024, 1, 4, 0, 0)]:
+for start in [datetime(2024, 1, 5, 0, 0), datetime(2024, 1, 6, 0, 0), datetime(2024, 1, 7, 0, 0), datetime(2024, 1, 8, 0, 0), datetime(2024, 1, 9, 0, 0),
+              datetime(2024, 1, 10, 0, 0), datetime(2024, 11, 6, 0, 0), datetime(2024, 1, 12, 0, 0), datetime(2024, 1, 13, 0, 0), datetime(2024, 1, 14, 0, 0),
+              datetime(2024, 1, 15, 0, 0), datetime(2024, 1, 16, 0, 0), datetime(2024, 1, 17, 0, 0)]:
     try:
         end = start + timedelta(hours=23) + timedelta(minutes=59)
         trading_day = check_trading_day(start)
@@ -53,7 +49,7 @@ for start in [datetime(2023, 12, 1, 0, 0), datetime(2023, 12, 2, 0, 0), datetime
                 'trading_day': start.strftime('%Y_%m_%d'),
                 'sticker_csvs': STICKER_CSV_PATH,
                 'init_cash': 26000,
-                'lower_price_boundary': 10,
+                'lower_price_boundary': 5,
                 'upper_price_boundary': 400,
                 'price_range_perc_cond': 5,
                 'avg_volume_cond': 10000,

@@ -4,14 +4,16 @@ from plotly.subplots import make_subplots
 from src_tr.main.enums_and_constants.trading_constants import *
 
 def plot_daily_statistics(data_man):
-    plot_df = pd.read_csv(f'{data_man.db_path}/{data_man.daily_dir}/recommended_symbols_pre_market_stats.csv')
+    plot_df = pd.read_csv(f'{data_man.db_path}/{data_man.daily_dir_name}/recommended_symbols_pre_market_stats.csv')
     statistics_variables = [c for c in plot_df.columns if c != 'symbol']
 
     fig = make_subplots(rows=len(statistics_variables), cols=1, subplot_titles=statistics_variables)
     for i, stat in enumerate(statistics_variables):
         fig.add_trace(go.Bar(x=plot_df['symbol'],
-                             y=plot_df[stat]), row=i+1, col=1)
-    fig.write_html(f'{data_man.db_path}/{data_man.daily_dir}/daily_statistics.html')
+                             y=plot_df[stat],
+                             name=stat), row=i+1, col=1)
+    fig.update_layout(height=len(statistics_variables) * 200)
+    fig.write_html(f'{data_man.db_path}/{data_man.daily_dir_name}/daily_statistics.html')
 
 
 def create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiments(data_gen, data_man):
@@ -22,6 +24,7 @@ def create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiment
         fig = make_subplots(rows=5, cols=1, shared_xaxes=True,
                             specs=[[{"secondary_y": False}],
                                    [{"secondary_y": True}],
+                                   [{"secondary_y": False}],
                                    [{"secondary_y": False}],
                                    [{"secondary_y": False}]])
         fig.add_trace(go.Candlestick(x=plot_df.index,
