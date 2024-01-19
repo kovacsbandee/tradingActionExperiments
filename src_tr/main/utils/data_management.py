@@ -61,6 +61,7 @@ class DataManager:
         daily_stats_for_all_symbols = pd.DataFrame(daily_stats_for_all_symbols)
 
         self.total_recommended_symbol_statistics = pd.merge(recommended_stickers, daily_stats_for_all_symbols, on='symbol', how='left')
+        self.total_recommended_symbol_statistics.sort_values(by=['avg_capital_td'], inplace=True, ascending=False)
         plot_daily_statistics(plot_df=self.total_recommended_symbol_statistics, db_path=self.db_path, daily_dir_name=self.daily_dir_name)
         plot_daily_statistics_correlation_matrix(plot_df=self.total_recommended_symbol_statistics, db_path=self.db_path, daily_dir_name=self.daily_dir_name)
         self.total_recommended_symbol_statistics.to_csv(f'{self.db_path}/{self.daily_dir_name}/recommended_symbols_sd_td_market_stats.csv', index=False)

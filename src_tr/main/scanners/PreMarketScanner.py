@@ -34,6 +34,7 @@ class PreMarketScanner(ScannerBase):
         Downloads the scanning day minutely price data from yahoo finance,
         if yfinance returns an error it raises an exception.
         '''
+        # ide bele kell tenni a hétvége check-et!
         start_date = self.scanning_day
         end_date = self.trading_day
         try:
@@ -134,30 +135,33 @@ class PreMarketScanner(ScannerBase):
         proj_path = os.environ['PROJECT_PATH']
         date = self.trading_day.strftime('%Y_%m_%d')
         self.pre_market_stats.to_csv(f'{proj_path}_database/scanner_stats/pre_market_stats_{date}.csv', index=False)
+        print(self.pre_market_stats)
         return self.pre_market_stats
 
     def recommend_premarket_watchlist(self) -> List[dict]:
         '''
         Filters the pre_market_stats dataframe with, price boundaries and price ranges and volume.
         '''
-        self.recommended_stickers: pd.DataFrame = self.pre_market_stats[
-            (self.lower_price_boundary < self.pre_market_stats[f'{AVG_OPEN}_sd']) & \
-            (self.pre_market_stats[f'{AVG_OPEN}_sd'] < self.upper_price_boundary) & \
-            (self.price_range_perc_cond < self.pre_market_stats[f'{PRICE_RANGE_PERC}_sd']) & \
-            (self.avg_volume_cond < self.pre_market_stats[f'{AVG_VOLUME}_sd'])]
-        print(f'The recommended watchlist for {self.trading_day} is the following DataFrame: {self.recommended_stickers}')
+        if len(self.pre_market_stats) > 0:
+            self.recommended_stickers: pd.DataFrame = self.pre_market_stats[
+                (self.lower_price_boundary < self.pre_market_stats[f'{AVG_OPEN}_sd']) & \
+                (self.pre_market_stats[f'{AVG_OPEN}_sd'] < self.upper_price_boundary) & \
+                (self.price_range_perc_cond < self.pre_market_stats[f'{PRICE_RANGE_PERC}_sd']) & \
+                (self.avg_volume_cond < self.pre_market_stats[f'{AVG_VOLUME}_sd'])]
+            print(f'The recommended watchlist for {self.trading_day} is the following DataFrame: {self.recommended_stickers}')
 
-        sticker_dict_list = []
-        if self.recommended_stickers is not None:
-            for index, row in self.recommended_stickers.iterrows():
-                st_dict = {
-                    SYMBOL : row[SYMBOL],
-                    AVG_OPEN : row[f'{AVG_OPEN}_sd'],
-                    STD_OPEN : row[f'{STD_OPEN}_sd']
-                }
-                sticker_dict_list.append(st_dict)
-                #sticker_dict_list.append(row['sticker'])
-        return sticker_dict_list
-
+            sticker_dict_list = []
+            if self.recommended_stickers is not None:
+                for index, row in self.recommended_stickers.iterrows():
+                    st_dict = {
+                        SYMBOL : row[SYMBOL],
+                        AVG_OPEN : row[f'{AVG_OPEN}_sd'],
+                        STD_OPEN : row[f'{STD_OPEN}_sd']
+                    }
+                    sticker_dict_list.append(st_dict)
+                    #sticker_dict_list.append(row['sticker'])
+            return sticker_dict_list
+        else:
+            print('No symbol was found for today.')
 
 

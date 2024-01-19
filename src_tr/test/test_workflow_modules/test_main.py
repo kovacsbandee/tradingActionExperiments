@@ -30,161 +30,167 @@ STICKER_CSV_PATH = os.environ["STICKER_CSV_PATH"]
 ALPACA_KEY = os.environ["ALPACA_KEY"]
 ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
 DB_PATH = os.environ['DB_PATH']
-RUN_ID = 'DEV_RUN_ID_testing_sticker_dataframe'
 
-#for start in [datetime(2024, 1, 17, 0, 0)]:
-start = datetime(2024, 1, 17, 0, 0)
-end = start + timedelta(hours=23) + timedelta(minutes=59)
-trading_day = check_trading_day(start)
-scanning_day = calculate_scanning_day(trading_day)
+RUN_ID = 'dev_run_id_testing_in_mass'
 
-data_manager = DataManager(trading_day=trading_day, scanning_day=scanning_day, run_id=RUN_ID, db_path=DB_PATH)
+for start in [datetime(2024, 1, 16, 0, 0), datetime(2024, 1, 17, 0, 0), datetime(2024, 1, 18, 0, 0)]:
+    try:
+        end = start + timedelta(hours=23) + timedelta(minutes=59)
+        if start.strftime('%A') == 'Sunday' or start.strftime('%A') == 'Saturday':
+            continue
+        trading_day = check_trading_day(start)
+        scanning_day = calculate_scanning_day(trading_day)
 
-nasdaq_stickers = get_nasdaq_stickers(file_path=STICKER_CSV_PATH)
+        data_manager = DataManager(trading_day=trading_day, scanning_day=scanning_day, run_id=RUN_ID, db_path=DB_PATH)
 
-run_parameters = \
-    {
-        'run_id': RUN_ID,
-        'trading_day': start.strftime('%Y_%m_%d'),
-        'sticker_csvs': STICKER_CSV_PATH,
-        'init_cash': 10000,
-        'lower_price_boundary': 5,
-        'upper_price_boundary': 400,
-        'price_range_perc_cond': 5,
-        'avg_volume_cond': 10000,
-        'ma_short': 5,
-        'ma_long': 12,
-        'epsilon': 0.0015,
-        'rsi_len': 12,
-        'stop_loss_perc': 0.0,
-        'rsi_threshold': 20,
-        'rsi_minutes_before_trading_start': 45
-    }
+        nasdaq_stickers = get_nasdaq_stickers(file_path=STICKER_CSV_PATH)
 
-# Professional scanner:
-scanner = PreMarketScanner(trading_day=data_manager.trading_day,
-                           scanning_day=data_manager.scanning_day,
-                           stickers=nasdaq_stickers,
-                           lower_price_boundary=run_parameters['lower_price_boundary'],
-                           upper_price_boundary=run_parameters['upper_price_boundary'],
-                           price_range_perc_cond=run_parameters['price_range_perc_cond'],
-                           avg_volume_cond=run_parameters['avg_volume_cond'])
+        run_parameters = \
+            {
+                'run_id': RUN_ID,
+                'trading_day': start.strftime('%Y_%m_%d'),
+                'sticker_csvs': STICKER_CSV_PATH,
+                'init_cash': 10000,
+                'lower_price_boundary': 5,
+                'upper_price_boundary': 400,
+                'price_range_perc_cond': 5,
+                'avg_volume_cond': 10000,
+                'ma_short': 5,
+                'ma_long': 12,
+                'epsilon': 0.0015,
+                'rsi_len': 12,
+                'stop_loss_perc': 0.0,
+                'rsi_threshold': 20,
+                'rsi_minutes_before_trading_start': 45
+            }
 
-# Polygon scanner:
-# scanner = PreMarketPolygonScanner(trading_day=data_manager.trading_day,
-#                                   scanning_day=data_manager.scanning_day,
-#                                   stickers=nasdaq_stickers,
-#                                   lower_price_boundary=run_parameters['lower_price_boundary'],
-#                                   upper_price_boundary=run_parameters['upper_price_boundary'],
-#                                   price_range_perc_cond=run_parameters['price_range_perc_cond'],
-#                                   avg_volume_cond=run_parameters['avg_volume_cond'])
+        # Professional scanner:
+        scanner = PreMarketScanner(trading_day=data_manager.trading_day,
+                                   scanning_day=data_manager.scanning_day,
+                                   stickers=nasdaq_stickers,
+                                   lower_price_boundary=run_parameters['lower_price_boundary'],
+                                   upper_price_boundary=run_parameters['upper_price_boundary'],
+                                   price_range_perc_cond=run_parameters['price_range_perc_cond'],
+                                   avg_volume_cond=run_parameters['avg_volume_cond'])
 
-
-# Dumb scanner:
-#dumb_stickers = ['MARA', 'RIOT', 'MVIS', 'SOS', 'CAN', 'EBON', 'BTBT', 'HUT', 'EQOS', 'MOGO', 'SUNW', 'XNET', 'PHUN', 'IDEX', 'ZKIN', 'SIFY', 'SNDL', 'NCTY', 'OCGN', 'NIO', 'FCEL', 'PLUG', 'TSLA', 'AAPL', 'AMZN', 'MSFT', 'GOOG', 'FB', 'GOOGL', 'NVDA', 'PYPL', 'ADBE', 'INTC', 'CMCSA', 'CSCO', 'NFLX', 'PEP', 'AVGO', 'TXN', 'COST', 'QCOM', 'TMUS', 'AMGN', 'CHTR', 'SBUX', 'AMD', 'INTU', 'ISRG', 'AMAT', 'MU', 'BKNG', 'MDLZ', 'ADP', 'GILD', 'CSX', 'FISV', 'VRTX', 'ATVI', 'ADSK', 'REGN', 'ILMN', 'BIIB', 'MELI', 'LRCX', 'JD', 'ADI', 'NXPI', 'ASML', 'KHC', 'MRNA', 'EA', 'BIDU', 'WBA', 'MAR', 'LULU', 'EXC', 'ROST', 'WDAY', 'KLAC', 'CTSH', 'ORLY', 'SNPS', 'DOCU', 'IDXX', 'SGEN', 'DXCM', 'PCAR', 'CDNS', 'XLNX', 'ANSS', 'NTES', 'MNST', 'VRSK', 'ALXN', 'FAST', 'SPLK', 'CPRT', 'CDW', 'PAYX', 'MXIM', 'SWKS', 'INCY', 'CHKP', 'TCOM', 'CTXS', 'VRSN', 'SGMS', 'DLTR', 'CERN', 'ULTA', 'FOXA', 'FOX', 'NTAP', 'WDC', 'TTWO', 'EXPE', 'XEL', 'MCHP', 'CTAS', 'MXL', 'WLTW', 'ANET', 'BMRN']
-# scanner = PreMarketDumbScanner(trading_day=data_manager.trading_day,
-#                                scanning_day=data_manager.scanning_day,
-#                                stickers=nasdaq_stickers,
-#                                lower_price_boundary=run_parameters['lower_price_boundary'],
-#                                upper_price_boundary=run_parameters['upper_price_boundary'],
-#                                price_range_perc_cond=run_parameters['price_range_perc_cond'],
-#                                avg_volume_cond=run_parameters['avg_volume_cond'])
+        # Polygon scanner:
+        # scanner = PreMarketPolygonScanner(trading_day=data_manager.trading_day,
+        #                                   scanning_day=data_manager.scanning_day,
+        #                                   stickers=nasdaq_stickers,
+        #                                   lower_price_boundary=run_parameters['lower_price_boundary'],
+        #                                   upper_price_boundary=run_parameters['upper_price_boundary'],
+        #                                   price_range_perc_cond=run_parameters['price_range_perc_cond'],
+        #                                   avg_volume_cond=run_parameters['avg_volume_cond'])
 
 
-# initialize sticker list:
+        # Dumb scanner:
+        #dumb_stickers = ['MARA', 'RIOT', 'MVIS', 'SOS', 'CAN', 'EBON', 'BTBT', 'HUT', 'EQOS', 'MOGO', 'SUNW', 'XNET', 'PHUN', 'IDEX', 'ZKIN', 'SIFY', 'SNDL', 'NCTY', 'OCGN', 'NIO', 'FCEL', 'PLUG', 'TSLA', 'AAPL', 'AMZN', 'MSFT', 'GOOG', 'FB', 'GOOGL', 'NVDA', 'PYPL', 'ADBE', 'INTC', 'CMCSA', 'CSCO', 'NFLX', 'PEP', 'AVGO', 'TXN', 'COST', 'QCOM', 'TMUS', 'AMGN', 'CHTR', 'SBUX', 'AMD', 'INTU', 'ISRG', 'AMAT', 'MU', 'BKNG', 'MDLZ', 'ADP', 'GILD', 'CSX', 'FISV', 'VRTX', 'ATVI', 'ADSK', 'REGN', 'ILMN', 'BIIB', 'MELI', 'LRCX', 'JD', 'ADI', 'NXPI', 'ASML', 'KHC', 'MRNA', 'EA', 'BIDU', 'WBA', 'MAR', 'LULU', 'EXC', 'ROST', 'WDAY', 'KLAC', 'CTSH', 'ORLY', 'SNPS', 'DOCU', 'IDXX', 'SGEN', 'DXCM', 'PCAR', 'CDNS', 'XLNX', 'ANSS', 'NTES', 'MNST', 'VRSK', 'ALXN', 'FAST', 'SPLK', 'CPRT', 'CDW', 'PAYX', 'MXIM', 'SWKS', 'INCY', 'CHKP', 'TCOM', 'CTXS', 'VRSN', 'SGMS', 'DLTR', 'CERN', 'ULTA', 'FOXA', 'FOX', 'NTAP', 'WDC', 'TTWO', 'EXPE', 'XEL', 'MCHP', 'CTAS', 'MXL', 'WLTW', 'ANET', 'BMRN']
+        # scanner = PreMarketDumbScanner(trading_day=data_manager.trading_day,
+        #                                scanning_day=data_manager.scanning_day,
+        #                                stickers=nasdaq_stickers,
+        #                                lower_price_boundary=run_parameters['lower_price_boundary'],
+        #                                upper_price_boundary=run_parameters['upper_price_boundary'],
+        #                                price_range_perc_cond=run_parameters['price_range_perc_cond'],
+        #                                avg_volume_cond=run_parameters['avg_volume_cond'])
 
-scanner.calculate_filtering_stats()
-recommended_sticker_list: List[dict] = scanner.recommend_premarket_watchlist()
-#recommended_sticker_list = [d for d in recommended_sticker_list if d['symbol'] in ['ALT', 'BA', 'GOLD', 'MRNA', 'SMCI', 'RUN']]
 
-data_manager.create_daily_dirs()
-data_manager.save_params(params=run_parameters)
-data_manager.recommended_sticker_list = recommended_sticker_list
+        # initialize sticker list:
 
-trading_client = TestTradingClient(init_cash=run_parameters['init_cash'],
-                                   sticker_list=data_manager.recommended_sticker_list)
-trading_client.initialize_positions()
+        scanner.calculate_filtering_stats()
+        if len(scanner.pre_market_stats) == 0:
+            print('For day', start, 'no yahoo data was found.')
+            continue
+        recommended_sticker_list: List[dict] = scanner.recommend_premarket_watchlist()
+        #recommended_sticker_list = [d for d in recommended_sticker_list if d['symbol'] in ['ALT', 'BA', 'GOLD', 'MRNA', 'SMCI', 'RUN']]
 
-data_generator = PriceDataGeneratorMain(recommended_sticker_list=data_manager.recommended_sticker_list)
+        data_manager.create_daily_dirs()
+        data_manager.save_params(params=run_parameters)
+        data_manager.recommended_sticker_list = recommended_sticker_list
 
-# Strategy with stop loss compared to the last price when opening the position:
-# strategy = StrategyWithStopLoss(ma_short=run_parameters['ma_short'],
-#                                 ma_long=run_parameters['ma_long'],
-#                                 epsilon=run_parameters['epsilon'],
-#                                 rsi_len=run_parameters['rsi_len'],
-#                                 stop_loss_perc=run_parameters['stop_loss_perc'],
-#                                 trading_day=data_manager.trading_day,
-#                                 run_id=RUN_ID,
-#                                 db_path=DB_PATH)
+        trading_client = TestTradingClient(init_cash=run_parameters['init_cash'],
+                                           sticker_list=data_manager.recommended_sticker_list)
+        trading_client.initialize_positions()
 
-# Strategy with stop loss compared to the previous price:
-strategy = StrategyWithStopLossPrevPrice(ma_short=run_parameters['ma_short'],
-                                         ma_long=run_parameters['ma_long'],
-                                         epsilon=run_parameters['epsilon'],
-                                         rsi_len=run_parameters['rsi_len'],
-                                         stop_loss_perc=run_parameters['stop_loss_perc'],
-                                         trading_day=data_manager.trading_day,
-                                         run_id=RUN_ID,
-                                         db_path=DB_PATH)
+        data_generator = PriceDataGeneratorMain(recommended_sticker_list=data_manager.recommended_sticker_list)
 
-trading_manager = TestTradingManager(data_generator=data_generator,
-                                     strategy=strategy,
-                                     trading_client=trading_client,
-                                     rsi_threshold=run_parameters['rsi_threshold'],
-                                     minutes_before_trading_start=run_parameters['rsi_minutes_before_trading_start'],
-                                     api_key='test_key',
-                                     secret_key='test_secret')
+        # Strategy with stop loss compared to the last price when opening the position:
+        # strategy = StrategyWithStopLoss(ma_short=run_parameters['ma_short'],
+        #                                 ma_long=run_parameters['ma_long'],
+        #                                 epsilon=run_parameters['epsilon'],
+        #                                 rsi_len=run_parameters['rsi_len'],
+        #                                 stop_loss_perc=run_parameters['stop_loss_perc'],
+        #                                 trading_day=data_manager.trading_day,
+        #                                 run_id=RUN_ID,
+        #                                 db_path=DB_PATH)
 
-data_generator.initialize_sticker_dict()
+        # Strategy with stop loss compared to the previous price:
+        strategy = StrategyWithStopLossPrevPrice(ma_short=run_parameters['ma_short'],
+                                                 ma_long=run_parameters['ma_long'],
+                                                 epsilon=run_parameters['epsilon'],
+                                                 rsi_len=run_parameters['rsi_len'],
+                                                 stop_loss_perc=run_parameters['stop_loss_perc'],
+                                                 trading_day=data_manager.trading_day,
+                                                 run_id=RUN_ID,
+                                                 db_path=DB_PATH)
 
-client = StockHistoricalDataClient(ALPACA_KEY, ALPACA_SECRET_KEY)
+        trading_manager = TestTradingManager(data_generator=data_generator,
+                                             strategy=strategy,
+                                             trading_client=trading_client,
+                                             rsi_threshold=run_parameters['rsi_threshold'],
+                                             minutes_before_trading_start=run_parameters['rsi_minutes_before_trading_start'],
+                                             api_key='test_key',
+                                             secret_key='test_secret')
 
-def download_daily_data(symbol, start, end):
-    timeframe = TimeFrame(amount=1, unit=TimeFrameUnit.Minute)
+        data_generator.initialize_sticker_dict()
 
-    bars_request = StockBarsRequest(
-        symbol_or_symbols=symbol,
-        timeframe=timeframe,
-        start=start,
-        end=end
-    )
-    latest_bars = client.get_stock_bars(bars_request).data
-    daily_data_list = _convert_data(latest_bars, symbol)
-    return daily_data_list
+        client = StockHistoricalDataClient(ALPACA_KEY, ALPACA_SECRET_KEY)
 
-def _convert_data(latest_bars: dict, symbol: str):
-    bar_list = []
-    for e in latest_bars[symbol]:
-        bar_list.append({
-        'T': 'b',
-        't': e.timestamp.strftime('%Y-%m-%dT%H:%M:%SZ'),
-        'S': e.symbol,
-        'o': e.open,
-        'c': e.close,
-        'h': e.high,
-        'l': e.low,
-        'v': e.volume,
-        'n': e.trade_count
-    })
-    return bar_list
+        def download_daily_data(symbol, start, end):
+            timeframe = TimeFrame(amount=1, unit=TimeFrameUnit.Minute)
 
-all_stickers_daily_data: List[List] = []
+            bars_request = StockBarsRequest(
+                symbol_or_symbols=symbol,
+                timeframe=timeframe,
+                start=start,
+                end=end
+            )
+            latest_bars = client.get_stock_bars(bars_request).data
+            daily_data_list = _convert_data(latest_bars, symbol)
+            return daily_data_list
 
-for symbol in recommended_sticker_list:
-    daily_data = download_daily_data(symbol=symbol['symbol'], start=start, end=end)
-    all_stickers_daily_data.append(daily_data)
+        def _convert_data(latest_bars: dict, symbol: str):
+            bar_list = []
+            for e in latest_bars[symbol]:
+                bar_list.append({
+                'T': 'b',
+                't': e.timestamp.strftime('%Y-%m-%dT%H:%M:%SZ'),
+                'S': e.symbol,
+                'o': e.open,
+                'c': e.close,
+                'h': e.high,
+                'l': e.low,
+                'v': e.volume,
+                'n': e.trade_count
+            })
+            return bar_list
 
-i = 0
-while i < len(all_stickers_daily_data[0]):
-    minute_bars = []
-    for sticker_daily_data in all_stickers_daily_data:
-        minute_bars.append(sticker_daily_data[i])
-    trading_manager.handle_message(ws=None, message=minute_bars)
-    minute_bars = []
-    i += 1
+        all_stickers_daily_data: List[List] = []
 
-data_manager.save_daily_statistics(recommended_stickers=scanner.recommended_stickers, sticker_dict=data_generator.sticker_dict)
-create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiments(data_generator, data_manager)
+        for symbol in recommended_sticker_list:
+            daily_data = download_daily_data(symbol=symbol['symbol'], start=start, end=end)
+            all_stickers_daily_data.append(daily_data)
+
+        i = 0
+        while i < len(all_stickers_daily_data[0]):
+            minute_bars = []
+            for sticker_daily_data in all_stickers_daily_data:
+                minute_bars.append(sticker_daily_data[i])
+            trading_manager.handle_message(ws=None, message=minute_bars)
+            minute_bars = []
+            i += 1
+    except IndexError:
+        data_manager.save_daily_statistics(recommended_stickers=scanner.recommended_stickers, sticker_dict=data_generator.sticker_dict)
+        create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiments(data_generator, data_manager)
 
 
 
