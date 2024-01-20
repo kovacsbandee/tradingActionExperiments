@@ -65,25 +65,25 @@ class PreMarketPolygonScanner(ScannerBase):
             if sticker_history is not None and not sticker_history.empty:
 
                 # TODO: itt ki kell találni milyen egyéb statisztikákat akarunk még nézni.
-                avg_open = sticker_history['Open'].mean()
-                median_open = sticker_history['Open'].median()
-                std_open = sticker_history['Open'].std()
+                avg_open = sticker_history['open'].mean()
+                median_open = sticker_history['open'].median()
+                std_open = sticker_history['open'].std()
 
-                avg_close = sticker_history['Close'].mean()
-                median_close = sticker_history['Close'].median()
+                avg_close = sticker_history['close'].mean()
+                median_close = sticker_history['close'].median()
 
-                high_max = sticker_history['High'].max()
-                low_min = sticker_history['Low'].min()
+                high_max = sticker_history['high'].max()
+                low_min = sticker_history['low'].min()
 
-                avg_volume = sticker_history['Volume'].mean()
-                median_volume = sticker_history['Volume'].median()
-                volume_max = sticker_history['Volume'].max()
-                volume_min = sticker_history['Volume'].min()
+                avg_volume = sticker_history['volume'].mean()
+                median_volume = sticker_history['volume'].median()
+                volume_max = sticker_history['volume'].max()
+                volume_min = sticker_history['volume'].min()
 
                 price_range_perc = 0
                 volume_range_ratio = 0
                 close_monetary_avg_volume = 0
-                close_monetary_min_volume = (sticker_history['Close'] * sticker_history['Volume']).min()
+                close_monetary_min_volume = (sticker_history['close'] * sticker_history['volume']).min()
 
                 if not pd.isnull(avg_volume) and avg_volume != 0:
                     price_range_perc = (high_max - low_min) / ((high_max + low_min) / 2) * 100

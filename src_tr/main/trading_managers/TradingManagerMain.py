@@ -74,32 +74,7 @@ class TradingManagerMain():
             self.data_generator.update_sticker_df(minute_bars=self.minute_bars)
             
             # apply strategy on all stickers --- TODO: kiszervezni külön metódusba
-            for symbol, value_dict in self.data_generator.sticker_dict.items():
-                # normalize open price
-                value_dict[STICKER_DF].loc[value_dict[STICKER_DF].index[-1], OPEN_NORM] = \
-                (value_dict[STICKER_DF].loc[value_dict[STICKER_DF].index[-1], OPEN] - value_dict[PREV_DAY_DATA][AVG_OPEN]) / value_dict[PREV_DAY_DATA][STD_OPEN]
-                
-                sticker_df_length = len(value_dict[STICKER_DF])
-                ma_long_value = self.strategy.ma_long
-                if sticker_df_length > ma_long_value:
-                    current_capital = self.get_current_capital()
-                    self.strategy.update_capital_amount(current_capital)
-                    previous_position = self.get_previous_position(symbol)
-                    self.data_generator.sticker_dict[symbol] = self.strategy.apply_long_strategy(previous_position=previous_position, 
-                                                                                                 symbol=symbol,  
-                                                                                                 sticker_dict=value_dict)
-                    current_df: pd.DataFrame = value_dict[STICKER_DF]
-                    if len(current_df) > self.minutes_before_trading_start:
-                        if not self.rsi_filtered and current_df[RSI].mean() < self.rsi_threshold: #NOTE: megfordítottam a >-t!
-                            self.stickers_to_delete.append(symbol)
-                        elif not self.rsi_filtered and current_df[RSI].mean() >= self.rsi_threshold:
-                            self.rsi_counter += 1
-                        if self.rsi_filtered:
-                            self.execute_trading_action(symbol, current_df)
-                    else:
-                        print("Collecting live data for RSI filtering, no trading is executed")
-                else:
-                    print(f"Not enough data to apply strategy. Symbol: {symbol}")
+            self.apply_strategy()
             
             # filter out stickers by RSI value
             if not self.rsi_filtered and len(self.stickers_to_delete) > 0:
@@ -125,6 +100,34 @@ class TradingManagerMain():
                     return POS_OUT
         else:
             return POS_OUT
+        
+    def apply_strategy(self):
+        for symbol, value_dict in self.data_generator.sticker_dict.items():
+            # normalize open price
+            value_dict[STICKER_DF].loc[value_dict[STICKER_DF].index[-1], OPEN_NORM] = \
+            (value_dict[STICKER_DF].loc[value_dict[STICKER_DF].index[-1], OPEN] - value_dict[PREV_DAY_DATA][AVG_OPEN]) / value_dict[PREV_DAY_DATA][STD_OPEN]
+            
+            sticker_df_length = len(value_dict[STICKER_DF])
+            ma_long_value = self.strategy.ma_long
+            if sticker_df_length > ma_long_value:
+                current_capital = self.get_current_capital()
+                self.strategy.update_capital_amount(current_capital)
+                previous_position = self.get_previous_position(symbol)
+                self.data_generator.sticker_dict[symbol] = self.strategy.apply_long_strategy(previous_position=previous_position, 
+                                                                                                symbol=symbol,  
+                                                                                                sticker_dict=value_dict)
+                current_df: pd.DataFrame = value_dict[STICKER_DF]
+                if len(current_df) > self.minutes_before_trading_start:
+                    if not self.rsi_filtered and current_df[RSI].mean() < self.rsi_threshold: #NOTE: megfordítottam a >-t!
+                        self.stickers_to_delete.append(symbol)
+                    elif not self.rsi_filtered and current_df[RSI].mean() >= self.rsi_threshold:
+                        self.rsi_counter += 1
+                    if self.rsi_filtered:
+                        self.execute_trading_action(symbol, current_df)
+                else:
+                    print("Collecting live data for RSI filtering, no trading is executed")
+            else:
+                print(f"Not enough data to apply strategy. Symbol: {symbol}")
         
     def execute_trading_action(self, symbol, current_df):
         trading_action = current_df.iloc[-1][TRADING_ACTION]

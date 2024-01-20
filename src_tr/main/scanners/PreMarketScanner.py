@@ -117,6 +117,7 @@ class PreMarketScanner(ScannerBase):
         self.pre_market_stats = self._create_pre_market_stats()
         proj_path = os.environ['PROJECT_PATH']
         date = self.trading_day.strftime('%Y_%m_%d')
+        # TODO: a path itt is kívülről jöjjön configból/.env-ből, hogy ne kelljen mindig átírni
         self.pre_market_stats.to_csv(f'{proj_path}_database/scanner_stats/pre_market_stats_{date}.csv', index=False)
         return self.pre_market_stats
         
