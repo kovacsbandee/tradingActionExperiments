@@ -4,11 +4,11 @@ from .TestTradingClient import TestTradingClient
 class TestTradingClientDivided(TestTradingClient):
     
     def initialize_positions(self):
-        for e in self.sticker_list:
+        for e in self.symbol_list:
             self.positions[e['symbol']] = {
                 'qty': 0,
                 'side': POS_OUT,
-                'max_cash' : self.cash / len(self.sticker_list)
+                'max_cash' : self.cash / len(self.symbol_list)
             }
         
     def get_max_cash_by_symbol(self, symbol: str):

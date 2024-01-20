@@ -52,15 +52,15 @@ def convert_alpaca_data(latest_bars: DataFrame, n_last_bars):
     df_tail = df.tail(n_last_bars)
     return df_tail
 
-def get_yahoo_data(sticker, start_date: datetime, end_date: datetime, n_last_bars):
-    ticker = yf.Ticker(sticker)
+def get_yahoo_data(symbol, start_date: datetime, end_date: datetime, n_last_bars):
+    ticker = yf.Ticker(symbol)
     ticker_history = ticker.history(start=start_date, end=end_date, interval='1m', period='1d', prepost=True) if ticker else None
-    converted_df = convert_yahoo_data(ticker_history, n_last_bars, sticker)
+    converted_df = convert_yahoo_data(ticker_history, n_last_bars, symbol)
     return converted_df
 
-def convert_yahoo_data(ticker_history: DataFrame, n_last_bars, sticker):
+def convert_yahoo_data(ticker_history: DataFrame, n_last_bars, symbol):
     ticker_history = ticker_history.reset_index()
-    ticker_history['S'] = sticker
+    ticker_history['S'] = symbol
 
     # Rename the columns to match the desired format
     ticker_history = ticker_history.rename(columns={

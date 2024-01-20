@@ -4,10 +4,10 @@ from src_tr.main.enums_and_constants.trading_constants import POS_OUT, POS_LONG_
 
 class TestTradingClient():
     
-    def __init__(self, init_cash, sticker_list) -> None:
+    def __init__(self, init_cash, symbol_list) -> None:
         self.cash: int = init_cash
         self.positions: dict = {}
-        self.sticker_list: List[dict] = sticker_list
+        self.symbol_list: List[dict] = symbol_list
     
     """
         self.positions = {
@@ -22,7 +22,7 @@ class TestTradingClient():
         '''
         Initializes the position dictionary, with quantity 0, and side out.
         '''
-        for e in self.sticker_list:
+        for e in self.symbol_list:
             self.positions[e['symbol']] = {
                 'qty': 0,
                 'side': POS_OUT

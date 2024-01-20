@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from dotenv import load_dotenv
-from src_tr.main.utils.utils import get_nasdaq_stickers
+from src_tr.main.utils.utils import get_nasdaq_symbols
 from polygon import RESTClient
 import pandas as pd
 from joblib import Parallel, delayed
@@ -22,8 +22,8 @@ from joblib import Parallel, delayed
 """
 
 load_dotenv()
-STICKER_CSV_PATH = os.environ["STICKER_CSV_PATH"]
-nasdaq_stickers = get_nasdaq_stickers(file_path=STICKER_CSV_PATH)
+SYMBOL_CSV_PATH = os.environ["SYMBOL_CSV_PATH"]
+nasdaq_symbols = get_nasdaq_symbols(file_path=SYMBOL_CSV_PATH)
 
 def get_bar_data(ticker: str, from_: str, to: str):
     aggs = []
@@ -42,7 +42,7 @@ def get_bar_data(ticker: str, from_: str, to: str):
         print(f'Error: {ex}')
     return aggs
 
-bar_data_list_per_symbol = Parallel(n_jobs=-10, verbose=10)(delayed(get_bar_data)(ticker=e, from_="2022-12-01", to="2023-12-01") for e in nasdaq_stickers)
+bar_data_list_per_symbol = Parallel(n_jobs=-10, verbose=10)(delayed(get_bar_data)(ticker=e, from_="2022-12-01", to="2023-12-01") for e in nasdaq_symbols)
 
 for e in bar_data_list_per_symbol:
     if len(e) > 0:

@@ -15,24 +15,24 @@ class TestTradingManagerDivided(TestTradingManager):
     
     #Override
     def apply_strategy(self):
-        for symbol, value_dict in self.data_generator.sticker_dict.items():
+        for symbol, value_dict in self.data_generator.symbol_dict.items():
             # normalize open price
-            value_dict[STICKER_DF].loc[value_dict[STICKER_DF].index[-1], OPEN_NORM] = \
-            (value_dict[STICKER_DF].loc[value_dict[STICKER_DF].index[-1], OPEN] - value_dict[PREV_DAY_DATA][AVG_OPEN]) / value_dict[PREV_DAY_DATA][STD_OPEN]
+            value_dict[SYMBOL_DF].loc[value_dict[SYMBOL_DF].index[-1], OPEN_NORM] = \
+            (value_dict[SYMBOL_DF].loc[value_dict[SYMBOL_DF].index[-1], OPEN] - value_dict[PREV_DAY_DATA][AVG_OPEN]) / value_dict[PREV_DAY_DATA][STD_OPEN]
             
-            sticker_df_length = len(value_dict[STICKER_DF])
+            SYMBOL_DF_length = len(value_dict[SYMBOL_DF])
             ma_long_value = self.strategy.ma_long
-            if sticker_df_length > ma_long_value:
+            if SYMBOL_DF_length > ma_long_value:
                 current_capital = self.get_current_capital(symbol)
                 self.strategy.update_capital_amount(current_capital)
                 previous_position = self.get_previous_position(symbol)
-                self.data_generator.sticker_dict[symbol] = self.strategy.apply_long_strategy(previous_position=previous_position, 
+                self.data_generator.symbol_dict[symbol] = self.strategy.apply_long_strategy(previous_position=previous_position, 
                                                                                                 symbol=symbol,  
-                                                                                                sticker_dict=value_dict)
-                current_df: pd.DataFrame = value_dict[STICKER_DF]
+                                                                                                symbol_dict=value_dict)
+                current_df: pd.DataFrame = value_dict[SYMBOL_DF]
                 if len(current_df) > self.minutes_before_trading_start:
                     if not self.rsi_filtered and current_df[RSI].mean() < self.rsi_threshold: #NOTE: megfordítottam a >-t!
-                        self.stickers_to_delete.append(symbol)
+                        self.symbols_to_delete.append(symbol)
                     elif not self.rsi_filtered and current_df[RSI].mean() >= self.rsi_threshold:
                         self.rsi_counter += 1
                     if self.rsi_filtered:

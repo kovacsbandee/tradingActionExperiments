@@ -17,7 +17,7 @@ class TradingManagerDraft(TradingManagerBase):
             #TODO: az első két üzenet az autentikáció és a subscription-visszaigazolás, ezt csekkolni kell!
             self.minute_bars.append(item)
 
-        if len(self.minute_bars) == len(self.price_data_generator.recommended_sticker_list):
+        if len(self.minute_bars) == len(self.price_data_generator.recommended_symbol_list):
             self.event.set()
             do_progress = self._process_data()
             if do_progress:
@@ -34,7 +34,7 @@ class TradingManagerDraft(TradingManagerBase):
         # az ezután érkező message-eket ignoráljuk (self.market_open, self.market_close)
         
         # if timecheck, stb:
-        self.price_data_generator.update_sticker_df(self.minute_bars)
+        self.price_data_generator.update_symbol_df(self.minute_bars)
         self.event.clear()
         return True
         # else: 
@@ -52,7 +52,7 @@ class TradingManagerDraft(TradingManagerBase):
 
         listen_message = {
             "action":"subscribe",
-            "bars": self.price_data_generator.recommended_sticker_list
+            "bars": self.price_data_generator.recommended_symbol_list
             }
 
         self.ws.send(json.dumps(listen_message))

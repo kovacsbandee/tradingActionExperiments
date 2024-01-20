@@ -8,23 +8,23 @@ class ScannerBase(ABC):
     #project_path: str
     trading_day: datetime 
     scanning_day: datetime # nem kell, származtatjuk
-    stickers: List[str]
+    symbols: List[str]
     pre_market_stats: List
-    recommended_stickers: pd.DataFrame
+    recommended_symbols: pd.DataFrame
 
     def __init__(self, 
                  #project_path,
                  trading_day, 
                  scanning_day, 
-                 stickers):
+                 symbols):
         #self.project_path = project_path
         self.trading_day = trading_day
         self.scanning_day = scanning_day # TODO: lehet, hogy származtatni kéne? egyszerűbb lenne...
-        self.stickers = stickers
-        self.recommended_stickers = None
+        self.symbols = symbols
+        self.recommended_symbols = None
         
     @abstractmethod
-    def get_pre_market_stats(self, sticker: str)  -> dict:
+    def get_pre_market_stats(self, symbol: str)  -> dict:
         pass
     
     @abstractmethod

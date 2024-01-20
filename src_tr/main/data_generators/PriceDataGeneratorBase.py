@@ -7,18 +7,18 @@ from alpaca.data.historical import StockHistoricalDataClient
 class PriceDataGeneratorBase(ABC):
     
     trading_day: datetime
-    recommended_sticker_list: List[str]
+    recommended_symbol_list: List[str]
     lower_price_boundary: int
     upper_price_boundary: int
     lower_volume_boundary: int
     prev_day_data: DataFrame
-    prev_day_sticker_stats: dict
-    trading_day_sticker_stats: dict #nem köll?
+    prev_day_symbol_stats: dict
+    trading_day_symbol_stats: dict #nem köll?
     
-    sticker_dict: dict = dict()
+    symbol_dict: dict = dict()
     """
-    sticker_dict = {
-        'AAPL': 'sticker_df' : DataFrame [{"T":"b",
+    symbol_dict = {
+        'AAPL': 'symbol_df' : DataFrame [{"T":"b",
                                         "S":"AAPL",
                                         "o":171.68,
                                         "h":171.68,
@@ -35,11 +35,11 @@ class PriceDataGeneratorBase(ABC):
     data_window_size: int #nem köll?
     
     def __init__(self,
-                 recommended_sticker_list):
-        self.recommended_sticker_list = recommended_sticker_list
+                 recommended_symbol_list):
+        self.recommended_symbol_list = recommended_symbol_list
         
     #@abstractmethod
-    #def load_individual_sticker_data(self):
+    #def load_individual_symbol_data(self):
     #    pass
     
     @abstractmethod
@@ -47,5 +47,5 @@ class PriceDataGeneratorBase(ABC):
         pass
 
     @abstractmethod
-    def update_sticker_df():
+    def update_symbol_df():
         pass
