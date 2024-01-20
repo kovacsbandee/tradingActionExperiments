@@ -104,10 +104,10 @@ class TradingManagerMain():
     def apply_strategy(self):
         for symbol, value_dict in self.data_generator.symbol_dict.items():
             # normalize open price
-            value_dict[SYMBOL_DF].loc[value_dict[SYMBOL_DF].index[-1], OPEN_NORM] = \
-            (value_dict[SYMBOL_DF].loc[value_dict[SYMBOL_DF].index[-1], OPEN] - value_dict[PREV_DAY_DATA][AVG_OPEN]) / value_dict[PREV_DAY_DATA][STD_OPEN]
+            value_dict[DAILY_PRICE_DATA_DF].loc[value_dict[DAILY_PRICE_DATA_DF].index[-1], OPEN_NORM] = \
+            (value_dict[DAILY_PRICE_DATA_DF].loc[value_dict[DAILY_PRICE_DATA_DF].index[-1], OPEN] - value_dict[PREV_DAY_DATA][AVG_OPEN]) / value_dict[PREV_DAY_DATA][STD_OPEN]
             
-            symbol_df_length = len(value_dict[SYMBOL_DF])
+            symbol_df_length = len(value_dict[DAILY_PRICE_DATA_DF])
             ma_long_value = self.strategy.ma_long
             if symbol_df_length > ma_long_value:
                 current_capital = self.get_current_capital()
@@ -116,7 +116,7 @@ class TradingManagerMain():
                 self.data_generator.symbol_dict[symbol] = self.strategy.apply_long_strategy(previous_position=previous_position, 
                                                                                                 symbol=symbol,  
                                                                                                 symbol_dict=value_dict)
-                current_df: pd.DataFrame = value_dict[SYMBOL_DF]
+                current_df: pd.DataFrame = value_dict[DAILY_PRICE_DATA_DF]
                 if len(current_df) > self.minutes_before_trading_start:
                     if not self.rsi_filtered and current_df[RSI].mean() < self.rsi_threshold: #NOTE: megfordítottam a >-t!
                         self.symbols_to_delete.append(symbol)
@@ -144,9 +144,9 @@ class TradingManagerMain():
             self.place_buy_order(quantity_buy_long, symbol)
         elif trading_action == ACT_SELL_NEXT_SHORT and current_position == POS_OUT:
             self.place_sell_order(quantity_sell_short, symbol)
-        elif trading_action == ACT_SELL_PREV_LONG and current_position == POS_LONG_BUY:
+        elif trading_action == ACT_SELL_PREV_LONG and current_position == POS_LONG:
             self.close_current_position(position="Sell previous long", symbol=symbol)
-        elif trading_action == ACT_BUY_PREV_SHORT and current_position == POS_SHORT_SELL:
+        elif trading_action == ACT_BUY_PREV_SHORT and current_position == POS_SHORT:
             self.close_current_position(position="Buy previous long", symbol=symbol)
         else:
             print(ACT_NO_ACTION)

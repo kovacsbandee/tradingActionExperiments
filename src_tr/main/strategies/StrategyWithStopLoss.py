@@ -32,7 +32,7 @@ class StrategyWithStopLoss(StrategyBase):
         self.capital = account_cash
         
     def apply_long_strategy(self, previous_position: str, symbol: str, symbol_dict: dict):
-        symbol_df: pd.DataFrame = symbol_dict[SYMBOL_DF]
+        symbol_df: pd.DataFrame = symbol_dict[DAILY_PRICE_DATA_DF]
         ind_price: str = symbol_dict[IND_PRICE]
 
         # set current_capital column
@@ -59,7 +59,7 @@ class StrategyWithStopLoss(StrategyBase):
 
         # set expected positions:
         if small_ind_col > self.epsilon and big_ind_col > self.epsilon:
-            expected_position = POS_LONG_BUY
+            expected_position = POS_LONG
         else:
             expected_position = POS_OUT
 
@@ -70,22 +70,22 @@ class StrategyWithStopLoss(StrategyBase):
         if symbol_df.iloc[-1][POSITION] == symbol_df.iloc[-2][POSITION]:
             symbol_df.loc[last_index, TRADING_ACTION] = ACT_NO_ACTION
 
-        if symbol_df.iloc[-1][POSITION] == POS_LONG_BUY and symbol_df.iloc[-2][POSITION] != POS_LONG_BUY:
+        if symbol_df.iloc[-1][POSITION] == POS_LONG and symbol_df.iloc[-2][POSITION] != POS_LONG:
             symbol_df.loc[last_index, TRADING_ACTION] = ACT_BUY_NEXT_LONG
             symbol_dict[PREV_LONG_BUY_POSITION_INDEX] = last_index
 
-        if symbol_df.iloc[-2][POSITION] == POS_LONG_BUY and symbol_df.iloc[-1][POSITION] != POS_LONG_BUY:
+        if symbol_df.iloc[-2][POSITION] == POS_LONG and symbol_df.iloc[-1][POSITION] != POS_LONG:
             symbol_df.loc[last_index, TRADING_ACTION] = ACT_SELL_PREV_LONG
             
         if symbol_dict[PREV_LONG_BUY_POSITION_INDEX] is not None:
             if (symbol_df.loc[last_index, ind_price] < symbol_df.loc[symbol_dict[PREV_LONG_BUY_POSITION_INDEX], ind_price]) \
-                and symbol_df.loc[last_index, POSITION] == POS_LONG_BUY:
+                and symbol_df.loc[last_index, POSITION] == POS_LONG:
                 symbol_df.loc[last_index, STOP_LOSS_OUT_SIGNAL] = STOP_LOSS_LONG
                 symbol_df.loc[last_index, TRADING_ACTION] = ACT_SELL_PREV_LONG
                 
         symbol_df.to_csv(f'{self.db_path}/{self.daily_dir_name}/daily_files/csvs/{symbol}_{self.trading_day}_{self.name}.csv')
         # update the current symbol DataFrame
-        symbol_dict[SYMBOL_DF] = symbol_df
+        symbol_dict[DAILY_PRICE_DATA_DF] = symbol_df
         return symbol_dict
     
         ''' 

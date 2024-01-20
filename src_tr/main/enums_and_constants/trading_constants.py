@@ -2,8 +2,7 @@
 SYMBOL = 'symbol'
 
 # symbol_dict constants
-# ennek inkább 'daily_price_data_df'-nek kéne lennie
-SYMBOL_DF = 'symbol_dataframe'
+DAILY_PRICE_DATA_DF = 'daily_price_data_df'
 IND_PRICE = 'indicator_price'
 PREV_DAY_DATA = 'prev_day_data'
 PRICE_RANGE_PERC = 'price_range_perc'
@@ -36,9 +35,8 @@ AMOUNT_BOUGHT = 'amount_bought'
 
 # symbol_df column value constants:
 POS_OUT = 'out'
-# itt javaslom, hogy a 'buy' és 'sell' szó lekerüljön innen, mert megtévesztő a pozíció leírása esetlében, hogy action is társul hozzá
-POS_LONG_BUY = 'long'
-POS_SHORT_SELL = 'short'
+POS_LONG = 'long'
+POS_SHORT = 'short'
 
 ACT_NO_ACTION = 'no_action'
 ACT_BUY_NEXT_LONG = 'buy_next_long_position'
@@ -53,3 +51,8 @@ STOP_LOSS_SHORT = 'stop_loss_short'
 # symbol position index constants:
 PREV_LONG_BUY_POSITION_INDEX = 'previous_long_buy_position_index'
 PREV_SHORT_SELL_POSITION_INDEX = 'previous_short_sell_position_index'
+
+# testing
+QTY = 'quantity'
+SIDE = 'side'
+SYMBOL_FREE_CASH = 'symbol_free_cash'

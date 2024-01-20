@@ -17,10 +17,10 @@ class TestTradingManagerDivided(TestTradingManager):
     def apply_strategy(self):
         for symbol, value_dict in self.data_generator.symbol_dict.items():
             # normalize open price
-            value_dict[SYMBOL_DF].loc[value_dict[SYMBOL_DF].index[-1], OPEN_NORM] = \
-            (value_dict[SYMBOL_DF].loc[value_dict[SYMBOL_DF].index[-1], OPEN] - value_dict[PREV_DAY_DATA][AVG_OPEN]) / value_dict[PREV_DAY_DATA][STD_OPEN]
+            value_dict[DAILY_PRICE_DATA_DF].loc[value_dict[DAILY_PRICE_DATA_DF].index[-1], OPEN_NORM] = \
+            (value_dict[DAILY_PRICE_DATA_DF].loc[value_dict[DAILY_PRICE_DATA_DF].index[-1], OPEN] - value_dict[PREV_DAY_DATA][AVG_OPEN]) / value_dict[PREV_DAY_DATA][STD_OPEN]
             
-            SYMBOL_DF_length = len(value_dict[SYMBOL_DF])
+            SYMBOL_DF_length = len(value_dict[DAILY_PRICE_DATA_DF])
             ma_long_value = self.strategy.ma_long
             if SYMBOL_DF_length > ma_long_value:
                 current_capital = self.get_current_capital(symbol)
@@ -29,7 +29,7 @@ class TestTradingManagerDivided(TestTradingManager):
                 self.data_generator.symbol_dict[symbol] = self.strategy.apply_long_strategy(previous_position=previous_position, 
                                                                                                 symbol=symbol,  
                                                                                                 symbol_dict=value_dict)
-                current_df: pd.DataFrame = value_dict[SYMBOL_DF]
+                current_df: pd.DataFrame = value_dict[DAILY_PRICE_DATA_DF]
                 if len(current_df) > self.minutes_before_trading_start:
                     if not self.rsi_filtered and current_df[RSI].mean() < self.rsi_threshold: #NOTE: megfordítottam a >-t!
                         self.symbols_to_delete.append(symbol)

@@ -47,7 +47,7 @@ class TestTradingManager(TradingManagerMain):
 
         if trading_action == ACT_BUY_NEXT_LONG and current_position == POS_OUT:
             self.place_buy_order(symbol=symbol, quantity=quantity_buy_long, price=current_df.iloc[-1][OPEN])
-        elif trading_action == ACT_SELL_PREV_LONG and current_position == POS_LONG_BUY:
+        elif trading_action == ACT_SELL_PREV_LONG and current_position == POS_LONG:
             self.close_current_position(symbol=symbol, price=current_df.iloc[-1][OPEN])
         else:
             print(ACT_NO_ACTION)

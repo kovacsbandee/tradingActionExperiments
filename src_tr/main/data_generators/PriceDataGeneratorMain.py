@@ -39,7 +39,7 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
         if self.recommended_symbol_list is not None:
             for e in self.recommended_symbol_list:
                 self.symbol_dict[e[SYMBOL]] = {
-                    SYMBOL_DF : None,
+                    DAILY_PRICE_DATA_DF : None,
                     PREV_LONG_BUY_POSITION_INDEX : None,
                     PREV_SHORT_SELL_POSITION_INDEX : None,
                     IND_PRICE : OPEN,
@@ -52,23 +52,23 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
             raise ValueError("Recommended symbol list is empty.")
         
     def initialize_additional_columns(self, symbol):
-        self.symbol_dict[symbol][SYMBOL_DF][POSITION] = POS_OUT
-        self.symbol_dict[symbol][SYMBOL_DF][TRADING_ACTION] = ACT_NO_ACTION
-        self.symbol_dict[symbol][SYMBOL_DF][CURRENT_CAPITAL] = 0.0 #TODO: check!
-        self.symbol_dict[symbol][SYMBOL_DF][STOP_LOSS_OUT_SIGNAL] = STOP_LOSS_NONE
-        self.symbol_dict[symbol][SYMBOL_DF][RSI] = None
-        self.symbol_dict[symbol][SYMBOL_DF][OPEN_SMALL_IND_COL] = None
-        self.symbol_dict[symbol][SYMBOL_DF][OPEN_BIG_IND_COL] = None
-        self.symbol_dict[symbol][SYMBOL_DF][OPEN_NORM] = None
-        self.symbol_dict[symbol][SYMBOL_DF][GAIN_LOSS] = None
-        self.symbol_dict[symbol][SYMBOL_DF][GAIN] = None
-        self.symbol_dict[symbol][SYMBOL_DF][LOSS] = None
-        self.symbol_dict[symbol][SYMBOL_DF][AVG_GAIN] = None
-        self.symbol_dict[symbol][SYMBOL_DF][AVG_LOSS] = None
+        self.symbol_dict[symbol][DAILY_PRICE_DATA_DF][POSITION] = POS_OUT
+        self.symbol_dict[symbol][DAILY_PRICE_DATA_DF][TRADING_ACTION] = ACT_NO_ACTION
+        self.symbol_dict[symbol][DAILY_PRICE_DATA_DF][CURRENT_CAPITAL] = 0.0 #TODO: check!
+        self.symbol_dict[symbol][DAILY_PRICE_DATA_DF][STOP_LOSS_OUT_SIGNAL] = STOP_LOSS_NONE
+        self.symbol_dict[symbol][DAILY_PRICE_DATA_DF][RSI] = None
+        self.symbol_dict[symbol][DAILY_PRICE_DATA_DF][OPEN_SMALL_IND_COL] = None
+        self.symbol_dict[symbol][DAILY_PRICE_DATA_DF][OPEN_BIG_IND_COL] = None
+        self.symbol_dict[symbol][DAILY_PRICE_DATA_DF][OPEN_NORM] = None
+        self.symbol_dict[symbol][DAILY_PRICE_DATA_DF][GAIN_LOSS] = None
+        self.symbol_dict[symbol][DAILY_PRICE_DATA_DF][GAIN] = None
+        self.symbol_dict[symbol][DAILY_PRICE_DATA_DF][LOSS] = None
+        self.symbol_dict[symbol][DAILY_PRICE_DATA_DF][AVG_GAIN] = None
+        self.symbol_dict[symbol][DAILY_PRICE_DATA_DF][AVG_LOSS] = None
         #-----TODO-----
         # Mi az AMOUNT_SOLD és az AMOUNT_BOUGHT definíciója? Mit értünk alattuk?
-        self.symbol_dict[symbol][SYMBOL_DF][AMOUNT_SOLD] = None
-        self.symbol_dict[symbol][SYMBOL_DF][AMOUNT_BOUGHT] = None
+        self.symbol_dict[symbol][DAILY_PRICE_DATA_DF][AMOUNT_SOLD] = None
+        self.symbol_dict[symbol][DAILY_PRICE_DATA_DF][AMOUNT_BOUGHT] = None
                 
     def update_symbol_df(self, minute_bars: List[dict]):
         if minute_bars is not None and len(minute_bars) > 0:
@@ -77,11 +77,11 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
                 bar_df = DataFrame([bar])
                 bar_df.set_index('t', inplace=True)
 
-                if self.symbol_dict[symbol][SYMBOL_DF] is None:
-                    self.symbol_dict[symbol][SYMBOL_DF] = bar_df
+                if self.symbol_dict[symbol][DAILY_PRICE_DATA_DF] is None:
+                    self.symbol_dict[symbol][DAILY_PRICE_DATA_DF] = bar_df
                     self.initialize_additional_columns(symbol)
-                elif isinstance(self.symbol_dict[symbol][SYMBOL_DF], DataFrame):
-                    self.symbol_dict[symbol][SYMBOL_DF] = pd.concat([self.symbol_dict[symbol][SYMBOL_DF], bar_df])
+                elif isinstance(self.symbol_dict[symbol][DAILY_PRICE_DATA_DF], DataFrame):
+                    self.symbol_dict[symbol][DAILY_PRICE_DATA_DF] = pd.concat([self.symbol_dict[symbol][DAILY_PRICE_DATA_DF], bar_df])
                 else:
                     raise ValueError("Unexpected data structure for the symbol in current_data_window")
         else:
