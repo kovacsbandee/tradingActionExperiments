@@ -12,7 +12,7 @@ class TestTradingManager(TradingManagerMain):
         try:
             for item in message:
                 self.minute_bars.append(item)
-                if len(self.minute_bars) == len(self.data_generator.recommended_sticker_list):
+                if len(self.minute_bars) == len(self.data_generator.recommended_symbol_list):
                     self.execute_all()
                     self.minute_bars = []
         except Exception as e:
@@ -20,8 +20,8 @@ class TestTradingManager(TradingManagerMain):
 
     #Override
     def on_open(self, ws):
-        self.data_generator.initialize_sticker_dict()
-        print(f"Sticker dict initialized:\n {self.data_generator.sticker_dict}")
+        self.data_generator.initialize_symbol_dict()
+        print(f"Symbol dict initialized:\n {self.data_generator.symbol_dict}")
     
     #Override    
     def get_current_capital(self):

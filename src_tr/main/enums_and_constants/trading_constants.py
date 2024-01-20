@@ -1,9 +1,9 @@
 # generic constants
 SYMBOL = 'symbol'
 
-# sticker_dict constants
+# symbol_dict constants
 # ennek inkább 'daily_price_data_df'-nek kéne lennie
-STICKER_DF = 'sticker_dataframe'
+SYMBOL_DF = 'symbol_dataframe'
 IND_PRICE = 'indicator_price'
 PREV_DAY_DATA = 'prev_day_data'
 PRICE_RANGE_PERC = 'price_range_perc'
@@ -17,7 +17,7 @@ SCANNING_DAY = 'scanning_day'
 OPEN = 'o'
 CLOSE = 'c'
 
-# sticker_df column name constants:
+# symbol_df column name constants:
 POSITION = 'position'
 TRADING_ACTION = 'trading_action'
 CURRENT_CAPITAL = 'current_capital'
@@ -34,7 +34,7 @@ AVG_LOSS = 'avg_loss'
 AMOUNT_SOLD = 'amount_sold'
 AMOUNT_BOUGHT = 'amount_bought'
 
-# sticker_df column value constants:
+# symbol_df column value constants:
 POS_OUT = 'out'
 # itt javaslom, hogy a 'buy' és 'sell' szó lekerüljön innen, mert megtévesztő a pozíció leírása esetlében, hogy action is társul hozzá
 POS_LONG_BUY = 'long'
@@ -50,6 +50,6 @@ STOP_LOSS_NONE = 'no_stop_loss_out_signal'
 STOP_LOSS_LONG = 'stop_loss_long'
 STOP_LOSS_SHORT = 'stop_loss_short'
 
-# sticker position index constants:
+# symbol position index constants:
 PREV_LONG_BUY_POSITION_INDEX = 'previous_long_buy_position_index'
 PREV_SHORT_SELL_POSITION_INDEX = 'previous_short_sell_position_index'

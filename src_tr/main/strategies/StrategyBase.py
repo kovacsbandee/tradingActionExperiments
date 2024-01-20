@@ -4,15 +4,15 @@ from pandas import DataFrame
 class StrategyBase(ABC):
 
     """
-        sticker_dict = {
+        symbol_dict = {
             'AAPL' : DataFrame,
             'TSLA' : DataFrame,
             . . .
         }
     """
     
-    def __init__(self, sticker_dict_from_generator: dict=None):
-        self.sticker_dict = sticker_dict_from_generator
+    def __init__(self, symbol_dict_from_generator: dict=None):
+        self.symbol_dict = symbol_dict_from_generator
 
     
     @abstractmethod

@@ -29,7 +29,7 @@ class TradingManagerMain():
         self.api_key = api_key
         self.secret_key = secret_key
         self.minute_bars = []
-        self.stickers_to_delete = []
+        self.symbols_to_delete = []
         self.rsi_filtered = False
         self.rsi_counter = 0
         self.minutes_before_trading_start = minutes_before_trading_start
@@ -44,7 +44,7 @@ class TradingManagerMain():
             if minute_bars[0]['T'] == 'b':
                 for item in minute_bars:
                     self.minute_bars.append(item)
-                    if len(self.minute_bars) == len(self.data_generator.recommended_sticker_list):
+                    if len(self.minute_bars) == len(self.data_generator.recommended_symbol_list):
                         self.execute_all()
                         self.minute_bars = []
                         print('Data available, execute() called')
@@ -56,7 +56,7 @@ class TradingManagerMain():
 
     def on_open(self, ws: websocket.WebSocketApp):
         print(f"WebSocket connection opened on URL: {ws.url}")
-        self.data_generator.initialize_sticker_dict()
+        self.data_generator.initialize_symbol_dict()
         auth_data = {"action": "auth", "key": f"{self.api_key}", "secret": f"{self.secret_key}"}
 
         ws.send(json.dumps(auth_data))
@@ -64,34 +64,34 @@ class TradingManagerMain():
         #NOTE: polygon -> {"action":"subscribe", "params":"AM.AAPL,AM.TSLA,AM.MSFT"}
         listen_message = {
             "action":"subscribe",
-            "bars": [s[SYMBOL] for s in self.data_generator.recommended_sticker_list]
+            "bars": [s[SYMBOL] for s in self.data_generator.recommended_symbol_list]
             }
 
         ws.send(json.dumps(listen_message))
         
     def execute_all(self):
         try:
-            self.data_generator.update_sticker_df(minute_bars=self.minute_bars)
+            self.data_generator.update_symbol_df(minute_bars=self.minute_bars)
             
-            # apply strategy on all stickers --- TODO: kiszervezni külön metódusba
-            for symbol, value_dict in self.data_generator.sticker_dict.items():
+            # apply strategy on all symbols --- TODO: kiszervezni külön metódusba
+            for symbol, value_dict in self.data_generator.symbol_dict.items():
                 # normalize open price
-                value_dict[STICKER_DF].loc[value_dict[STICKER_DF].index[-1], OPEN_NORM] = \
-                (value_dict[STICKER_DF].loc[value_dict[STICKER_DF].index[-1], OPEN] - value_dict[PREV_DAY_DATA][AVG_OPEN]) / value_dict[PREV_DAY_DATA][STD_OPEN]
+                value_dict[SYMBOL_DF].loc[value_dict[SYMBOL_DF].index[-1], OPEN_NORM] = \
+                (value_dict[SYMBOL_DF].loc[value_dict[SYMBOL_DF].index[-1], OPEN] - value_dict[PREV_DAY_DATA][AVG_OPEN]) / value_dict[PREV_DAY_DATA][STD_OPEN]
                 
-                sticker_df_length = len(value_dict[STICKER_DF])
+                symbol_df_length = len(value_dict[SYMBOL_DF])
                 ma_long_value = self.strategy.ma_long
-                if sticker_df_length > ma_long_value:
+                if symbol_df_length > ma_long_value:
                     current_capital = self.get_current_capital()
                     self.strategy.update_capital_amount(current_capital)
                     previous_position = self.get_previous_position(symbol)
-                    self.data_generator.sticker_dict[symbol] = self.strategy.apply_long_strategy(previous_position=previous_position, 
+                    self.data_generator.symbol_dict[symbol] = self.strategy.apply_long_strategy(previous_position=previous_position, 
                                                                                                  symbol=symbol,  
-                                                                                                 sticker_dict=value_dict)
-                    current_df: pd.DataFrame = value_dict[STICKER_DF]
+                                                                                                 symbol_dict=value_dict)
+                    current_df: pd.DataFrame = value_dict[SYMBOL_DF]
                     if len(current_df) > self.minutes_before_trading_start:
                         if not self.rsi_filtered and current_df[RSI].mean() < self.rsi_threshold: #NOTE: megfordítottam a >-t!
-                            self.stickers_to_delete.append(symbol)
+                            self.symbols_to_delete.append(symbol)
                         elif not self.rsi_filtered and current_df[RSI].mean() >= self.rsi_threshold:
                             self.rsi_counter += 1
                         if self.rsi_filtered:
@@ -101,11 +101,11 @@ class TradingManagerMain():
                 else:
                     print(f"Not enough data to apply strategy. Symbol: {symbol}")
             
-            # filter out stickers by RSI value
-            if not self.rsi_filtered and len(self.stickers_to_delete) > 0:
-                self.rsi_filter_stickers() 
-                print(f"Sticker dictionary filtered by RSI at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-            elif not self.rsi_filtered and self.rsi_counter == len(self.data_generator.recommended_sticker_list):
+            # filter out symbols by RSI value
+            if not self.rsi_filtered and len(self.symbols_to_delete) > 0:
+                self.rsi_filter_symbols() 
+                print(f"Symbol dictionary filtered by RSI at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            elif not self.rsi_filtered and self.rsi_counter == len(self.data_generator.recommended_symbol_list):
                 self.rsi_filtered = True
                 print(f"No RSI filtering required, trading cycle started at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
@@ -148,9 +148,9 @@ class TradingManagerMain():
         else:
             print(ACT_NO_ACTION)
 
-    def rsi_filter_stickers(self):
-        for sticker in self.stickers_to_delete:
-            del self.data_generator.sticker_dict[sticker]
+    def rsi_filter_symbols(self):
+        for symbol in self.symbols_to_delete:
+            del self.data_generator.symbol_dict[symbol]
         self.rsi_filtered = True
             
     def place_buy_order(self, quantity, symbol, price=None):
