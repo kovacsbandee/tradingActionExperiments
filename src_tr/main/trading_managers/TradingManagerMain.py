@@ -8,7 +8,6 @@ import pandas as pd
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
 from src_tr.main.strategies.StrategyWithStopLoss import StrategyWithStopLoss
 from src_tr.main.helpers.converter import string_to_dict_list
-from src_tr.main.enums_and_constants.trading_constants import *
 
 class TradingManagerMain():
 
@@ -64,7 +63,7 @@ class TradingManagerMain():
         #NOTE: polygon -> {"action":"subscribe", "params":"AM.AAPL,AM.TSLA,AM.MSFT"}
         listen_message = {
             "action":"subscribe",
-            "bars": [s[SYMBOL] for s in self.data_generator.recommended_symbol_list]
+            "bars": [s['symbol'] for s in self.data_generator.recommended_symbol_list]
             }
 
         ws.send(json.dumps(listen_message))
@@ -97,17 +96,17 @@ class TradingManagerMain():
                 if p.symbol == symbol:
                     return p.side.value
                 else:
-                    return POS_OUT
+                    return 'out'
         else:
-            return POS_OUT
+            return 'out'
         
     def apply_strategy(self):
         for symbol, value_dict in self.data_generator.symbol_dict.items():
             # normalize open price
-            value_dict[DAILY_PRICE_DATA_DF].loc[value_dict[DAILY_PRICE_DATA_DF].index[-1], OPEN_NORM] = \
-            (value_dict[DAILY_PRICE_DATA_DF].loc[value_dict[DAILY_PRICE_DATA_DF].index[-1], OPEN] - value_dict[PREV_DAY_DATA][AVG_OPEN]) / value_dict[PREV_DAY_DATA][STD_OPEN]
+            value_dict['daily_price_data_df'].loc[value_dict['daily_price_data_df'].index[-1], 'open_norm'] = \
+            (value_dict['daily_price_data_df'].loc[value_dict['daily_price_data_df'].index[-1], 'o'] - value_dict['prev_day_data']['avg_open']) / value_dict['prev_day_data']['std_open']
             
-            symbol_df_length = len(value_dict[DAILY_PRICE_DATA_DF])
+            symbol_df_length = len(value_dict['daily_price_data_df'])
             ma_long_value = self.strategy.ma_long
             if symbol_df_length > ma_long_value:
                 current_capital = self.get_current_capital()
@@ -116,11 +115,11 @@ class TradingManagerMain():
                 self.data_generator.symbol_dict[symbol] = self.strategy.apply_long_strategy(previous_position=previous_position, 
                                                                                                 symbol=symbol,  
                                                                                                 symbol_dict=value_dict)
-                current_df: pd.DataFrame = value_dict[DAILY_PRICE_DATA_DF]
+                current_df: pd.DataFrame = value_dict['daily_price_data_df']
                 if len(current_df) > self.minutes_before_trading_start:
-                    if not self.rsi_filtered and current_df[RSI].mean() < self.rsi_threshold: #NOTE: megfordítottam a >-t!
+                    if not self.rsi_filtered and current_df['rsi'].mean() < self.rsi_threshold: #NOTE: megfordítottam a >-t!
                         self.symbols_to_delete.append(symbol)
-                    elif not self.rsi_filtered and current_df[RSI].mean() >= self.rsi_threshold:
+                    elif not self.rsi_filtered and current_df['rsi'].mean() >= self.rsi_threshold:
                         self.rsi_counter += 1
                     if self.rsi_filtered:
                         self.execute_trading_action(symbol, current_df)
@@ -130,26 +129,26 @@ class TradingManagerMain():
                 print(f"Not enough data to apply strategy. Symbol: {symbol}")
         
     def execute_trading_action(self, symbol, current_df):
-        trading_action = current_df.iloc[-1][TRADING_ACTION]
-        current_position = current_df.iloc[-2][POSITION]
+        trading_action = current_df.iloc[-1]['trading_action']
+        current_position = current_df.iloc[-2]['position']
 
         # divide capital with amount of OUT positions:
         out_positions = self.data_generator.get_out_positions()
-        quantity_buy_long = current_df.iloc[-1][CURRENT_CAPITAL] / out_positions / current_df.iloc[-1][OPEN]
+        quantity_buy_long = current_df.iloc[-1]['current_capital'] / out_positions / current_df.iloc[-1]['o']
 
         #NOTE sell only a percentage of divided capital
-        quantity_sell_short = (current_df.iloc[-1][CURRENT_CAPITAL] / out_positions * 0.15) / current_df.iloc[-1][OPEN]
+        quantity_sell_short = (current_df.iloc[-1]['current_capital'] / out_positions * 0.15) / current_df.iloc[-1]['o']
 
-        if trading_action == ACT_BUY_NEXT_LONG and current_position == POS_OUT:
+        if trading_action == 'buy_next_long_position' and current_position == 'out':
             self.place_buy_order(quantity_buy_long, symbol)
-        elif trading_action == ACT_SELL_NEXT_SHORT and current_position == POS_OUT:
+        elif trading_action == 'sell_next_short_position' and current_position == 'out':
             self.place_sell_order(quantity_sell_short, symbol)
-        elif trading_action == ACT_SELL_PREV_LONG and current_position == POS_LONG:
+        elif trading_action == 'sell_previous_long_position' and current_position == 'long':
             self.close_current_position(position="Sell previous long", symbol=symbol)
-        elif trading_action == ACT_BUY_PREV_SHORT and current_position == POS_SHORT:
+        elif trading_action == 'buy_previous_short_position' and current_position == 'short':
             self.close_current_position(position="Buy previous long", symbol=symbol)
         else:
-            print(ACT_NO_ACTION)
+            print('no_action')
 
     def rsi_filter_symbols(self):
         for symbol in self.symbols_to_delete:

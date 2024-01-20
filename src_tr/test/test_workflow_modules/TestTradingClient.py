@@ -1,7 +1,5 @@
 from typing import List
 
-from src_tr.main.enums_and_constants.trading_constants import POS_OUT, POS_LONG, QTY, SIDE
-
 class TestTradingClient():
     
     def __init__(self, init_cash, symbol_list) -> None:
@@ -24,15 +22,15 @@ class TestTradingClient():
         '''
         for e in self.symbol_list:
             self.positions[e['symbol']] = {
-                QTY: 0,
-                SIDE: POS_OUT
+                'quantity': 0,
+                'side': 'out'
             }
     
     def get_position_by_symbol(self, symbol: str):
         '''
         Returns the latest side for each symbol.
         '''
-        return self.positions[symbol][SIDE]
+        return self.positions[symbol]['side']
     
     def submit_order(self, symbol: str, qty: int, price: float):
         '''
@@ -41,8 +39,8 @@ class TestTradingClient():
         long_amount = qty * price
         self.total_free_cash -= long_amount
         self.positions[symbol] = {
-            QTY: qty,
-            SIDE: POS_LONG
+            'quantity': qty,
+            'side': 'long'
         }
         print(f"Buy order completed. \nSymbol:{symbol} \nPrice at buy:{price} \nAmount bought:{qty} \nCurrent cash: {self.total_free_cash}")
     
@@ -50,8 +48,8 @@ class TestTradingClient():
         '''
         Emualtes closing the position for a symbol.
         '''
-        sell_amount = self.positions[symbol][QTY] * price
+        sell_amount = self.positions[symbol]['quantity'] * price
         self.total_free_cash += sell_amount
-        self.positions[symbol][QTY] = 0
-        self.positions[symbol][SIDE] = POS_OUT
+        self.positions[symbol]['quantity'] = 0
+        self.positions[symbol]['side'] = 'out'
         print(f"Position closed. \nSymbol:{symbol} \nPrice at sell:{price} \nCurrent cash: {self.total_free_cash}")

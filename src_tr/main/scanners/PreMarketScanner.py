@@ -10,7 +10,6 @@ from pandas import DataFrame
 import yfinance as yf
 from joblib import Parallel, delayed
 
-from src_tr.main.enums_and_constants.trading_constants import AVG_OPEN, STD_OPEN, SYMBOL, PRICE_RANGE_PERC, AVG_VOLUME, VOLUME_RANGE_RATIO
 from src_tr.main.scanners.ScannerBase import ScannerBase
 
 class PreMarketScanner(ScannerBase):
@@ -87,10 +86,10 @@ class PreMarketScanner(ScannerBase):
 
                 # itt mindig minden statisztikát vissza kell adni, amit kiszámolunk!
                 return {
-                    SYMBOL: symbol,
-                    AVG_OPEN: avg_open,
+                    'symbol': symbol,
+                    'avg_open': avg_open,
                     'median_open': median_open,
-                    STD_OPEN: std_open,
+                    'std_open': std_open,
                     'avg_close': avg_close,
                     'median_close': median_close,
                     'high_max': high_max,
@@ -98,14 +97,14 @@ class PreMarketScanner(ScannerBase):
                     'minute_oc_price_diff_avg': minute_oc_price_diff_avg,
                     'minute_oc_price_diff_median': minute_oc_price_diff_median,
                     'minute_oc_price_diff_std': minute_oc_price_diff_std,
-                    AVG_VOLUME: avg_volume,
+                    'avg_volume': avg_volume,
                     'median_volume': median_volume,
                     'max_volume': volume_max,
                     'min_volume': volume_min,
                     'close_monetary_avg_volume': close_monetary_avg_volume,
                     'close_monetary_min_volume': close_monetary_min_volume,
-                    PRICE_RANGE_PERC: price_range_perc,
-                    VOLUME_RANGE_RATIO: volume_range_ratio
+                    'price_range_perc': price_range_perc,
+                    'volume_range_ratio': volume_range_ratio
                     }
             else:
                 return None
@@ -138,19 +137,19 @@ class PreMarketScanner(ScannerBase):
         Filters the pre_market_stats dataframe with, price boundaries and price ranges and volume.
         '''
         self.recommended_symbols: pd.DataFrame = self.pre_market_stats[
-            (self.lower_price_boundary < self.pre_market_stats[AVG_OPEN]) & \
-            (self.pre_market_stats[AVG_OPEN] < self.upper_price_boundary) & \
-            (self.price_range_perc_cond < self.pre_market_stats[PRICE_RANGE_PERC]) & \
-            (self.avg_volume_cond < self.pre_market_stats[AVG_VOLUME])]
+            (self.lower_price_boundary < self.pre_market_stats['avg_open']) & \
+            (self.pre_market_stats['avg_open'] < self.upper_price_boundary) & \
+            (self.price_range_perc_cond < self.pre_market_stats['price_range_perc']) & \
+            (self.avg_volume_cond < self.pre_market_stats['avg_volume'])]
         print(f'The recommended watchlist for {self.trading_day} is the following DataFrame: {self.recommended_symbols}')
 
         symbol_dict_list = []
         if self.recommended_symbols is not None:
             for index, row in self.recommended_symbols.iterrows():
                 st_dict = {
-                    SYMBOL : row[SYMBOL],
-                    AVG_OPEN : row[AVG_OPEN],
-                    STD_OPEN : row[STD_OPEN]
+                    'symbol' : row['symbol'],
+                    'avg_open' : row['avg_open'],
+                    'std_open' : row['std_open']
                 }
                 symbol_dict_list.append(st_dict)
                 #symbol_dict_list.append(row['symbol'])
