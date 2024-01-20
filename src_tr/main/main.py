@@ -13,7 +13,7 @@ import websocket
 #logging.basicConfig(level=logging.DEBUG)
 
 from src_tr.main.checks.checks import check_trading_day
-from src_tr.main.utils.utils import calculate_scanning_day, get_nasdaq_stickers
+from src_tr.main.utils.utils import calculate_scanning_day, get_nasdaq_symbols
 from src_tr.main.scanners.PreMarketScanner import PreMarketScanner
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
 from src_tr.main.strategies.StrategyWithStopLoss import StrategyWithStopLoss
@@ -24,9 +24,9 @@ load_dotenv()
 ALPACA_KEY= os.environ["ALPACA_KEY"]
 ALPACA_SECRET_KEY= os.environ["ALPACA_SECRET_KEY"]
 SOCKET_URL= os.environ["SOCKET_URL"]
-STICKER_CSV_PATH = os.environ["STICKER_CSV_PATH"]
+SYMBOL_CSV_PATH = os.environ["SYMBOL_CSV_PATH"]
 
-nasdaq_stickers = get_nasdaq_stickers(file_path=STICKER_CSV_PATH)
+nasdaq_symbols = get_nasdaq_symbols(file_path=SYMBOL_CSV_PATH)
 
 trading_client = TradingClient(ALPACA_KEY, ALPACA_SECRET_KEY, paper=True)
 trading_day = check_trading_day('2023-12-28')
@@ -34,19 +34,19 @@ scanning_day = calculate_scanning_day(trading_day)
 
 scanner = PreMarketScanner(trading_day=trading_day,
                            scanning_day=scanning_day,
-                           stickers=nasdaq_stickers,
+                           symbols=nasdaq_symbols,
                            lower_price_boundary=10,
                            upper_price_boundary=400,
                            price_range_perc_cond=10,
                            avg_volume_cond=25000)
 
-# initialize sticker list:
+# initialize symbol list:
 scanner.calculate_filtering_stats()
-recommended_sticker_list: List[dict] = scanner.recommend_premarket_watchlist()
+recommended_symbol_list: List[dict] = scanner.recommend_premarket_watchlist()
 
 # rec_st_list = ['AAPL', 'TSLA']
 
-data_generator = PriceDataGeneratorMain(recommended_sticker_list=recommended_sticker_list)
+data_generator = PriceDataGeneratorMain(recommended_symbol_list=recommended_symbol_list)
 
 strategy = StrategyWithStopLoss(ma_short=5,
                                 ma_long=12,

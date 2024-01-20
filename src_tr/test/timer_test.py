@@ -10,7 +10,7 @@ while True:
     
     yahoo_start = datetime(2023, 11, 10)
     yahoo_end = datetime(2023, 11, 11)
-    bar_df = get_yahoo_data(sticker='AAPL', start_date=yahoo_start, end_date=yahoo_end,n_last_bars=1)
+    bar_df = get_yahoo_data(symbol='AAPL', start_date=yahoo_start, end_date=yahoo_end,n_last_bars=1)
     print(bar_df)
 
     # The thing to time. Using sleep as an example

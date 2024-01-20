@@ -17,8 +17,8 @@ def plot_daily_statistics(data_man):
 def create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiments(data_gen, data_man):
     date = data_man.run_parameters['trading_day']
 
-    for symbol in data_gen.sticker_dict.keys():
-        plot_df = data_gen.sticker_dict[symbol]['sticker_dataframe']
+    for symbol in data_gen.symbol_dict.keys():
+        plot_df = data_gen.symbol_dict[symbol]['symbol_dataframe']
         fig = make_subplots(rows=5, cols=1, shared_xaxes=True,
                             specs=[[{"secondary_y": False}],
                                    [{"secondary_y": True}],
