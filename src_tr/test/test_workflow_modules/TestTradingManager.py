@@ -3,7 +3,6 @@ from typing import List
 
 from src_tr.main.trading_managers.TradingManagerMain import TradingManagerMain
 from src_tr.main.helpers.converter import string_to_dict_list
-from src_tr.main.enums_and_constants.trading_constants import *
 
 class TestTradingManager(TradingManagerMain):
     
@@ -12,7 +11,7 @@ class TestTradingManager(TradingManagerMain):
         try:
             for item in message:
                 self.minute_bars.append(item)
-                if len(self.minute_bars) == len(self.data_generator.recommended_sticker_list):
+                if len(self.minute_bars) == len(self.data_generator.recommended_symbol_list):
                     self.execute_all()
                     self.minute_bars = []
         except Exception as e:
@@ -20,8 +19,8 @@ class TestTradingManager(TradingManagerMain):
 
     #Override
     def on_open(self, ws):
-        self.data_generator.initialize_sticker_dict()
-        print(f"Sticker dict initialized:\n {self.data_generator.sticker_dict}")
+        self.data_generator.initialize_symbol_dict()
+        print(f"Symbol dict initialized:\n {self.data_generator.symbol_dict}")
     
     #Override    
     def get_current_capital(self):
@@ -33,8 +32,8 @@ class TestTradingManager(TradingManagerMain):
     
     #Override
     def execute_trading_action(self, symbol, current_df):
-        trading_action = current_df.iloc[-1][TRADING_ACTION]
-        current_position = current_df.iloc[-2][POSITION]
+        trading_action = current_df.iloc[-1]['trading_action']
+        current_position = current_df.iloc[-2]['position']
 
         # IGEN EZ NE LEGYEN, MERT SZERINTEM NAGYON MEGNEHEZÍTI AZ EGÉSZ ÉRTELMEZÉSÉT TESZELÉS SORÁN!
         # NYILVÁN VALAMIT MAJD TŐKE MANAGELÉSÉRE KI KELL TALÁLNI,
@@ -43,14 +42,14 @@ class TestTradingManager(TradingManagerMain):
         # divide capital with amount of OUT positions:
         out_positions = self.data_generator.get_out_positions()
         #quantity_buy_long = current_df.iloc[-1][CURRENT_CAPITAL] / out_positions / current_df.iloc[-1][OPEN]
-        quantity_buy_long = current_df.iloc[-1][CURRENT_CAPITAL] / current_df.iloc[-1][OPEN]
+        quantity_buy_long = current_df.iloc[-1]['current_capital'] / current_df.iloc[-1]['o']
 
-        if trading_action == ACT_BUY_NEXT_LONG and current_position == POS_OUT:
-            self.place_buy_order(symbol=symbol, quantity=quantity_buy_long, price=current_df.iloc[-1][OPEN])
-        elif trading_action == ACT_SELL_PREV_LONG and current_position == POS_LONG_BUY:
-            self.close_current_position(symbol=symbol, price=current_df.iloc[-1][OPEN])
+        if trading_action == 'buy_next_long_position' and current_position == 'out':
+            self.place_buy_order(symbol=symbol, quantity=quantity_buy_long, price=current_df.iloc[-1]['o'])
+        elif trading_action == 'sell_previous_long_position' and current_position == 'long':
+            self.close_current_position(symbol=symbol, price=current_df.iloc[-1]['o'])
         else:
-            print(ACT_NO_ACTION)
+            print('no_action')
             
     #Override
     def place_buy_order(self, quantity, symbol, price=None):

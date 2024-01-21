@@ -1,13 +1,11 @@
 from typing import List
 
-from src_tr.main.enums_and_constants.trading_constants import POS_OUT, POS_LONG_BUY
-
 class TestTradingClient():
     
-    def __init__(self, init_cash, sticker_list) -> None:
-        self.cash: int = init_cash
+    def __init__(self, init_cash, symbol_list) -> None:
+        self.total_free_cash: int = init_cash
         self.positions: dict = {}
-        self.sticker_list: List[dict] = sticker_list
+        self.symbol_list: List[dict] = symbol_list
     
     """
         self.positions = {
@@ -22,10 +20,10 @@ class TestTradingClient():
         '''
         Initializes the position dictionary, with quantity 0, and side out.
         '''
-        for e in self.sticker_list:
+        for e in self.symbol_list:
             self.positions[e['symbol']] = {
-                'qty': 0,
-                'side': POS_OUT
+                'quantity': 0,
+                'side': 'out'
             }
     
     def get_position_by_symbol(self, symbol: str):
@@ -39,19 +37,19 @@ class TestTradingClient():
         Emulates submitting the order to the trading client.
         '''
         long_amount = qty * price
-        self.cash -= long_amount
+        self.total_free_cash -= long_amount
         self.positions[symbol] = {
-            'qty': qty,
-            'side': POS_LONG_BUY
+            'quantity': qty,
+            'side': 'long'
         }
-        print(f"Buy order completed. \nSymbol:{symbol} \nPrice at buy:{price} \nAmount bought:{qty} \nCurrent cash: {self.cash}")
+        print(f"Buy order completed. \nSymbol:{symbol} \nPrice at buy:{price} \nAmount bought:{qty} \nCurrent cash: {self.total_free_cash}")
     
     def close_position(self, symbol: str, price: float):
         '''
         Emualtes closing the position for a symbol.
         '''
-        sell_amount = self.positions[symbol]['qty'] * price
-        self.cash += sell_amount
-        self.positions[symbol]['qty'] = 0
-        self.positions[symbol]['side'] = POS_OUT
-        print(f"Position closed. \nSymbol:{symbol} \nPrice at sell:{price} \nCurrent cash: {self.cash}")
+        sell_amount = self.positions[symbol]['quantity'] * price
+        self.total_free_cash += sell_amount
+        self.positions[symbol]['quantity'] = 0
+        self.positions[symbol]['side'] = 'out'
+        print(f"Position closed. \nSymbol:{symbol} \nPrice at sell:{price} \nCurrent cash: {self.total_free_cash}")

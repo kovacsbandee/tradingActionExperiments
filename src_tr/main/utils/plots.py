@@ -1,7 +1,6 @@
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from src_tr.main.enums_and_constants.trading_constants import *
 
 def plot_daily_statistics(plot_df, db_path, daily_dir_name):
     statistics_variables = [c for c in plot_df.columns if c != 'symbol']
@@ -24,8 +23,8 @@ def plot_daily_statistics_correlation_matrix(plot_df, db_path, daily_dir_name):
 def create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiments(data_gen, data_man):
     date = data_man.run_parameters['trading_day']
 
-    for symbol in data_gen.sticker_dict.keys():
-        plot_df = data_gen.sticker_dict[symbol]['sticker_dataframe']
+    for symbol in data_gen.symbol_dict.keys():
+        plot_df = data_gen.symbol_dict[symbol]['symbol_dataframe']
         fig = make_subplots(rows=5, cols=1, shared_xaxes=True,
                             specs=[[{"secondary_y": False}],
                                    [{"secondary_y": True}],
@@ -53,7 +52,7 @@ def create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiment
                       secondary_y=True, row=2, col=1)
         fig.update_yaxes(title = 'number of transactions', title_font=dict(color='red'), autorange = 'reversed', secondary_y=True, row=2, col=1)
         fig.add_trace(go.Scatter(x=plot_df.index,
-                                 y=plot_df[OPEN_NORM],
+                                 y=plot_df['open_norm'],
                                  name='normalized price',
                                  mode='lines',
                                  connectgaps=True), row=3, col=1)
