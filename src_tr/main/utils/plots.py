@@ -1,7 +1,6 @@
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from src_tr.main.enums_and_constants.trading_constants import *
 
 def plot_daily_statistics(data_man):
     plot_df = pd.read_csv(f'{data_man.db_path}/{data_man.daily_dir}/recommended_symbols_pre_market_stats.csv')
