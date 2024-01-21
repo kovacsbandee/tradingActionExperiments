@@ -1,7 +1,6 @@
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from src_tr.main.enums_and_constants.trading_constants import *
 
 def plot_daily_statistics(data_man):
     plot_df = pd.read_csv(f'{data_man.db_path}/{data_man.daily_dir}/recommended_symbols_pre_market_stats.csv')
@@ -45,7 +44,7 @@ def create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiment
                       secondary_y=True, row=2, col=1)
         fig.update_yaxes(title = 'number of transactions', title_font=dict(color='red'), autorange = 'reversed', secondary_y=True, row=2, col=1)
         fig.add_trace(go.Scatter(x=plot_df.index,
-                                 y=plot_df[OPEN_NORM],
+                                 y=plot_df['open_norm'],
                                  name='normalized price',
                                  mode='lines',
                                  connectgaps=True), row=3, col=1)

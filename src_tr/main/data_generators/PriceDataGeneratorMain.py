@@ -3,13 +3,11 @@ from .PriceDataGeneratorBase import PriceDataGeneratorBase
 import pandas as pd
 from pandas import DataFrame
 
-from src_tr.main.enums_and_constants.trading_constants import *
-
 class PriceDataGeneratorMain(PriceDataGeneratorBase):
 
     def __init__(self, recommended_symbol_list):
         super().__init__(recommended_symbol_list)
-        self.ind_price = OPEN
+        self.ind_price = 'o'
         # Mi a definíciója az out_position-nek? Ha azt jelenti, hogy hány symbol nincsen pozícióban,
         # akkor nem lenne egyszerűbb azt nézni hány symbol van pozícióban?
         self.out_positions = len(recommended_symbol_list) # TODO: le kell kérni az Alpacáról minden indításnál!
@@ -38,37 +36,37 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
     def initialize_symbol_dict(self):
         if self.recommended_symbol_list is not None:
             for e in self.recommended_symbol_list:
-                self.symbol_dict[e[SYMBOL]] = {
-                    SYMBOL_DF : None,
-                    PREV_LONG_BUY_POSITION_INDEX : None,
-                    PREV_SHORT_SELL_POSITION_INDEX : None,
-                    IND_PRICE : OPEN,
-                    PREV_DAY_DATA : {
-                        AVG_OPEN : e[AVG_OPEN],
-                        STD_OPEN: e[STD_OPEN]
+                self.symbol_dict[e['symbol']] = {
+                    'daily_price_data_df' : None,
+                    'previous_long_buy_position_index' : None,
+                    'previous_short_sell_position_index' : None,
+                    'indicator_price' : 'o',
+                    'prev_day_data' : {
+                        'avg_open' : e['avg_open'],
+                        'std_open': e['std_open']
                     }
                 }
         else:
             raise ValueError("Recommended symbol list is empty.")
         
     def initialize_additional_columns(self, symbol):
-        self.symbol_dict[symbol][SYMBOL_DF][POSITION] = POS_OUT
-        self.symbol_dict[symbol][SYMBOL_DF][TRADING_ACTION] = ACT_NO_ACTION
-        self.symbol_dict[symbol][SYMBOL_DF][CURRENT_CAPITAL] = 0.0 #TODO: check!
-        self.symbol_dict[symbol][SYMBOL_DF][STOP_LOSS_OUT_SIGNAL] = STOP_LOSS_NONE
-        self.symbol_dict[symbol][SYMBOL_DF][RSI] = None
-        self.symbol_dict[symbol][SYMBOL_DF][OPEN_SMALL_IND_COL] = None
-        self.symbol_dict[symbol][SYMBOL_DF][OPEN_BIG_IND_COL] = None
-        self.symbol_dict[symbol][SYMBOL_DF][OPEN_NORM] = None
-        self.symbol_dict[symbol][SYMBOL_DF][GAIN_LOSS] = None
-        self.symbol_dict[symbol][SYMBOL_DF][GAIN] = None
-        self.symbol_dict[symbol][SYMBOL_DF][LOSS] = None
-        self.symbol_dict[symbol][SYMBOL_DF][AVG_GAIN] = None
-        self.symbol_dict[symbol][SYMBOL_DF][AVG_LOSS] = None
+        self.symbol_dict[symbol]['daily_price_data_df']['position'] = 'out'
+        self.symbol_dict[symbol]['daily_price_data_df']['trading_action'] = 'no_action'
+        self.symbol_dict[symbol]['daily_price_data_df']['current_capital'] = 0.0 #TODO: check!
+        self.symbol_dict[symbol]['daily_price_data_df']['stop_loss_out_signal'] = 'no_stop_loss_out_signal'
+        self.symbol_dict[symbol]['daily_price_data_df']['rsi'] = None
+        self.symbol_dict[symbol]['daily_price_data_df']['open_small_indicator'] = None
+        self.symbol_dict[symbol]['daily_price_data_df']['open_big_indicator'] = None
+        self.symbol_dict[symbol]['daily_price_data_df']['open_norm'] = None
+        self.symbol_dict[symbol]['daily_price_data_df']['gain_loss'] = None
+        self.symbol_dict[symbol]['daily_price_data_df']['gain'] = None
+        self.symbol_dict[symbol]['daily_price_data_df']['loss'] = None
+        self.symbol_dict[symbol]['daily_price_data_df']['avg_gain'] = None
+        self.symbol_dict[symbol]['daily_price_data_df']['avg_loss'] = None
         #-----TODO-----
         # Mi az AMOUNT_SOLD és az AMOUNT_BOUGHT definíciója? Mit értünk alattuk?
-        self.symbol_dict[symbol][SYMBOL_DF][AMOUNT_SOLD] = None
-        self.symbol_dict[symbol][SYMBOL_DF][AMOUNT_BOUGHT] = None
+        self.symbol_dict[symbol]['daily_price_data_df']['amount_sold'] = None
+        self.symbol_dict[symbol]['daily_price_data_df']['amount_bought'] = None
                 
     def update_symbol_df(self, minute_bars: List[dict]):
         if minute_bars is not None and len(minute_bars) > 0:
@@ -77,11 +75,11 @@ class PriceDataGeneratorMain(PriceDataGeneratorBase):
                 bar_df = DataFrame([bar])
                 bar_df.set_index('t', inplace=True)
 
-                if self.symbol_dict[symbol][SYMBOL_DF] is None:
-                    self.symbol_dict[symbol][SYMBOL_DF] = bar_df
+                if self.symbol_dict[symbol]['daily_price_data_df'] is None:
+                    self.symbol_dict[symbol]['daily_price_data_df'] = bar_df
                     self.initialize_additional_columns(symbol)
-                elif isinstance(self.symbol_dict[symbol][SYMBOL_DF], DataFrame):
-                    self.symbol_dict[symbol][SYMBOL_DF] = pd.concat([self.symbol_dict[symbol][SYMBOL_DF], bar_df])
+                elif isinstance(self.symbol_dict[symbol]['daily_price_data_df'], DataFrame):
+                    self.symbol_dict[symbol]['daily_price_data_df'] = pd.concat([self.symbol_dict[symbol]['daily_price_data_df'], bar_df])
                 else:
                     raise ValueError("Unexpected data structure for the symbol in current_data_window")
         else:

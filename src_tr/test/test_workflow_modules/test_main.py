@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from datetime import datetime, timedelta
 
 from src_tr.test.test_workflow_modules.TestTradingClient import TestTradingClient
+from src_tr.test.test_workflow_modules.TestTradingClientDivided import TestTradingClientDivided
 from alpaca.data.historical import StockHistoricalDataClient
 from alpaca.data.requests import StockBarsRequest
 from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
@@ -20,6 +21,7 @@ from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGenerato
 from src_tr.main.strategies.StrategyWithStopLoss import StrategyWithStopLoss
 from src_tr.main.strategies.StrategyWithStopLossPrevPrice import StrategyWithStopLossPrevPrice
 from src_tr.test.test_workflow_modules.TestTradingManager import TestTradingManager
+from src_tr.test.test_workflow_modules.TestTradingManagerDivided import TestTradingManagerDivided
 
 # 1) Scanner inicializálása -> watchlist létrehozás
 load_dotenv()
@@ -97,12 +99,15 @@ for start in [datetime(2024, 1, 10, 0, 0), datetime(2024, 1, 11, 0, 0)]:
         data_manager.save_params_and_scanner_output(params=run_parameters, scanner_output=scanner.recommended_symbols)
         data_manager.recommended_symbol_list = recommended_symbol_list
         
+        trading_client = TestTradingClientDivided(init_cash=run_parameters['init_cash'],
+                                           symbol_list=recommended_symbol_list)        
         
-        trading_client = TestTradingClient(init_cash=run_parameters['init_cash'],
-                                           symbol_list=data_manager.recommended_symbol_list)
+        #trading_client = TestTradingClient(init_cash=run_parameters['init_cash'],
+        #                                   symbol_list=data_manager.recommended_symbol_list)
+        
         trading_client.initialize_positions()
         
-        data_generator = PriceDataGeneratorMain(recommended_symbol_list=data_manager.recommended_symbol_list)
+        data_generator = PriceDataGeneratorMain(recommended_symbol_list=recommended_symbol_list)
         
         # Strategy with stop loss compared to the last price when opening the position:
         # strategy = StrategyWithStopLoss(ma_short=run_parameters['ma_short'],
@@ -124,7 +129,15 @@ for start in [datetime(2024, 1, 10, 0, 0), datetime(2024, 1, 11, 0, 0)]:
                                                  run_id=RUN_ID,
                                                  db_path=DB_PATH)
         
-        trading_manager = TestTradingManager(data_generator=data_generator,
+        #trading_manager = TestTradingManager(data_generator=data_generator,
+        #                                     strategy=strategy,
+        #                                     trading_client=trading_client,
+        #                                     rsi_threshold=run_parameters['rsi_threshold'],
+        #                                     minutes_before_trading_start=run_parameters['rsi_minutes_before_trading_start'],
+        #                                     api_key='test_key',
+        #                                     secret_key='test_secret')
+        
+        trading_manager = TestTradingManagerDivided(data_generator=data_generator,
                                              strategy=strategy,
                                              trading_client=trading_client,
                                              rsi_threshold=run_parameters['rsi_threshold'],
@@ -182,8 +195,8 @@ for start in [datetime(2024, 1, 10, 0, 0), datetime(2024, 1, 11, 0, 0)]:
 
         plot_daily_statistics(data_man=data_manager)
         create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiments(data_generator, data_manager)
-    except:
-        pass
+    except Exception as e:
+        print(str(e))
 
 # visszaolvasni a daily csv-ket egyenként és megcsinálni a post trading aggregált statisztikákat majd kimenteni soronként a napi post trading statisztika file-ba
 

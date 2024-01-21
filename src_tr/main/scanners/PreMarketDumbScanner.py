@@ -6,7 +6,6 @@ from pandas import DataFrame
 import yfinance as yf
 from joblib import Parallel, delayed
 
-from src_tr.main.enums_and_constants.trading_constants import AVG_OPEN, STD_OPEN, SYMBOL, PRICE_RANGE_PERC, AVG_VOLUME, VOLUME_RANGE_RATIO, SCANNING_DAY
 from src_tr.main.scanners.ScannerBase import ScannerBase
 
 class PreMarketDumbScanner(ScannerBase):
@@ -72,22 +71,22 @@ class PreMarketDumbScanner(ScannerBase):
 
                 # itt mindig minden statisztikát vissza kell adni, amit kiszámolunk!
                 return {
-                    SYMBOL: symbol,
-                    AVG_OPEN: avg_open,
+                    'symbol': symbol,
+                    'avg_open': avg_open,
                     'median_open': median_open,
-                    STD_OPEN: std_open,
+                    'std_open': std_open,
                     'avg_close': avg_close,
                     'median_close': median_close,
                     'high_max': high_max,
                     'low_min': low_min,
-                    AVG_VOLUME: avg_volume,
+                    'avg_volume': avg_volume,
                     'median_volume': median_volume,
                     'max_volume': volume_max,
                     'min_volume': volume_min,
                     'close_monetary_avg_volume': close_monetary_avg_volume,
                     'close_monetary_min_volume': close_monetary_min_volume,
-                    PRICE_RANGE_PERC: price_range_perc,
-                    VOLUME_RANGE_RATIO: volume_range_ratio
+                    'price_range_perc': price_range_perc,
+                    'volume_range_ratio': volume_range_ratio
                 }
             else:
                 return None
@@ -127,9 +126,9 @@ class PreMarketDumbScanner(ScannerBase):
         if self.recommended_symbols is not None:
             for index, row in self.recommended_symbols.iterrows():
                 st_dict = {
-                    SYMBOL : row[SYMBOL],
-                    AVG_OPEN : row[AVG_OPEN],
-                    STD_OPEN : row[STD_OPEN]
+                    'symbol' : row['symbol'],
+                    'avg_open' : row['avg_open'],
+                    'std_open' : row['std_open']
                 }
                 # Itt azt gondolom, hogy érdemes lenne beletenni minden statisztikát, amit számolunk,
                 # így lenne lehetőség arra, hogy vizsgáljuk az összefüggéseket a premarket scanner statisztikái és a kereskedés eredményei között
