@@ -25,7 +25,6 @@ class StrategyWithStopLoss(StrategyBase):
         self.epsilon = epsilon
         self.trading_day = trading_day.strftime('%Y_%m_%d')
         self.run_id = run_id
-        load_dotenv()
         self.db_path = db_path
         self.name = 'strategy_with_stoploss'
         self.daily_dir_name = self.run_id + '_' + 'trading_day' + '_' + self.trading_day

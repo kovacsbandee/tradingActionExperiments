@@ -68,6 +68,7 @@ def create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiment
                                  mode='lines',
                                  connectgaps=True), row=5, col=1)
         fig.update_xaxes(showticklabels=True)
+        # TODO ide bele kell tenni az indikátorok hisztogramját és az epsilont is rá kell tenni a plotra.
         title_date = date.replace('-', '.')
         fig.update_layout(title=f'{symbol} {title_date}.', title_font=dict(size=18), xaxis_rangeslider_visible=False, height=1500)
         fig.write_html(f'{data_man.db_path}/{data_man.daily_dir_name}/daily_files/plots/candle_plot_{symbol}_{date}.html')

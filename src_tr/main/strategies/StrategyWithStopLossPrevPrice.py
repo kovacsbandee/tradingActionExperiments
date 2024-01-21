@@ -25,7 +25,6 @@ class StrategyWithStopLossPrevPrice(StrategyBase):
         self.comission_ratio = 0.0
         self.trading_day = trading_day.strftime('%Y_%m_%d')
         self.run_id = run_id
-        load_dotenv()
         self.db_path = db_path
         self.name = 'strategy_with_stoploss_prev_price'
         self.daily_dir_name = self.run_id + '_' + 'trading_day' + '_' + self.trading_day

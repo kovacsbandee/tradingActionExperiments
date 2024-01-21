@@ -1,6 +1,9 @@
 # az ebben a file-ban javasolt változtatásokat mindegyik scanner-ben meg kell csinálni,
 # esetleg már az ősosztályba be lehetne dolgozni
 
+
+# TODO: nem az előző napot kell nézni, hanem az előző kereskedési napot Cirmi!!!
+
 import os
 from typing import List
 from datetime import timedelta

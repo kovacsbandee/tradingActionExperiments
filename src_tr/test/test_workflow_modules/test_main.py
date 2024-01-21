@@ -31,9 +31,12 @@ ALPACA_KEY = os.environ["ALPACA_KEY"]
 ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
 DB_PATH = os.environ['DB_PATH']
 
-RUN_ID = 'dev_run_id_testing_in_mass'
+RUN_ID = '1st_attempt_testing_in_mass_wout_scanner'
 
-for start in [datetime(2024, 1, 16, 0, 0), datetime(2024, 1, 17, 0, 0), datetime(2024, 1, 18, 0, 0)]:
+for start in [datetime(2023, 12, 27, 0, 0), datetime(2023, 12, 28, 0, 0), datetime(2023, 12, 29, 0, 0), datetime(2024, 1, 2, 0, 0), datetime(2024, 1, 3, 0, 0),
+              datetime(2024, 1, 4, 0, 0), datetime(2024, 1, 5, 0, 0), datetime(2024, 1, 6, 0, 0), datetime(2024, 1, 7, 0, 0), datetime(2024, 1, 8, 0, 0), datetime(2024, 1, 9, 0, 0),
+              datetime(2024, 1, 10, 0, 0), datetime(2024, 1, 11, 0, 0), datetime(2024, 1, 12, 0, 0), datetime(2024, 1, 13, 0, 0), datetime(2024, 1, 14, 0, 0), datetime(2024, 1, 15, 0, 0),
+              datetime(2024, 1, 16, 0, 0), datetime(2024, 1, 17, 0, 0), datetime(2024, 1, 18, 0, 0)]:
     try:
         end = start + timedelta(hours=23) + timedelta(minutes=59)
         if start.strftime('%A') == 'Sunday' or start.strftime('%A') == 'Saturday':
@@ -52,8 +55,8 @@ for start in [datetime(2024, 1, 16, 0, 0), datetime(2024, 1, 17, 0, 0), datetime
                 'sticker_csvs': STICKER_CSV_PATH,
                 'init_cash': 10000,
                 'lower_price_boundary': 5,
-                'upper_price_boundary': 400,
-                'price_range_perc_cond': 5,
+                'upper_price_boundary': 1000,
+                'price_range_perc_cond': 0,
                 'avg_volume_cond': 10000,
                 'ma_short': 5,
                 'ma_long': 12,
