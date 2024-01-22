@@ -29,9 +29,9 @@ SYMBOL_CSV_PATH = os.environ["SYMBOL_CSV_PATH"]
 ALPACA_KEY = os.environ["ALPACA_KEY"]
 ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
 DB_PATH = os.environ['DB_PATH']
-RUN_ID = 'DEV_RUN_ID'
+RUN_ID = 'DEV_RUN_ID_valami'
 
-for start in [datetime(2024, 1, 10, 0, 0), datetime(2024, 1, 11, 0, 0)]:
+for start in [datetime(2024, 1, 10, 0, 0)]:#, datetime(2024, 1, 11, 0, 0)]:
     try:
         end = start + timedelta(hours=23) + timedelta(minutes=59)
         trading_day = check_trading_day(start)
@@ -192,11 +192,13 @@ for start in [datetime(2024, 1, 10, 0, 0), datetime(2024, 1, 11, 0, 0)]:
             trading_manager.handle_message(ws=None, message=minute_bars)
             minute_bars = []
             i += 1
-
         plot_daily_statistics(data_man=data_manager)
         create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiments(data_generator, data_manager)
-    except Exception as e:
-        print(str(e))
+
+    except IndexError as ie:
+        plot_daily_statistics(data_man=data_manager)
+        create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiments(data_generator, data_manager)
+        print(str(ie))
 
 # visszaolvasni a daily csv-ket egyenként és megcsinálni a post trading aggregált statisztikákat majd kimenteni soronként a napi post trading statisztika file-ba
 
