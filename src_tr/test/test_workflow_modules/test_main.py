@@ -31,22 +31,25 @@ ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
 DB_PATH = os.environ['DB_PATH']
 RUN_ID = 'DEV_RUN_ID_valami'
 
-for start in [datetime(2024, 1, 10, 0, 0)]:#, datetime(2024, 1, 11, 0, 0)]:
+for start in [datetime(2024, 1, 3, 0, 0)]:
+    # , datetime(2024, 1, 4, 0, 0), datetime(2024, 1, 5, 0, 0),
+    #           datetime(2024, 1, 9, 0, 0), datetime(2024, 1, 10, 0, 0), datetime(2024, 1, 11, 0, 0), datetime(2024, 1, 12, 0, 0),
+    #           datetime(2024, 1, 16, 0, 0), datetime(2024, 1, 17, 0, 0), datetime(2024, 1, 18, 0, 0), datetime(2024, 1, 19, 0, 0)]:
     try:
+        start = start + timedelta(hours=0) + timedelta(minutes=00)
         end = start + timedelta(hours=23) + timedelta(minutes=59)
         trading_day = check_trading_day(start)
         scanning_day = calculate_scanning_day(trading_day)
         
         data_manager = DataManager(trading_day=trading_day, scanning_day=scanning_day, run_id=RUN_ID, db_path=DB_PATH)
         
-        nasdaq_symbols = get_nasdaq_symbols(file_path=SYMBOL_CSV_PATH)[:100]
-        
+        nasdaq_symbols = get_nasdaq_symbols(file_path=SYMBOL_CSV_PATH)
         run_parameters = \
             {
                 'run_id': RUN_ID,
                 'trading_day': start.strftime('%Y_%m_%d'),
                 'symbol_csvs': SYMBOL_CSV_PATH,
-                'init_cash': 26000,
+                'init_cash': 10000,
                 'lower_price_boundary': 10,
                 'upper_price_boundary': 400,
                 'price_range_perc_cond': 5,
@@ -96,11 +99,12 @@ for start in [datetime(2024, 1, 10, 0, 0)]:#, datetime(2024, 1, 11, 0, 0)]:
         recommended_symbol_list: List[dict] = scanner.recommend_premarket_watchlist()
         
         data_manager.create_daily_dirs()
-        data_manager.save_params_and_scanner_output(params=run_parameters, scanner_output=scanner.recommended_symbols)
+        data_manager.save_params(params=run_parameters)
         data_manager.recommended_symbol_list = recommended_symbol_list
         
         trading_client = TestTradingClientDivided(init_cash=run_parameters['init_cash'],
-                                           symbol_list=recommended_symbol_list)        
+                                                  symbol_list=recommended_symbol_list,
+                                                  mode='same')
         
         #trading_client = TestTradingClient(init_cash=run_parameters['init_cash'],
         #                                   symbol_list=data_manager.recommended_symbol_list)
@@ -192,12 +196,14 @@ for start in [datetime(2024, 1, 10, 0, 0)]:#, datetime(2024, 1, 11, 0, 0)]:
             trading_manager.handle_message(ws=None, message=minute_bars)
             minute_bars = []
             i += 1
-        plot_daily_statistics(data_man=data_manager)
-        create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiments(data_generator, data_manager)
+        data_manager.save_daily_statistics(recommended_symbols=scanner.recommended_symbols,
+                                           symbol_dict=data_generator.symbol_dict)
+        data_manager.save_daily_charts(symbol_dict=data_generator.symbol_dict)
 
     except IndexError as ie:
-        plot_daily_statistics(data_man=data_manager)
-        create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiments(data_generator, data_manager)
+        data_manager.save_daily_statistics(recommended_symbols=scanner.recommended_symbols,
+                                           symbol_dict=data_generator.symbol_dict)
+        data_manager.save_daily_charts(symbol_dict=data_generator.symbol_dict)
         print(str(ie))
 
 # visszaolvasni a daily csv-ket egyenként és megcsinálni a post trading aggregált statisztikákat majd kimenteni soronként a napi post trading statisztika file-ba
