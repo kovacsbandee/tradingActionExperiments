@@ -41,12 +41,18 @@ class DataManager:
             print('Previous directory was deleted and a new one was created.')
 
     def save_params(self, params):
+        '''
+        Saves the parameters describing the run as as json.
+        '''
         self.run_parameters = params
         with open(f'{self.db_path}/{self.daily_dir_name}/run_paramters.json', 'w') as fp:
             json.dump(self.run_parameters, fp)
         print(f'run_parameters was successfully saved')
 
-    def save_daily_statistics(self, recommended_symbols, symbol_dict):
+    def save_daily_statistics_and_aggregated_plots(self, recommended_symbols, symbol_dict):
+        '''
+
+        '''
         daily_stats_for_all_symbols = list()
         for symbol in symbol_dict.keys():
             daily_df = symbol_dict[symbol]['daily_price_data_df']
@@ -56,6 +62,7 @@ class DataManager:
             daily_stats['avg_capital_td'] = daily_df['current_capital'].mean()
             daily_stats['min_capital_td'] = daily_df['current_capital'].min()
             daily_stats['max_capital_td'] = daily_df['current_capital'].max()
+            daily_stats['max_per_input_cap_ratio_td'] = daily_df['current_capital'].max() / self.run_parameters['init_cash']
             daily_stats['in_position_percent_td'] = (len(daily_df[daily_df['position'] != 'out']) / len(daily_df)) * 100
             # az alábbi néhány szerepel a scanner statisztikák között is
             daily_stats['bear_candle_ratio_td'] = len(daily_df[daily_df['c'] < daily_df['o']]) / len(daily_df)
@@ -67,7 +74,7 @@ class DataManager:
         daily_stats_for_all_symbols = pd.DataFrame(daily_stats_for_all_symbols)
 
         self.total_recommended_symbol_statistics = pd.merge(recommended_symbols, daily_stats_for_all_symbols, on='symbol', how='left')
-        self.total_recommended_symbol_statistics.sort_values(by=['avg_capital_td'], inplace=True, ascending=False)
+        self.total_recommended_symbol_statistics.sort_values(by=['max_per_input_cap_ratio_td'], inplace=True, ascending=False)
         plot_daily_statistics(plot_df=self.total_recommended_symbol_statistics, db_path=self.db_path, daily_dir_name=self.daily_dir_name)
         plot_daily_statistics_correlation_matrix(plot_df=self.total_recommended_symbol_statistics, db_path=self.db_path, daily_dir_name=self.daily_dir_name)
         self.total_recommended_symbol_statistics.to_csv(f'{self.db_path}/{self.daily_dir_name}/recommended_symbols_sd_td_market_stats.csv', index=False)

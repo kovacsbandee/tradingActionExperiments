@@ -31,10 +31,7 @@ ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
 DB_PATH = os.environ['DB_PATH']
 RUN_ID = 'DEV_RUN_ID_valami'
 
-for start in [datetime(2024, 1, 3, 0, 0)]:
-    # , datetime(2024, 1, 4, 0, 0), datetime(2024, 1, 5, 0, 0),
-    #           datetime(2024, 1, 9, 0, 0), datetime(2024, 1, 10, 0, 0), datetime(2024, 1, 11, 0, 0), datetime(2024, 1, 12, 0, 0),
-    #           datetime(2024, 1, 16, 0, 0), datetime(2024, 1, 17, 0, 0), datetime(2024, 1, 18, 0, 0), datetime(2024, 1, 19, 0, 0)]:
+for start in [datetime(2024, 1, 16, 0, 0), datetime(2024, 1, 17, 0, 0), datetime(2024, 1, 18, 0, 0), datetime(2024, 1, 19, 0, 0)]:
     try:
         start = start + timedelta(hours=0) + timedelta(minutes=00)
         end = start + timedelta(hours=23) + timedelta(minutes=59)
@@ -62,7 +59,10 @@ for start in [datetime(2024, 1, 3, 0, 0)]:
                 'rsi_threshold': 20,
                 'rsi_minutes_before_trading_start': 45
             }
-        
+
+        data_manager.create_daily_dirs()
+        data_manager.save_params(params=run_parameters)
+
         # Professional scanner:
         scanner = PreMarketScanner(trading_day=data_manager.trading_day,
                                    scanning_day=data_manager.scanning_day,
@@ -97,9 +97,7 @@ for start in [datetime(2024, 1, 3, 0, 0)]:
         
         scanner.calculate_filtering_stats()
         recommended_symbol_list: List[dict] = scanner.recommend_premarket_watchlist()
-        
-        data_manager.create_daily_dirs()
-        data_manager.save_params(params=run_parameters)
+
         data_manager.recommended_symbol_list = recommended_symbol_list
         
         trading_client = TestTradingClientDivided(init_cash=run_parameters['init_cash'],
@@ -196,16 +194,12 @@ for start in [datetime(2024, 1, 3, 0, 0)]:
             trading_manager.handle_message(ws=None, message=minute_bars)
             minute_bars = []
             i += 1
-        data_manager.save_daily_statistics(recommended_symbols=scanner.recommended_symbols,
-                                           symbol_dict=data_generator.symbol_dict)
+        data_manager.save_daily_statistics_and_aggregated_plots(recommended_symbols=scanner.recommended_symbols,
+                                                                symbol_dict=data_generator.symbol_dict)
         data_manager.save_daily_charts(symbol_dict=data_generator.symbol_dict)
 
     except IndexError as ie:
-        data_manager.save_daily_statistics(recommended_symbols=scanner.recommended_symbols,
-                                           symbol_dict=data_generator.symbol_dict)
+        data_manager.save_daily_statistics_and_aggregated_plots(recommended_symbols=scanner.recommended_symbols,
+                                                                symbol_dict=data_generator.symbol_dict)
         data_manager.save_daily_charts(symbol_dict=data_generator.symbol_dict)
         print(str(ie))
-
-# visszaolvasni a daily csv-ket egyenként és megcsinálni a post trading aggregált statisztikákat majd kimenteni soronként a napi post trading statisztika file-ba
-
-# megcsinálni az aggergált statisztikák ábrázolását
