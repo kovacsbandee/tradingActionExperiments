@@ -35,8 +35,6 @@ class DataManager:
         os.mkdir(f'{self.db_path}/{self.daily_dir_name}/{daily_symbol_dir_name}/plots')
         print(f'daily data store was created with the name: ', self.daily_dir_name)
 
-
-
     def save_params(self, params):
         '''
         Saves the parameters describing the run as as json.
@@ -56,7 +54,7 @@ class DataManager:
 
             daily_stats = dict()
             daily_stats['symbol'] = symbol
-            daily_stats['avg_capital_td'] = daily_df['current_capital'].mean()
+            daily_stats['avg_capital_td'] = daily_df[daily_df['current_capital'] > self.run_parameters['init_cash']*0.1]['current_capital'].mean()
             daily_stats['min_capital_td'] = daily_df['current_capital'].min()
             daily_stats['max_capital_td'] = daily_df['current_capital'].max()
             daily_stats['max_per_input_cap_ratio_td'] = daily_df['current_capital'].max() / self.run_parameters['init_cash']

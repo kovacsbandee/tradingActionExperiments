@@ -5,15 +5,16 @@ from datetime import datetime, timedelta
 
 from src_tr.test.test_workflow_modules.TestTradingClient import TestTradingClient
 from src_tr.test.test_workflow_modules.TestTradingClientDivided import TestTradingClientDivided
-from alpaca.data.historical import StockHistoricalDataClient
-from alpaca.data.requests import StockBarsRequest
-from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
+from src_tr.main.utils.test_utils import get_all_symbols_daily_data_base, run_test_experiment
+
+from src_tr.main.utils.test_utils import get_yf_local_db_symbols, get_all_symbols_daily_data_yf_db
 
 from src_tr.main.checks.checks import check_trading_day
 from src_tr.main.utils.utils import calculate_scanning_day, get_nasdaq_symbols
 from src_tr.main.utils.data_management import DataManager
 from src_tr.main.utils.plots import create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiments, plot_daily_statistics
 from src_tr.main.scanners.PreMarketScanner import PreMarketScanner
+from src_tr.main.scanners.PreMarketScannerYFDB import PreMarketScannerYFDB
 #from src_tr.main.scanners.PreMarketDumbScanner import PreMarketDumbScanner
 from src_tr.main.scanners.PreMarketPolygonScanner import PreMarketPolygonScanner
 
@@ -31,7 +32,7 @@ ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
 DB_PATH = os.environ['DB_PATH']
 RUN_ID = 'DEV_RUN_ID_valami'
 
-for start in [datetime(2024, 1, 10, 0, 0)]:
+for start in [datetime(2024, 1, 10, 0, 0), datetime(2024, 1, 11, 0, 0)]:
     try:
         start = start + timedelta(hours=0) + timedelta(minutes=00)
         end = start + timedelta(hours=23) + timedelta(minutes=59)
@@ -40,7 +41,10 @@ for start in [datetime(2024, 1, 10, 0, 0)]:
         
         data_manager = DataManager(trading_day=trading_day, scanning_day=scanning_day, run_id=RUN_ID, db_path=DB_PATH)
         
-        nasdaq_symbols = get_nasdaq_symbols(file_path=SYMBOL_CSV_PATH)[:100]
+        #input_symbols = get_nasdaq_symbols(file_path=SYMBOL_CSV_PATH)[0:100]
+
+        scanning_day_yf_data, input_symbols = get_yf_local_db_symbols(start=start)
+
         run_parameters = \
             {
                 'run_id': RUN_ID,
@@ -64,18 +68,27 @@ for start in [datetime(2024, 1, 10, 0, 0)]:
         data_manager.save_params(params=run_parameters)
 
         # Professional scanner:
-        scanner = PreMarketScanner(trading_day=data_manager.trading_day,
+        # scanner = PreMarketScanner(trading_day=data_manager.trading_day,
+        #                            scanning_day=data_manager.scanning_day,
+        #                            symbols=input_symbols,
+        #                            lower_price_boundary=run_parameters['lower_price_boundary'],
+        #                            upper_price_boundary=run_parameters['upper_price_boundary'],
+        #                            price_range_perc_cond=run_parameters['price_range_perc_cond'],
+        #                            avg_volume_cond=run_parameters['avg_volume_cond'])
+
+        scanner = PreMarketScannerYFDB(trading_day=data_manager.trading_day,
                                    scanning_day=data_manager.scanning_day,
-                                   symbols=nasdaq_symbols,
+                                   symbols=input_symbols,
                                    lower_price_boundary=run_parameters['lower_price_boundary'],
                                    upper_price_boundary=run_parameters['upper_price_boundary'],
                                    price_range_perc_cond=run_parameters['price_range_perc_cond'],
                                    avg_volume_cond=run_parameters['avg_volume_cond'])
-        
+
+
         # Polygon scanner:
         # scanner = PreMarketPolygonScanner(trading_day=data_manager.trading_day,
         #                                   scanning_day=data_manager.scanning_day,
-        #                                   symbols=nasdaq_symbols,
+        #                                   symbols=input_symbols,
         #                                   lower_price_boundary=run_parameters['lower_price_boundary'],
         #                                   upper_price_boundary=run_parameters['upper_price_boundary'],
         #                                   price_range_perc_cond=run_parameters['price_range_perc_cond'],
@@ -86,7 +99,7 @@ for start in [datetime(2024, 1, 10, 0, 0)]:
         #dumb_symbols = ['MARA', 'RIOT', 'MVIS', 'SOS', 'CAN', 'EBON', 'BTBT', 'HUT', 'EQOS', 'MOGO', 'SUNW', 'XNET', 'PHUN', 'IDEX', 'ZKIN', 'SIFY', 'SNDL', 'NCTY', 'OCGN', 'NIO', 'FCEL', 'PLUG', 'TSLA', 'AAPL', 'AMZN', 'MSFT', 'GOOG', 'FB', 'GOOGL', 'NVDA', 'PYPL', 'ADBE', 'INTC', 'CMCSA', 'CSCO', 'NFLX', 'PEP', 'AVGO', 'TXN', 'COST', 'QCOM', 'TMUS', 'AMGN', 'CHTR', 'SBUX', 'AMD', 'INTU', 'ISRG', 'AMAT', 'MU', 'BKNG', 'MDLZ', 'ADP', 'GILD', 'CSX', 'FISV', 'VRTX', 'ATVI', 'ADSK', 'REGN', 'ILMN', 'BIIB', 'MELI', 'LRCX', 'JD', 'ADI', 'NXPI', 'ASML', 'KHC', 'MRNA', 'EA', 'BIDU', 'WBA', 'MAR', 'LULU', 'EXC', 'ROST', 'WDAY', 'KLAC', 'CTSH', 'ORLY', 'SNPS', 'DOCU', 'IDXX', 'SGEN', 'DXCM', 'PCAR', 'CDNS', 'XLNX', 'ANSS', 'NTES', 'MNST', 'VRSK', 'ALXN', 'FAST', 'SPLK', 'CPRT', 'CDW', 'PAYX', 'MXIM', 'SWKS', 'INCY', 'CHKP', 'TCOM', 'CTXS', 'VRSN', 'SGMS', 'DLTR', 'CERN', 'ULTA', 'FOXA', 'FOX', 'NTAP', 'WDC', 'TTWO', 'EXPE', 'XEL', 'MCHP', 'CTAS', 'MXL', 'WLTW', 'ANET', 'BMRN']
         # scanner = PreMarketDumbScanner(trading_day=data_manager.trading_day,
         #                                scanning_day=data_manager.scanning_day,
-        #                                symbols=nasdaq_symbols,
+        #                                symbols=input_symbols,
         #                                lower_price_boundary=run_parameters['lower_price_boundary'],
         #                                upper_price_boundary=run_parameters['upper_price_boundary'],
         #                                price_range_perc_cond=run_parameters['price_range_perc_cond'],
@@ -148,52 +161,17 @@ for start in [datetime(2024, 1, 10, 0, 0)]:
                                              secret_key='test_secret')
         
         data_generator.initialize_symbol_dict()
-        
-        client = StockHistoricalDataClient(ALPACA_KEY, ALPACA_SECRET_KEY)
-        
-        def download_daily_data(symbol, start, end):
-            timeframe = TimeFrame(amount=1, unit=TimeFrameUnit.Minute)
-        
-            bars_request = StockBarsRequest(
-                symbol_or_symbols=symbol,
-                timeframe=timeframe,
-                start=start,
-                end=end
-            )
-            latest_bars = client.get_stock_bars(bars_request).data
-            daily_data_list = _convert_data(latest_bars, symbol)
-            return daily_data_list
-        
-        def _convert_data(latest_bars: dict, symbol: str):
-            bar_list = []
-            for e in latest_bars[symbol]:
-                bar_list.append({
-                'T': 'b',
-                't': e.timestamp.strftime('%Y-%m-%dT%H:%M:%SZ'),
-                'S': e.symbol,
-                'o': e.open,
-                'c': e.close,
-                'h': e.high,
-                'l': e.low,
-                'v': e.volume,
-                'n': e.trade_count
-            })
-            return bar_list
-        
-        all_symbols_daily_data: List[List] = []
-        
-        for symbol in recommended_symbol_list:
-            daily_data = download_daily_data(symbol=symbol['symbol'], start=start, end=end)
-            all_symbols_daily_data.append(daily_data)
-        
-        i = 0
-        while i < len(all_symbols_daily_data[0]):
-            minute_bars = []
-            for symbol_daily_data in all_symbols_daily_data:
-                minute_bars.append(symbol_daily_data[i])
-            trading_manager.handle_message(ws=None, message=minute_bars)
-            minute_bars = []
-            i += 1
+
+        # all_symbols_daily_data = get_all_symbols_daily_data(recommended_symbol_list=recommended_symbol_list,
+        #                                                     s=start,
+        #                                                     e=end,
+        #                                                     alpaca_key=ALPACA_KEY,
+        #                                                     alpaca_secret_key=ALPACA_SECRET_KEY)
+
+        all_symbols_daily_data = get_all_symbols_daily_data_yf_db(recommended_symbol_list=recommended_symbol_list,
+                                                                  s=start)
+
+        run_test_experiment(all_symbols_daily_data=all_symbols_daily_data, trading_manager=trading_manager)
 
     except IndexError as ie:
         print(str(ie))
