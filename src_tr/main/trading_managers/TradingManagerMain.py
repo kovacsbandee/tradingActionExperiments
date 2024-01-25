@@ -16,11 +16,7 @@ class TradingManagerMain():
                 strategy: StrategyWithStopLoss,
                 trading_client: TradingClient,
                 api_key: str,
-                secret_key: str,
-                minutes_before_trading_start: int,
-                rsi_threshold: int
-                #market_open: datetime,
-                #market_close: datetime
+                secret_key: str
                 ):
         self.data_generator = data_generator
         self.strategy = strategy
@@ -28,13 +24,6 @@ class TradingManagerMain():
         self.api_key = api_key
         self.secret_key = secret_key
         self.minute_bars = []
-        self.symbols_to_delete = []
-        self.rsi_filtered = False
-        self.rsi_counter = 0
-        self.minutes_before_trading_start = minutes_before_trading_start
-        self.rsi_threshold = rsi_threshold
-        #self.market_open = market_open
-        #self.market_close = market_close
 
     def handle_message(self, ws, message):
         try:
@@ -74,14 +63,6 @@ class TradingManagerMain():
             
             # apply strategy on all symbols
             self.apply_strategy()
-            
-            # filter out symbols by RSI value
-            if not self.rsi_filtered and len(self.symbols_to_delete) > 0:
-                self.rsi_filter_symbols() 
-                print(f"Symbol dictionary filtered by RSI at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-            elif not self.rsi_filtered and self.rsi_counter == len(self.data_generator.recommended_symbol_list):
-                self.rsi_filtered = True
-                print(f"No RSI filtering required, trading cycle started at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
         except Exception as e:
             print(str(e))
@@ -116,15 +97,7 @@ class TradingManagerMain():
                                                                                                 symbol=symbol,  
                                                                                                 symbol_dict=value_dict)
                 current_df: pd.DataFrame = value_dict['daily_price_data_df']
-                if len(current_df) > self.minutes_before_trading_start:
-                    if not self.rsi_filtered and current_df['rsi'].mean() < self.rsi_threshold: #NOTE: megfordítottam a >-t!
-                        self.symbols_to_delete.append(symbol)
-                    elif not self.rsi_filtered and current_df['rsi'].mean() >= self.rsi_threshold:
-                        self.rsi_counter += 1
-                    if self.rsi_filtered:
-                        self.execute_trading_action(symbol, current_df)
-                else:
-                    print("Collecting live data for RSI filtering, no trading is executed")
+                self.execute_trading_action(symbol, current_df)
             else:
                 print(f"Not enough data to apply strategy. Symbol: {symbol}")
         

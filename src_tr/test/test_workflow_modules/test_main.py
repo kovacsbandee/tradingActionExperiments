@@ -55,9 +55,9 @@ for start in [datetime(2024, 1, 16, 0, 0), datetime(2024, 1, 17, 0, 0), datetime
                 'ma_long': 12,
                 'epsilon': 0.0015,
                 'rsi_len': 12,
-                'stop_loss_perc': 0.0,
-                'rsi_threshold': 20,
-                'rsi_minutes_before_trading_start': 45
+                'stop_loss_perc': 0.0
+                #'rsi_threshold': 20,
+                #'rsi_minutes_before_trading_start': 45
             }
 
         data_manager.create_daily_dirs()
@@ -142,8 +142,6 @@ for start in [datetime(2024, 1, 16, 0, 0), datetime(2024, 1, 17, 0, 0), datetime
         trading_manager = TestTradingManagerDivided(data_generator=data_generator,
                                              strategy=strategy,
                                              trading_client=trading_client,
-                                             rsi_threshold=run_parameters['rsi_threshold'],
-                                             minutes_before_trading_start=run_parameters['rsi_minutes_before_trading_start'],
                                              api_key='test_key',
                                              secret_key='test_secret')
         
