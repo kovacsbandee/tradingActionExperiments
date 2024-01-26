@@ -122,11 +122,6 @@ class TradingManagerMain():
             self.close_current_position(position="Buy previous long", symbol=symbol)
         else:
             print('no_action')
-
-    def rsi_filter_symbols(self):
-        for symbol in self.symbols_to_delete:
-            del self.data_generator.symbol_dict[symbol]
-        self.rsi_filtered = True
             
     def place_buy_order(self, quantity, symbol, price=None):
         try:

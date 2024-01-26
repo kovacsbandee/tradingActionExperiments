@@ -61,3 +61,8 @@ class TradingManagerRSI(TradingManagerMain):
                     print("Collecting live data for RSI filtering, no trading is executed")
             else:
                 print(f"Not enough data to apply strategy. Symbol: {symbol}")
+                
+    def rsi_filter_symbols(self):
+        for symbol in self.symbols_to_delete:
+            del self.data_generator.symbol_dict[symbol]
+        self.rsi_filtered = True
