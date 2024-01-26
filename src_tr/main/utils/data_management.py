@@ -25,20 +25,15 @@ class DataManager:
         és a symbol_df-ből a program futásának végén generált csv-ket és plot-okat tartalmazó mappa
         '''
         daily_symbol_dir_name = 'daily_files'
-        if self.daily_dir_name not in os.listdir(self.db_path):
-            os.mkdir(f'{self.db_path}/{self.daily_dir_name}')
-            os.mkdir(f'{self.db_path}/{self.daily_dir_name}/{daily_symbol_dir_name}')
-            os.mkdir(f'{self.db_path}/{self.daily_dir_name}/{daily_symbol_dir_name}/csvs')
-            os.mkdir(f'{self.db_path}/{self.daily_dir_name}/{daily_symbol_dir_name}/plots')
-            print(f'daily data store was created with the name: ', self.daily_dir_name)
-        else:
+        if self.daily_dir_name in os.listdir(self.db_path):
             shutil.rmtree(f'{self.db_path}/{self.daily_dir_name}')
-            os.mkdir(f'{self.db_path}/{self.daily_dir_name}')
-            os.mkdir(f'{self.db_path}/{self.daily_dir_name}/{daily_symbol_dir_name}')
-            os.mkdir(f'{self.db_path}/{self.daily_dir_name}/{daily_symbol_dir_name}/csvs')
-            os.mkdir(f'{self.db_path}/{self.daily_dir_name}/{daily_symbol_dir_name}/plots')
-            print(f'daily data store was recreated with the name: ', self.daily_dir_name)
             print('Previous directory was deleted and a new one was created.')
+
+        os.mkdir(f'{self.db_path}/{self.daily_dir_name}')
+        os.mkdir(f'{self.db_path}/{self.daily_dir_name}/{daily_symbol_dir_name}')
+        os.mkdir(f'{self.db_path}/{self.daily_dir_name}/{daily_symbol_dir_name}/csvs')
+        os.mkdir(f'{self.db_path}/{self.daily_dir_name}/{daily_symbol_dir_name}/plots')
+        print(f'daily data store was created with the name: ', self.daily_dir_name)
 
     def save_params(self, params):
         '''
@@ -59,7 +54,7 @@ class DataManager:
 
             daily_stats = dict()
             daily_stats['symbol'] = symbol
-            daily_stats['avg_capital_td'] = daily_df['current_capital'].mean()
+            daily_stats['avg_capital_td'] = daily_df[daily_df['current_capital'] > self.run_parameters['init_cash']*0.1]['current_capital'].mean()
             daily_stats['min_capital_td'] = daily_df['current_capital'].min()
             daily_stats['max_capital_td'] = daily_df['current_capital'].max()
             daily_stats['max_per_input_cap_ratio_td'] = daily_df['current_capital'].max() / self.run_parameters['init_cash']

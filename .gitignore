@@ -1,5 +1,6 @@
 .vscode/
 .env
 /data_store/
+/src_tr/research/
 /plots/plot_store/
 __pycache__/
