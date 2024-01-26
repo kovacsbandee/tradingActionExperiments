@@ -3,11 +3,15 @@ from .TestTradingClient import TestTradingClient
 class TestTradingClientDivided(TestTradingClient):
     
     def initialize_positions(self):
+        if self.mode == 'divide':
+            symbol_free_cash = self.total_free_cash / len(self.symbol_list)
+        if self.mode == 'same':
+            symbol_free_cash = self.total_free_cash
         for e in self.symbol_list:
             self.positions[e['symbol']] = {
                 'quantity' : 0,
                 'side' : 'out',
-                'symbol_free_cash' : self.total_free_cash / len(self.symbol_list)
+                'symbol_free_cash' : symbol_free_cash
             }
         
     def get_max_cash_by_symbol(self, symbol: str):

@@ -2,11 +2,12 @@ from typing import List
 
 class TestTradingClient():
     
-    def __init__(self, init_cash, symbol_list) -> None:
+    def __init__(self, init_cash, symbol_list, mode = 'same') -> None:
         self.total_free_cash: int = init_cash
-        self.positions: dict = {}
         self.symbol_list: List[dict] = symbol_list
-    
+        self.mode = mode
+        self.positions: dict = {}
+
     """
         self.positions = {
             symbol: {
