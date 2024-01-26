@@ -11,6 +11,7 @@ import yfinance as yf
 from joblib import Parallel, delayed
 
 from src_tr.main.scanners.ScannerBase import ScannerBase
+import config
 
 
 class PreMarketScannerYFDB(ScannerBase):
@@ -37,7 +38,7 @@ class PreMarketScannerYFDB(ScannerBase):
         try:
             scanning_day_str = self.scanning_day.strftime('%Y_%m_%d')
             symbol_scanning_day_df = pd.read_csv(
-                f'F:/tradingActionExperiments_database/daywise_database/stock_prices_for_{scanning_day_str}/csvs/{symbol}.csv')
+                f'{config.db_path}/daywise_database/stock_prices_for_{scanning_day_str}/csvs/{symbol}.csv')
             symbol_scanning_day_df.columns = ['Datetime', 'Open', 'High', 'Low', 'Close', 'adj close', 'Volume']
             return symbol_scanning_day_df
         except Exception as e:

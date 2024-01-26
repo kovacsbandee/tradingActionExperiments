@@ -5,6 +5,8 @@ from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 from alpaca.data.historical import StockHistoricalDataClient
 from alpaca.data.requests import StockBarsRequest
 
+import config
+
 
 def download_daily_data_base(symbol, start, end, alpaca_key, alpaca_secret_key):
     client = StockHistoricalDataClient(alpaca_key, alpaca_secret_key)
@@ -47,7 +49,7 @@ def get_all_symbols_daily_data_base(recommended_symbol_list, s, e, alpaca_key, a
 
 
 def get_yf_local_db_symbols(start):
-    file = open('F:/tradingActionExperiments_database/daywise_common_files.json')
+    file = open(f'{config.db_path}/daywise_common_files.json')
     data = file.readlines()
     file.close()
     daywise_common_files = [json.loads(l) for l in data]
@@ -74,7 +76,7 @@ def _convert_yf_db_data_yf_db(latest_bars: dict, symbol: str):
     return bar_list
 
 def download_daily_data_yf_db(symbol, start):
-    latest_bars = pd.read_csv('F:/tradingActionExperiments_database/' + 'daywise_database/' + 'stock_prices_for_' + start.strftime('%Y_%m_%d') + '/csvs/' + symbol + '.csv')
+    latest_bars = pd.read_csv(f"{config.db_path}/daywise_database/stock_prices_for_{start.strftime('%Y_%m_%d')}/csvs/{symbol}.csv")
     latest_bars['timestamp'] = pd.to_datetime(latest_bars['Datetime'])
     latest_bars['symbol'] = symbol
     latest_bars['trade_count'] = latest_bars['volume']
