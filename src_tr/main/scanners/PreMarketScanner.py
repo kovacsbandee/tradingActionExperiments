@@ -11,6 +11,7 @@ import yfinance as yf
 from joblib import Parallel, delayed
 
 from src_tr.main.scanners.ScannerBase import ScannerBase
+import config
 
 class PreMarketScanner(ScannerBase):
 
@@ -112,10 +113,8 @@ class PreMarketScanner(ScannerBase):
 
     def calculate_filtering_stats(self) -> List:
         self.pre_market_stats = self._create_pre_market_stats()
-        proj_path = os.environ['PROJECT_PATH']
         date = self.trading_day.strftime('%Y_%m_%d')
-        # TODO: a path itt is kívülről jöjjön configból/.env-ből, hogy ne kelljen mindig átírni
-        self.pre_market_stats.to_csv(f'{proj_path}_database/scanner_stats/pre_market_stats_{date}.csv', index=False)
+        self.pre_market_stats.to_csv(f'{config.db_path}/scanner_stats/pre_market_stats_{date}.csv', index=False)
         return self.pre_market_stats
         
     def _create_pre_market_stats(self) -> DataFrame:

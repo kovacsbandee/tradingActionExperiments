@@ -2,7 +2,6 @@ import pandas as pd
 from typing import List
 
 from src_tr.main.trading_managers.TradingManagerMain import TradingManagerMain
-from src_tr.main.helpers.converter import string_to_dict_list
 
 class TestTradingManager(TradingManagerMain):
     
@@ -35,14 +34,9 @@ class TestTradingManager(TradingManagerMain):
         trading_action = current_df.iloc[-1]['trading_action']
         current_position = current_df.iloc[-2]['position']
 
-        # IGEN EZ NE LEGYEN, MERT SZERINTEM NAGYON MEGNEHEZÍTI AZ EGÉSZ ÉRTELMEZÉSÉT TESZELÉS SORÁN!
-        # NYILVÁN VALAMIT MAJD TŐKE MANAGELÉSÉRE KI KELL TALÁLNI,
-        # DE EZ EGY NEHÉZ KÉRDÉS LESZ ÉS SZERINTEM MAJD BE KELL EMELNI A STRATÉGIÁBA A SCANNER ÉS AZ ALGORITMUS SZINTJÉRE
-        # VAGYIS CSAK AZ out_position-nel VALÓ OSZTÁST KELL KIVENNI.
         # divide capital with amount of OUT positions:
         out_positions = self.data_generator.get_out_positions()
-        #quantity_buy_long = current_df.iloc[-1][CURRENT_CAPITAL] / out_positions / current_df.iloc[-1][OPEN]
-        quantity_buy_long = current_df.iloc[-1]['current_capital'] / current_df.iloc[-1]['o']
+        quantity_buy_long = current_df.iloc[-1]['current_capital'] / out_positions / current_df.iloc[-1]['o']
 
         if trading_action == 'buy_next_long_position' and current_position == 'out':
             self.place_buy_order(symbol=symbol, quantity=quantity_buy_long, price=current_df.iloc[-1]['o'])
