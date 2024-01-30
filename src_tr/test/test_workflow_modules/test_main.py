@@ -19,8 +19,8 @@ from src_tr.main.scanners.PreMarketScannerYFDB import PreMarketScannerYFDB
 from src_tr.main.scanners.PreMarketPolygonScanner import PreMarketPolygonScanner
 
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
-from tradingActionExperiments.src_tr.main.trading_algorithms.TradingAlgorithmWithStopLoss import StrategyWithStopLoss
-from tradingActionExperiments.src_tr.main.trading_algorithms.TradingAlgorithmWithStopLossPrevPrice import StrategyWithStopLossPrevPrice
+from src_tr.main.trading_algorithms.TradingAlgorithmWithStopLoss import TradingAlgorithmWithStopLoss
+from src_tr.main.trading_algorithms.TradingAlgorithmWithStopLossPrevPrice import TradingAlgorithmWithStopLossPrevPrice
 from src_tr.test.test_workflow_modules.TestTradingManager import TestTradingManager
 from src_tr.test.test_workflow_modules.TestTradingManagerDivided import TestTradingManagerDivided
 
@@ -124,8 +124,8 @@ for start in [datetime(2024, 1, 10, 0, 0), datetime(2024, 1, 11, 0, 0)]:
         
         data_generator = PriceDataGeneratorMain(recommended_symbol_list=recommended_symbol_list)
         
-        # Strategy with stop loss compared to the last price when opening the position:
-        # strategy = StrategyWithStopLoss(ma_short=run_parameters['ma_short'],
+        # Trading algorithm with stop loss compared to the last price when opening the position:
+        # trading_algorithm = TradingAlgorithmWithStopLoss(ma_short=run_parameters['ma_short'],
         #                                 ma_long=run_parameters['ma_long'],
         #                                 epsilon=run_parameters['epsilon'],
         #                                 rsi_len=run_parameters['rsi_len'],
@@ -134,8 +134,8 @@ for start in [datetime(2024, 1, 10, 0, 0), datetime(2024, 1, 11, 0, 0)]:
         #                                 run_id=RUN_ID,
         #                                 db_path=DB_PATH)
         
-        # Strategy with stop loss compared to the previous price:
-        strategy = StrategyWithStopLossPrevPrice(ma_short=run_parameters['ma_short'],
+        # Trading algorithm with stop loss compared to the previous price:
+        trading_algorithm = TradingAlgorithmWithStopLossPrevPrice(ma_short=run_parameters['ma_short'],
                                                  ma_long=run_parameters['ma_long'],
                                                  epsilon=run_parameters['epsilon'],
                                                  rsi_len=run_parameters['rsi_len'],
@@ -145,7 +145,7 @@ for start in [datetime(2024, 1, 10, 0, 0), datetime(2024, 1, 11, 0, 0)]:
                                                  db_path=DB_PATH)
         
         #trading_manager = TestTradingManager(data_generator=data_generator,
-        #                                     strategy=strategy,
+        #                                     trading_algorithm=trading_algorithm,
         #                                     trading_client=trading_client,
         #                                     rsi_threshold=run_parameters['rsi_threshold'],
         #                                     minutes_before_trading_start=run_parameters['rsi_minutes_before_trading_start'],
@@ -153,7 +153,7 @@ for start in [datetime(2024, 1, 10, 0, 0), datetime(2024, 1, 11, 0, 0)]:
         #                                     secret_key='test_secret')
         
         trading_manager = TestTradingManagerDivided(data_generator=data_generator,
-                                             strategy=strategy,
+                                             trading_algorithm=trading_algorithm,
                                              trading_client=trading_client,
                                              rsi_threshold=run_parameters['rsi_threshold'],
                                              minutes_before_trading_start=run_parameters['rsi_minutes_before_trading_start'],

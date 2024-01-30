@@ -6,7 +6,7 @@ from alpaca.trading.enums import OrderSide, TimeInForce
 import pandas as pd
 
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
-from tradingActionExperiments.src_tr.main.trading_algorithms.TradingAlgorithmWithStopLoss import TradingAlgorithmWithStopLoss
+from src_tr.main.trading_algorithms.TradingAlgorithmWithStopLoss import TradingAlgorithmWithStopLoss
 from src_tr.main.helpers.converter import string_to_dict_list
 
 class TradingManagerMain():

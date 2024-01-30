@@ -16,7 +16,7 @@ from src_tr.main.checks.checks import check_trading_day
 from src_tr.main.utils.utils import calculate_scanning_day, get_nasdaq_symbols
 from src_tr.main.scanners.PreMarketScanner import PreMarketScanner
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
-from tradingActionExperiments.src_tr.main.trading_algorithms.TradingAlgorithmWithStopLoss import TradingAlgorithmWithStopLoss
+from src_tr.main.trading_algorithms.TradingAlgorithmWithStopLoss import TradingAlgorithmWithStopLoss
 from src_tr.main.trading_managers.TradingManagerMain import TradingManagerMain
 
 # 1) Scanner inicializálása -> watchlist létrehozás

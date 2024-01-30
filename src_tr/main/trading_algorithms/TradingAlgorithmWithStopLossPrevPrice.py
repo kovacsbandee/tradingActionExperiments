@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from tradingActionExperiments.src_tr.main.trading_algorithms.TradingAlgorithmBase import TradingAlgorithmBase
+from src_tr.main.trading_algorithms.TradingAlgorithmBase import TradingAlgorithmBase
 
 class TradingAlgorithmWithStopLossPrevPrice(TradingAlgorithmBase):
 

@@ -4,7 +4,7 @@ import websocket
 
 from src_tr.main.scanners.ScannerBase import ScannerBase
 from src_tr.main.data_generators.PriceDataGeneratorBase import PriceDataGeneratorBase
-from tradingActionExperiments.src_tr.main.trading_algorithms.TradingAlgorithmBase import TradingAlgorithmBase
+from src_tr.main.trading_algorithms.TradingAlgorithmBase import TradingAlgorithmBase
 from src_tr.main.data_streams.DataStreamBase import DataStreamBase
 from src_tr.main.trading_clients.TradingClientBase import TradingClientBase
 
