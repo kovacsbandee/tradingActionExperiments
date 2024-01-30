@@ -4,7 +4,7 @@ import websocket
 
 from src_tr.main.scanners.ScannerBase import ScannerBase
 from src_tr.main.data_generators.PriceDataGeneratorBase import PriceDataGeneratorBase
-from src_tr.main.strategies.StrategyBase import StrategyBase
+from tradingActionExperiments.src_tr.main.trading_algorithms.TradingAlgorithmBase import TradingAlgorithmBase
 from src_tr.main.data_streams.DataStreamBase import DataStreamBase
 from src_tr.main.trading_clients.TradingClientBase import TradingClientBase
 
@@ -12,7 +12,7 @@ class TradingManagerBase(ABC):
 
     scanner: ScannerBase
     price_data_generator: PriceDataGeneratorBase
-    strategy: StrategyBase
+    trading_algorithm: TradingAlgorithmBase
     data_stream: DataStreamBase
     trading_client: TradingClientBase
     ws: websocket.WebSocketApp
@@ -25,7 +25,7 @@ class TradingManagerBase(ABC):
     def __init__(self, 
                  scanner, 
                  price_data_generator, 
-                 strategy, data_stream, 
+                 trading_algorithm, data_stream, 
                  trading_client, 
                  key, 
                  secret_key, 
@@ -34,7 +34,7 @@ class TradingManagerBase(ABC):
                  market_close):
         self.scanner = scanner
         self.price_data_generator = price_data_generator
-        self.strategy = strategy
+        self.trading_algorithm = trading_algorithm
         self.data_stream = data_stream
         self.trading_client = trading_client
         self.key = key
@@ -68,7 +68,7 @@ class TradingManagerBase(ABC):
         pass
 
     @abstractmethod
-    def apply_strategy(self):
+    def apply_trading_algorithm(self):
         pass
 
     @abstractmethod

@@ -19,8 +19,8 @@ from src_tr.main.scanners.PreMarketScannerYFDB import PreMarketScannerYFDB
 from src_tr.main.scanners.PreMarketPolygonScanner import PreMarketPolygonScanner
 
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
-from src_tr.main.strategies.StrategyWithStopLoss import StrategyWithStopLoss
-from src_tr.main.strategies.StrategyWithStopLossPrevPrice import StrategyWithStopLossPrevPrice
+from tradingActionExperiments.src_tr.main.trading_algorithms.TradingAlgorithmWithStopLoss import StrategyWithStopLoss
+from tradingActionExperiments.src_tr.main.trading_algorithms.TradingAlgorithmWithStopLossPrevPrice import StrategyWithStopLossPrevPrice
 from src_tr.test.test_workflow_modules.TestTradingManager import TestTradingManager
 from src_tr.test.test_workflow_modules.TestTradingManagerDivided import TestTradingManagerDivided
 

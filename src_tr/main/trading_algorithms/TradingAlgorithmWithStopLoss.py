@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
 
-from src_tr.main.strategies.StrategyBase import StrategyBase
+from tradingActionExperiments.src_tr.main.trading_algorithms.TradingAlgorithmBase import TradingAlgorithmBase
 
-class StrategyWithStopLoss(StrategyBase):
+class TradingAlgorithmWithStopLoss(TradingAlgorithmBase):
 
     def __init__(self,
                  ma_short, 
@@ -24,13 +24,13 @@ class StrategyWithStopLoss(StrategyBase):
         self.trading_day = trading_day.strftime('%Y_%m_%d')
         self.run_id = run_id
         self.db_path = db_path
-        self.name = 'strategy_with_stoploss'
+        self.name = 'trading_algorithm_with_stoploss'
         self.daily_dir_name = self.run_id + '_' + 'trading_day' + '_' + self.trading_day
 
     def update_capital_amount(self, account_cash):
         self.capital = account_cash
         
-    def apply_long_strategy(self, previous_position: str, symbol: str, symbol_dict: dict):
+    def apply_long_trading_algorithm(self, previous_position: str, symbol: str, symbol_dict: dict):
         symbol_df: pd.DataFrame = symbol_dict['daily_price_data_df']
         ind_price: str = symbol_dict['indicator_price']
 
@@ -88,7 +88,7 @@ class StrategyWithStopLoss(StrategyBase):
         return symbol_dict
     
         ''' 
-    def apply_combined_strategy(self, trading_client: TradingClient, symbol: str):
+    def apply_combined_trading_algorithm(self, trading_client: TradingClient, symbol: str):
         # set current_capital column
         symbol_df.loc[symbol_df.index[-1], CURRENT_CAPITAL] = self.capital
 
@@ -152,5 +152,5 @@ class StrategyWithStopLoss(StrategyBase):
                 symbol_df.loc[last_index, STOP_LOSS_OUT_SIGNAL] = STOP_LOSS_SHORT
                 symbol_df.loc[last_index, TRADING_ACTION] = ACT_BUY_PREV_SHORT
                 
-        symbol_df.to_csv('combined_strategy_log.csv')
+        symbol_df.to_csv('combined_trading_algorithm_log.csv')
         '''

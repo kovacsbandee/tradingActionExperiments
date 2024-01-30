@@ -6,14 +6,14 @@ from alpaca.trading.enums import OrderSide, TimeInForce
 import pandas as pd
 
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
-from src_tr.main.strategies.StrategyWithStopLoss import StrategyWithStopLoss
+from tradingActionExperiments.src_tr.main.trading_algorithms.TradingAlgorithmWithStopLoss import TradingAlgorithmWithStopLoss
 from src_tr.main.helpers.converter import string_to_dict_list
 
 class TradingManagerMain():
 
     def __init__(self,
                 data_generator: PriceDataGeneratorMain,
-                strategy: StrategyWithStopLoss,
+                trading_algorithm: TradingAlgorithmWithStopLoss,
                 trading_client: TradingClient,
                 api_key: str,
                 secret_key: str,
@@ -23,7 +23,7 @@ class TradingManagerMain():
                 #market_close: datetime
                 ):
         self.data_generator = data_generator
-        self.strategy = strategy
+        self.trading_algorithm = trading_algorithm
         self.trading_client = trading_client
         self.api_key = api_key
         self.secret_key = secret_key
@@ -72,8 +72,8 @@ class TradingManagerMain():
         try:
             self.data_generator.update_symbol_df(minute_bars=self.minute_bars)
             
-            # apply strategy on all symbols
-            self.apply_strategy()
+            # apply trading_algorithm on all symbols
+            self.apply_trading_algorithm()
             
             # filter out symbols by RSI value
             if not self.rsi_filtered and len(self.symbols_to_delete) > 0:
@@ -100,19 +100,19 @@ class TradingManagerMain():
         else:
             return 'out'
         
-    def apply_strategy(self):
+    def apply_trading_algorithm(self):
         for symbol, value_dict in self.data_generator.symbol_dict.items():
             # normalize open price
             value_dict['daily_price_data_df'].loc[value_dict['daily_price_data_df'].index[-1], 'open_norm'] = \
             (value_dict['daily_price_data_df'].loc[value_dict['daily_price_data_df'].index[-1], 'o'] - value_dict['prev_day_data']['avg_open']) / value_dict['prev_day_data']['std_open']
             
             symbol_df_length = len(value_dict['daily_price_data_df'])
-            ma_long_value = self.strategy.ma_long
+            ma_long_value = self.trading_algorithm.ma_long
             if symbol_df_length > ma_long_value:
                 current_capital = self.get_current_capital()
-                self.strategy.update_capital_amount(current_capital)
+                self.trading_algorithm.update_capital_amount(current_capital)
                 previous_position = self.get_previous_position(symbol)
-                self.data_generator.symbol_dict[symbol] = self.strategy.apply_long_strategy(previous_position=previous_position, 
+                self.data_generator.symbol_dict[symbol] = self.trading_algorithm.apply_long_trading_algorithm(previous_position=previous_position, 
                                                                                                 symbol=symbol,  
                                                                                                 symbol_dict=value_dict)
                 current_df: pd.DataFrame = value_dict['daily_price_data_df']
@@ -126,7 +126,7 @@ class TradingManagerMain():
                 else:
                     print("Collecting live data for RSI filtering, no trading is executed")
             else:
-                print(f"Not enough data to apply strategy. Symbol: {symbol}")
+                print(f"Not enough data to apply trading_algorithm. Symbol: {symbol}")
         
     def execute_trading_action(self, symbol, current_df):
         trading_action = current_df.iloc[-1]['trading_action']
