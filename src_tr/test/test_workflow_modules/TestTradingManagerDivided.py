@@ -29,14 +29,20 @@ class TestTradingManagerDivided(TestTradingManager):
                                                                                                 symbol=symbol,  
                                                                                                 symbol_dict=value_dict)
                 current_df: pd.DataFrame = value_dict['daily_price_data_df']
-                if len(current_df) > self.minutes_before_trading_start:
-                    if not self.rsi_filtered and current_df['rsi'].mean() < self.rsi_threshold: #NOTE: megfordítottam a >-t!
-                        self.symbols_to_delete.append(symbol)
-                    elif not self.rsi_filtered and current_df['rsi'].mean() >= self.rsi_threshold:
-                        self.rsi_counter += 1
-                    if self.rsi_filtered:
-                        self.execute_trading_action(symbol, current_df)
-                else:
-                    print("Collecting live data for RSI filtering, no trading is executed")
+                self.execute_trading_action(symbol, current_df)
             else:
                 print(f"Not enough data to apply strategy. Symbol: {symbol}")
+                
+    #Override
+    def execute_trading_action(self, symbol, current_df):
+        trading_action = current_df.iloc[-1]['trading_action']
+        current_position = current_df.iloc[-2]['position']
+
+        quantity_buy_long = current_df.iloc[-1]['current_capital'] / current_df.iloc[-1]['o']
+
+        if trading_action == 'buy_next_long_position' and current_position == 'out':
+            self.place_buy_order(symbol=symbol, quantity=quantity_buy_long, price=current_df.iloc[-1]['o'])
+        elif trading_action == 'sell_previous_long_position' and current_position == 'long':
+            self.close_current_position(symbol=symbol, price=current_df.iloc[-1]['o'])
+        else:
+            print('no_action')
