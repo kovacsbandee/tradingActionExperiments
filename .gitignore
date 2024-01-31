@@ -6,4 +6,4 @@
 __pycache__/
 src_tr/main/resources
 configs/**
-^configs/*-example.json
+!configs/*-example.json
