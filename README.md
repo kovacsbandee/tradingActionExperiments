@@ -39,7 +39,9 @@ Change directory to this database folder, then:
 mkdir scanner_stats
 ```
 
-## Set project root's config.py properly
+## Set project configs/config-default.json properly
+
+Based on the config-default-example.json template
 
 # Running
 

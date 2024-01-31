@@ -32,7 +32,7 @@ ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
 DB_PATH = os.environ['DB_PATH']
 RUN_ID = 'DEV_RUN_ID_valami'
 
-for start in [datetime(2024, 1, 10, 0, 0), datetime(2024, 1, 11, 0, 0)]:
+for start in [datetime(2023, 9, 20, 0, 0), datetime(2023, 9, 21, 0, 0)]:
     try:
         start = start + timedelta(hours=0) + timedelta(minutes=00)
         end = start + timedelta(hours=23) + timedelta(minutes=59)

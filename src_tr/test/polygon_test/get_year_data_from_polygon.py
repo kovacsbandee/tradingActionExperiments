@@ -39,7 +39,7 @@ def get_bar_data(ticker: str, from_: str, to: str):
             a_dict['symbol'] = ticker
             aggs.append(a_dict)
     except Exception as ex:
-        print(f'Error: {ex}')
+        print(f"Error: {ex}")
     return aggs
 
 bar_data_list_per_symbol = Parallel(n_jobs=-10, verbose=10)(delayed(get_bar_data)(ticker=e, from_="2022-12-01", to="2023-12-01") for e in nasdaq_symbols)

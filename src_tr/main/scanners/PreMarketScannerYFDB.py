@@ -11,7 +11,7 @@ import yfinance as yf
 from joblib import Parallel, delayed
 
 from src_tr.main.scanners.ScannerBase import ScannerBase
-import config
+from config import config
 
 
 class PreMarketScannerYFDB(ScannerBase):
@@ -38,7 +38,7 @@ class PreMarketScannerYFDB(ScannerBase):
         try:
             scanning_day_str = self.scanning_day.strftime('%Y_%m_%d')
             symbol_scanning_day_df = pd.read_csv(
-                f'{config.db_path}/daywise_database/stock_prices_for_{scanning_day_str}/csvs/{symbol}.csv')
+                f"{config['db_path']}/daywise_database/stock_prices_for_{scanning_day_str}/csvs/{symbol}.csv")
             symbol_scanning_day_df.columns = ['Datetime', 'Open', 'High', 'Low', 'Close', 'adj close', 'Volume']
             return symbol_scanning_day_df
         except Exception as e:
@@ -115,7 +115,7 @@ class PreMarketScannerYFDB(ScannerBase):
     def calculate_filtering_stats(self) -> List:
         self.pre_market_stats = self._create_pre_market_stats()
         date = self.trading_day.strftime('%Y_%m_%d')
-        self.pre_market_stats.to_csv(f'{config.db_path}/scanner_stats/pre_market_stats_{date}.csv', index=False)
+        self.pre_market_stats.to_csv(f"{config['db_path']}/scanner_stats/pre_market_stats_{date}.csv", index=False)
         return self.pre_market_stats
 
     def _create_pre_market_stats(self) -> DataFrame:
@@ -127,7 +127,7 @@ class PreMarketScannerYFDB(ScannerBase):
         try:
             return pd.DataFrame.from_records(pre_market_symbol_stats)
         except Exception as e:
-            print(f'Failed to create pre_market_stats DataFrame: {str(e)}')
+            print(f"Failed to create pre_market_stats DataFrame: {str(e)}")
             return None
 
     def recommend_premarket_watchlist(self) -> List[dict]:
@@ -140,7 +140,7 @@ class PreMarketScannerYFDB(ScannerBase):
             (self.price_range_perc_cond < self.pre_market_stats['price_range_perc']) & \
             (self.avg_volume_cond < self.pre_market_stats['avg_volume'])]
         print(
-            f'The recommended watchlist for {self.trading_day} is the following DataFrame: {self.recommended_symbols}')
+            f"The recommended watchlist for {self.trading_day} is the following DataFrame: {self.recommended_symbols}")
 
         symbol_dict_list = []
         if self.recommended_symbols is not None:

@@ -11,14 +11,14 @@ def plot_daily_statistics(plot_df, db_path, daily_dir_name):
                              y=plot_df[stat],
                              name=stat), row=i+1, col=1)
     fig.update_layout(height=len(statistics_variables) * 200)
-    fig.write_html(f'{db_path}/{daily_dir_name}/daily_statistics.html')
+    fig.write_html(f"{db_path}/{daily_dir_name}/daily_statistics.html")
 
 def plot_daily_statistics_correlation_matrix(plot_df, db_path, daily_dir_name):
     corr_df = plot_df[[c for c in plot_df.columns if c != 'symbol']].corr()
     fig = go.Figure(data=go.Heatmap(x=corr_df.columns,
                                     y=corr_df.index,
                                     z=corr_df))
-    fig.write_html(f'{db_path}/{daily_dir_name}/daily_correlation_matrix.html')
+    fig.write_html(f"{db_path}/{daily_dir_name}/daily_correlation_matrix.html")
 
 def get_marker_df(plot_df):
     plot_df = plot_df.loc[(plot_df['trading_action'] != '')]
@@ -132,5 +132,5 @@ def create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiment
                                    name='open_big_indicator_hist',
                                    nbinsx=100), row=7, col=1)
         fig.update_xaxes(showticklabels=True)
-        fig.update_layout(title=f'{symbol} {date}.', title_font=dict(size=18), xaxis_rangeslider_visible=False, height=1500)
-        fig.write_html(f'{db_path}/{daily_dir_name}/daily_files/plots/candle_plot_{symbol}_{date}.html')
+        fig.update_layout(title=f"{symbol} {date}.", title_font=dict(size=18), xaxis_rangeslider_visible=False, height=1500)
+        fig.write_html(f"{db_path}/{daily_dir_name}/daily_files/plots/candle_plot_{symbol}_{date}.html")

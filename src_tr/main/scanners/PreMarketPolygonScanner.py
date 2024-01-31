@@ -44,7 +44,7 @@ class PreMarketPolygonScanner(ScannerBase):
                 a_dict['symbol'] = ticker
                 aggs.append(a_dict)
         except Exception as ex:
-            print(f'Error: {ex}')
+            print(f"Error: {ex}")
             
         if len(aggs) > 0:
             bar_dict_list = []
@@ -128,7 +128,7 @@ class PreMarketPolygonScanner(ScannerBase):
         try:   
             return pd.DataFrame.from_records(pre_market_symbol_stats)
         except Exception as e:
-            print(f'Failed to create pre_market_stats DataFrame: {str(e)}')
+            print(f"Failed to create pre_market_stats DataFrame: {str(e)}")
             return None
         
     def recommend_premarket_watchlist(self) -> List[dict]:
@@ -137,7 +137,7 @@ class PreMarketPolygonScanner(ScannerBase):
             (self.pre_market_stats['avg_open'] < self.upper_price_boundary) & \
             (self.price_range_perc_cond < self.pre_market_stats['price_range_perc']) & \
             (self.avg_volume_cond < self.pre_market_stats['avg_volume'])]
-        print(f'The recommended watchlist for {self.trading_day} is the following DataFrame: {self.recommended_symbols}')
+        print(f"The recommended watchlist for {self.trading_day} is the following DataFrame: {self.recommended_symbols}")
         symbol_dict_list = []
         if self.recommended_symbols is not None:
             # általában nem jó ötlet pandas dataframe-en iterálni, van benne egy csomó okos vektor művelet, ami sokkal gyorsabb pl.:
