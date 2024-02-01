@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+from datetime import datetime
 
 def split_data_by_day_Kovi_original():
     full_symbol_df = pd.read_csv('F:/tradingActionExperiments_database/input/polygon/bar_dfs/AAPL_2023-01-26_2023-04-03.csv')
@@ -24,7 +25,7 @@ def split_data_by_day_Kovi_original():
             os.mkdir(f'F:/tradingActionExperiments_database/input/polygon/daywise_database/stock_prices_for_{date_str}')
         trading_day_df.to_csv(f'F:/tradingActionExperiments_database/input/polygon/daywise_database/stock_prices_for_{date_str}/{out_symbol_name}.csv')
         
-def split_data_by_day(full_symbol_df: pd.DataFrame):
+def split_data_by_day(full_symbol_df: pd.DataFrame, filter_length=None):
     #TODO: configból
     output_folder_path = "/home/tamkiraly/Development/tradingActionExperiments/src_tr/test/polygon_test/daily_bars"
 
@@ -43,7 +44,13 @@ def split_data_by_day(full_symbol_df: pd.DataFrame):
         trading_day_df.drop('symbol', inplace=True, axis=1)
         if date_str not in os.listdir(output_folder_path):
             os.mkdir(f"{output_folder_path}/{date_str}")
-        trading_day_df.to_csv(f"{output_folder_path}/{date_str}/{out_symbol_name}.csv")
+            
+        start_time = datetime.strptime('09:30:00', '%H:%M:%S').time()
+        end_time = datetime.strptime('16:00:00', '%H:%M:%S').time()
+        time_filtered_df = trading_day_df.between_time(start_time, end_time)
+        
+        if filter_length is None or (filter_length > 0 and time_filtered_df.shape[0] >= filter_length):
+            time_filtered_df.to_csv(f"{output_folder_path}/{date_str}/{out_symbol_name}.csv")
         
 def split_downloaded_data():
     #TODO: configból
@@ -52,4 +59,4 @@ def split_downloaded_data():
         csv_file_path = os.path.join(csv_dir, filename)
         if os.path.isfile(csv_file_path):
             full_symbol_df = pd.read_csv(csv_file_path)
-            split_data_by_day(full_symbol_df)
+            split_data_by_day(full_symbol_df, 200)
