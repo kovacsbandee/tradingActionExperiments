@@ -8,11 +8,12 @@ from src_tr.test.test_workflow_modules.TestTradingClientDivided import TestTradi
 from src_tr.main.utils.test_utils import get_all_symbols_daily_data_base, run_test_experiment
 
 from src_tr.main.utils.test_utils import get_yf_local_db_symbols, get_all_symbols_daily_data_yf_db
+from src_tr.main.utils.local_yf_db_handler import get_possible_local_yf_trading_days
 
 from src_tr.main.checks.checks import check_trading_day
 from src_tr.main.utils.utils import calculate_scanning_day, get_nasdaq_symbols
 from src_tr.main.utils.data_management import DataManager
-from src_tr.main.utils.plots import create_candle_stick_chart_w_indicators_for_trendscalping_for_mass_experiments, plot_daily_statistics
+from src_tr.main.utils.plots import daily_time_series_charts, plot_daily_statistics
 from src_tr.main.scanners.PreMarketScanner import PreMarketScanner
 from src_tr.main.scanners.PreMarketScannerYFDB import PreMarketScannerYFDB
 #from src_tr.main.scanners.PreMarketDumbScanner import PreMarketDumbScanner
@@ -30,15 +31,24 @@ SYMBOL_CSV_PATH = os.environ["SYMBOL_CSV_PATH"]
 ALPACA_KEY = os.environ["ALPACA_KEY"]
 ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
 DB_PATH = os.environ['DB_PATH']
+
 RUN_ID = 'DEV_RUN_ID_valami'
 
-for start in [datetime(2024, 1, 10, 0, 0), datetime(2024, 1, 11, 0, 0)]:
+MODE = 'LOCAL_YF_DB'
+if MODE == 'LOCAL_YF_DB':
+    trading_days, scanning_days = get_possible_local_yf_trading_days()
+
+for i, start in enumerate(trading_days[:1]):
     try:
         start = start + timedelta(hours=0) + timedelta(minutes=00)
         end = start + timedelta(hours=23) + timedelta(minutes=59)
         trading_day = check_trading_day(start)
-        scanning_day = calculate_scanning_day(trading_day)
-        
+
+        if MODE == 'LOCAL_YF_DB':
+            scanning_day = scanning_days[i]
+        else:
+            scanning_day = calculate_scanning_day(trading_day)
+
         data_manager = DataManager(trading_day=trading_day, scanning_day=scanning_day, run_id=RUN_ID, db_path=DB_PATH)
         
         #input_symbols = get_nasdaq_symbols(file_path=SYMBOL_CSV_PATH)[0:100]

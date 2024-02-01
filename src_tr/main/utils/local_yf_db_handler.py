@@ -134,7 +134,6 @@ def create_stockwise_price_data(symbol_csvs):
             long_symbol_df.set_index('Datetime', inplace=True)
             long_symbol_df.to_csv(f'{STOCKWISE_DB_FOLDER}/{symbol_csv}')
 
-start = datetime.datetime(2024, 1, 10, 0, 0)
 
 def get_possible_local_yf_trading_days():
     file = open(F'{config.db_path}/daywise_common_files.json')
@@ -142,5 +141,6 @@ def get_possible_local_yf_trading_days():
     file.close()
     daywise_common_files = [json.loads(l) for l in data]
     trading_days = [datetime.strptime(d['day'][17:], '%Y_%m_%d') for d in daywise_common_files]
-    return trading_days
+    scanning_day = [datetime.strptime(d['prev_day'][17:], '%Y_%m_%d') for d in daywise_common_files]
+    return trading_days, scanning_day
 
