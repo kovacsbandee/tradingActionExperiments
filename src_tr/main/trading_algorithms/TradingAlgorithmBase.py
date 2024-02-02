@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from pandas import DataFrame
 
-class StrategyBase(ABC):
+class TradingAlgorithmBase(ABC):
 
     """
         symbol_dict = {
@@ -16,5 +16,5 @@ class StrategyBase(ABC):
 
     
     @abstractmethod
-    def apply_long_strategy():
+    def apply_long_trading_algorithm():
         pass

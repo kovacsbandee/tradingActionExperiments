@@ -21,7 +21,7 @@ class TradingManagerDraft(TradingManagerBase):
             self.event.set()
             do_progress = self._process_data()
             if do_progress:
-                # továbbhalad a folyamat: trading_day_stats update -> apply_strategy -> execute_trading_action
+                # továbbhalad a folyamat: trading_day_stats update -> apply_trading_algorithm -> execute_trading_action
                 pass
             # else:
             #     self.wait_for_data() / self.event.clear() ???

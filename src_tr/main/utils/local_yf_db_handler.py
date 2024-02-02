@@ -5,7 +5,7 @@ import pandas as pd
 import yfinance as yf
 from joblib import Parallel, delayed
 import logging
-import config
+from config import config
 
 logging.getLogger('yfinance').setLevel(logging.CRITICAL)
 
@@ -16,21 +16,21 @@ class yfPriceDatabaseBuilder:
                  upper_last_sale=400):
         self.date = start_date
         self.date_dt = datetime.strptime(self.date, '%Y-%m-%d')
-        self.daywise_database = f'{config.db_path}/daywise_database'
+        self.daywise_database = f"{config['db_path']}/daywise_database"
         self.mod_date = self.date.replace('-', '_')
-        self.instance_dir_name = f'stock_prices_for_{self.mod_date}'
-        self.screener_file = config.resource_paths['nasdaq_symbols_csv']
+        self.instance_dir_name = f"stock_prices_for_{self.mod_date}"
+        self.screener_file = os.path.join(config["project_path"], config["resource_paths"]['nasdaq_symbols_csv'])
         self.lower_last_sale_price = low_last_sale
         self.upper_last_sale_price = upper_last_sale
-        self.symbol_screener_parameter = f'screener_file: {self.screener_file}, lower last sale price boundary: {self.lower_last_sale_price}, upper last sale price boundary: {self.upper_last_sale_price}'
+        self.symbol_screener_parameter = f"screener_file: {self.screener_file}, lower last sale price boundary: {self.lower_last_sale_price}, upper last sale price boundary: {self.upper_last_sale_price}"
 
     def initialize_date_dir(self):
         if self.instance_dir_name not in os.listdir(self.daywise_database):
-            instance_dir = f'{self.daywise_database}/{self.instance_dir_name}'
+            instance_dir = f"{self.daywise_database}/{self.instance_dir_name}"
             os.mkdir(instance_dir)
         else:
-            self.instance_dir = f'{self.daywise_database}/{self.instance_dir_name}'
-            print(f'{self.instance_dir_name} is already created at the {self.daywise_database}!')
+            self.instance_dir = f"{self.daywise_database}/{self.instance_dir_name}"
+            print(f"{self.instance_dir_name} is already created at the {self.daywise_database}!")
 
     def get_nasdaq_symbols(self):
         daily_nasdaq_symbols = pd.read_csv(self.screener_file)
@@ -55,7 +55,7 @@ class yfPriceDatabaseBuilder:
                                        progress=False)
             symbol_data.columns = [c.lower() for c in symbol_data.columns]
             if len(symbol_data) > 0:
-                symbol_data.to_csv(f'{self.instance_dir_name}/{symbol}.csv')
+                symbol_data.to_csv(f"{self.instance_dir_name}/{symbol}.csv")
                 successfull_symbols.append(symbol)
             else:
                 pass
@@ -78,20 +78,20 @@ def build_daywise_directories(start_date, day_nums):
         if datetime.strptime(loading_day, '%Y-%m-%d').strftime('%A') != 'Sunday' or datetime.strptime(loading_day, '%Y-%m-%d').strftime('%A') != 'Saturday':
             db_builder = yfPriceDatabaseBuilder(start_date=loading_day)
             if db_builder.instance_dir_name not in os.listdir(db_builder.daywise_database):
-                instance_dir = f'{db_builder.daywise_database}/{db_builder.instance_dir_name}'
+                instance_dir = f"{db_builder.daywise_database}/{db_builder.instance_dir_name}"
                 os.mkdir(instance_dir)
-                os.mkdir(f'{instance_dir}/csvs')
-                db_builder.instance_dir_name = f'{instance_dir}/csvs'
+                os.mkdir(f"{instance_dir}/csvs")
+                db_builder.instance_dir_name = f"{instance_dir}/csvs"
             else:
-                db_builder.instance_dir_name = f'{db_builder.daywise_database}/{db_builder.instance_dir_name}/csvs'
-                print(f'{db_builder.instance_dir_name} is already created at the {db_builder.daywise_database}!')
+                db_builder.instance_dir_name = f"{db_builder.daywise_database}/{db_builder.instance_dir_name}/csvs"
+                print(f"{db_builder.instance_dir_name} is already created at the {db_builder.daywise_database}!")
             db_builder.get_nasdaq_symbols()
             df = db_builder.run_paralelle_loading()
             log_dfs.append(df)
     return log_dfs
 
-DAYWISE_DB_FOLDER = f'{config.db_path}/daywise_database'
-STOCKWISE_DB_FOLDER = f'{config.db_path}/stockwise_database'
+DAYWISE_DB_FOLDER = f"{config['db_path']}/daywise_database"
+STOCKWISE_DB_FOLDER = f"{config['db_path']}/stockwise_database"
 
 def get_daywise_common_files(mode='write'):
     folds_df = pd.DataFrame({'folders': os.listdir(DAYWISE_DB_FOLDER)})
@@ -103,9 +103,9 @@ def get_daywise_common_files(mode='write'):
         day_prev_day_files = dict()
         day_prev_day_files['day'] = folds[0]
         day_prev_day_files['prev_day'] = folds[1]
-        prev_day_files = os.listdir(f'{DAYWISE_DB_FOLDER}/{folds[1]}/csvs')
+        prev_day_files = os.listdir(f"{DAYWISE_DB_FOLDER}/{folds[1]}/csvs")
         files = list()
-        for file in os.listdir(f'{DAYWISE_DB_FOLDER}/{folds[0]}/csvs'):
+        for file in os.listdir(f"{DAYWISE_DB_FOLDER}/{folds[0]}/csvs"):
             if (file in prev_day_files and 'sdf' not in file) and \
                (file in prev_day_files and 'normalized' not in file) and \
                (file in prev_day_files and 'w_' not in file):
@@ -114,7 +114,7 @@ def get_daywise_common_files(mode='write'):
         common_files.append(day_prev_day_files)
     if mode == 'write':
         import json as local_json
-        with open(f'{config.db_path}/daywise_common_files.json', 'w') as fout:
+        with open(f"{config['db_path']}/daywise_common_files.json", 'w') as fout:
             for ddict in common_files:
                 jout = local_json.dumps(ddict) + '\n'
                 fout.write(jout)
@@ -126,21 +126,21 @@ def create_stockwise_price_data(symbol_csvs):
         print(i, symbol_csv)
         symbol_dfs = list()
         for daily_dirs in os.listdir(DAYWISE_DB_FOLDER):
-            if symbol_csv in os.listdir(f'{DAYWISE_DB_FOLDER}/{daily_dirs}/csvs'):
+            if symbol_csv in os.listdir(f"{DAYWISE_DB_FOLDER}/{daily_dirs}/csvs"):
                 print(daily_dirs)
-                symbol_dfs.append(pd.read_csv(f'{DAYWISE_DB_FOLDER}/{daily_dirs}/csvs/{symbol_csv}'))
+                symbol_dfs.append(pd.read_csv(f"{DAYWISE_DB_FOLDER}/{daily_dirs}/csvs/{symbol_csv}"))
         if len(symbol_dfs) > 10:
             long_symbol_df = pd.concat(symbol_dfs, axis=0)
             long_symbol_df.set_index('Datetime', inplace=True)
-            long_symbol_df.to_csv(f'{STOCKWISE_DB_FOLDER}/{symbol_csv}')
+            long_symbol_df.to_csv(f"{STOCKWISE_DB_FOLDER}/{symbol_csv}")
 
-start = datetime.datetime(2024, 1, 10, 0, 0)
 
 def get_possible_local_yf_trading_days():
-    file = open(F'{config.db_path}/daywise_common_files.json')
+    file = open(f"{config['db_path']}/daywise_common_files.json")
     data = file.readlines()
     file.close()
     daywise_common_files = [json.loads(l) for l in data]
     trading_days = [datetime.strptime(d['day'][17:], '%Y_%m_%d') for d in daywise_common_files]
-    return trading_days
+    scanning_day = [datetime.strptime(d['prev_day'][17:], '%Y_%m_%d') for d in daywise_common_files]
+    return trading_days, scanning_day
 

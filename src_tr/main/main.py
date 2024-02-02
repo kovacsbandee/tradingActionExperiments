@@ -16,7 +16,7 @@ from src_tr.main.checks.checks import check_trading_day
 from src_tr.main.utils.utils import calculate_scanning_day, get_nasdaq_symbols
 from src_tr.main.scanners.PreMarketScanner import PreMarketScanner
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
-from src_tr.main.strategies.StrategyWithStopLoss import StrategyWithStopLoss
+from src_tr.main.trading_algorithms.TradingAlgorithmWithStopLoss import TradingAlgorithmWithStopLoss
 from src_tr.main.trading_managers.TradingManagerMain import TradingManagerMain
 
 # 1) Scanner inicializálása -> watchlist létrehozás
@@ -48,7 +48,7 @@ recommended_symbol_list: List[dict] = scanner.recommend_premarket_watchlist()
 
 data_generator = PriceDataGeneratorMain(recommended_symbol_list=recommended_symbol_list)
 
-strategy = StrategyWithStopLoss(ma_short=5,
+trading_algorithm = TradingAlgorithmWithStopLoss(ma_short=5,
                                 ma_long=12,
                                 rsi_len=12,
                                 stop_loss_perc=0.0,
@@ -56,7 +56,7 @@ strategy = StrategyWithStopLoss(ma_short=5,
                                 trading_day=trading_day)
 
 trading_manager = TradingManagerMain(data_generator=data_generator,
-                                     strategy=strategy,
+                                     trading_algorithm=trading_algorithm,
                                      trading_client=trading_client,
                                      api_key=ALPACA_KEY,
                                      secret_key=ALPACA_SECRET_KEY,

@@ -2,10 +2,11 @@ import os
 import pandas as pd
 import numpy as np
 from datetime import datetime
+
+from config import config
         
 def split_data_by_day(full_symbol_df: pd.DataFrame, filter_length=None):
-    #TODO: configból
-    output_folder_path = "/home/tamkiraly/Development/tradingActionExperiments/src_tr/test/polygon_test/daily_bars"
+    output_folder_path = os.path.join(config["project_path"], config["resource_paths"]["daily_data_output_folder"])
 
     #NOTE: erre csak a fájlból konvertáláshoz van szükségünk, mert abban nincs timezone infó
     full_symbol_df['timestamp'] = pd.DatetimeIndex(pd.to_datetime(full_symbol_df['timestamp'], utc=True)).tz_convert('US/Eastern')
@@ -34,8 +35,7 @@ def split_data_by_day(full_symbol_df: pd.DataFrame, filter_length=None):
                 daily_df.to_csv(f"{output_folder_path}/{date_str}/{symbol}.csv")
         
 def split_downloaded_data():
-    #TODO: configból
-    csv_dir = "/home/tamkiraly/Development/tradingActionExperiments/src_tr/test/polygon_test/full_bar_csvs"
+    csv_dir = os.path.join(config["project_path"], config["resource_paths"]["polygon_bar_data_csvs"])
     for filename in os.listdir(csv_dir):
         csv_file_path = os.path.join(csv_dir, filename)
         if os.path.isfile(csv_file_path):

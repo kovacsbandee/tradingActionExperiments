@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
 
-from src_tr.main.strategies.StrategyBase import StrategyBase
+from src_tr.main.trading_algorithms.TradingAlgorithmBase import TradingAlgorithmBase
 
-class StrategyWithStopLossPrevPrice(StrategyBase):
+class TradingAlgorithmWithStopLossPrevPrice(TradingAlgorithmBase):
 
     def __init__(self,
                  ma_short, 
@@ -24,13 +24,13 @@ class StrategyWithStopLossPrevPrice(StrategyBase):
         self.trading_day = trading_day.strftime('%Y_%m_%d')
         self.run_id = run_id
         self.db_path = db_path
-        self.name = 'strategy_with_stoploss_prev_price'
+        self.name = 'trading_algorithm_with_stoploss_prev_price'
         self.daily_dir_name = self.run_id + '_' + 'trading_day' + '_' + self.trading_day
 
     def update_capital_amount(self, account_cash):
         self.capital = account_cash
         
-    def apply_long_strategy(self, previous_position: str, symbol: str, symbol_dict: dict):
+    def apply_long_trading_algorithm(self, previous_position: str, symbol: str, symbol_dict: dict):
         symbol_df: pd.DataFrame = symbol_dict['daily_price_data_df']
         ind_price: str = symbol_dict['indicator_price']
 

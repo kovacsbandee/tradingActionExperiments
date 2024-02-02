@@ -11,6 +11,7 @@ import yfinance as yf
 from joblib import Parallel, delayed
 
 from src_tr.main.scanners.ScannerBase import ScannerBase
+from config import config
 
 class PreMarketScanner(ScannerBase):
 
@@ -112,10 +113,8 @@ class PreMarketScanner(ScannerBase):
 
     def calculate_filtering_stats(self) -> List:
         self.pre_market_stats = self._create_pre_market_stats()
-        proj_path = os.environ['PROJECT_PATH']
         date = self.trading_day.strftime('%Y_%m_%d')
-        # TODO: a path itt is kívülről jöjjön configból/.env-ből, hogy ne kelljen mindig átírni
-        self.pre_market_stats.to_csv(f'{proj_path}_database/scanner_stats/pre_market_stats_{date}.csv', index=False)
+        self.pre_market_stats.to_csv(f"{config['db_path']}/scanner_stats/pre_market_stats_{date}.csv", index=False)
         return self.pre_market_stats
         
     def _create_pre_market_stats(self) -> DataFrame:
@@ -127,7 +126,7 @@ class PreMarketScanner(ScannerBase):
         try:   
             return pd.DataFrame.from_records(pre_market_symbol_stats)
         except Exception as e:
-            print(f'Failed to create pre_market_stats DataFrame: {str(e)}')
+            print(f"Failed to create pre_market_stats DataFrame: {str(e)}")
             return None
 
     def recommend_premarket_watchlist(self) -> List[dict]:
@@ -139,7 +138,7 @@ class PreMarketScanner(ScannerBase):
             (self.pre_market_stats['avg_open'] < self.upper_price_boundary) & \
             (self.price_range_perc_cond < self.pre_market_stats['price_range_perc']) & \
             (self.avg_volume_cond < self.pre_market_stats['avg_volume'])]
-        print(f'The recommended watchlist for {self.trading_day} is the following DataFrame: {self.recommended_symbols}')
+        print(f"The recommended watchlist for {self.trading_day} is the following DataFrame: {self.recommended_symbols}")
 
         symbol_dict_list = []
         if self.recommended_symbols is not None:

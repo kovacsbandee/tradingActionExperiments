@@ -7,6 +7,7 @@ import yfinance as yf
 from joblib import Parallel, delayed
 
 from src_tr.main.scanners.ScannerBase import ScannerBase
+from config import config
 
 class PreMarketDumbScanner(ScannerBase):
 
@@ -96,9 +97,8 @@ class PreMarketDumbScanner(ScannerBase):
 
     def calculate_filtering_stats(self) -> List:
         self.pre_market_stats = self._create_pre_market_stats()
-        proj_path = os.environ['PROJECT_PATH']
         date = self.trading_day.strftime('%Y_%m_%d')
-        self.pre_market_stats.to_csv(f'{proj_path}_database/scanner_stats/pre_market_stats_{date}.csv', index=False)
+        self.pre_market_stats.to_csv(f"{config['db_path']}/scanner_stats/pre_market_stats_{date}.csv", index=False)
         return self.pre_market_stats
 
     def _create_pre_market_stats(self) -> DataFrame:
@@ -110,7 +110,7 @@ class PreMarketDumbScanner(ScannerBase):
         try:
             return pd.DataFrame.from_records(pre_market_symbol_stats)
         except Exception as e:
-            print(f'Failed to create pre_market_stats DataFrame: {str(e)}')
+            print(f"Failed to create pre_market_stats DataFrame: {str(e)}")
             return None
         
     def recommend_premarket_watchlist(self) -> List[dict]:
@@ -121,7 +121,7 @@ class PreMarketDumbScanner(ScannerBase):
         #    (self.avg_volume_cond < self.pre_market_stats[AVG_VOLUME])]
 
         self.recommended_symbols: pd.DataFrame = self.pre_market_stats
-        print(f'The recommended watchlist for {self.trading_day} is the following DataFrame: {self.recommended_symbols}')
+        print(f"The recommended watchlist for {self.trading_day} is the following DataFrame: {self.recommended_symbols}")
         symbol_dict_list = []
         if self.recommended_symbols is not None:
             for index, row in self.recommended_symbols.iterrows():
