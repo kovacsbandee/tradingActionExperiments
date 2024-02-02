@@ -49,7 +49,7 @@ for i, start in enumerate(trading_days[:1]):
         else:
             scanning_day = calculate_scanning_day(trading_day)
 
-        data_manager = DataManager(trading_day=trading_day, scanning_day=scanning_day, run_id=RUN_ID, db_path=DB_PATH)
+        data_manager = DataManager(mode=MODE, trading_day=trading_day, scanning_day=scanning_day, run_id=RUN_ID, db_path=DB_PATH)
         
         #input_symbols = get_nasdaq_symbols(file_path=SYMBOL_CSV_PATH)[0:100]
 
