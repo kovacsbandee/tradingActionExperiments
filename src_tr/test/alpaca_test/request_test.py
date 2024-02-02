@@ -58,7 +58,7 @@ def convert_quotes_to_df(quotes: dict):
             
             # Concatenate the current element's DataFrame with the main DataFrame
             quotes_df = pd.concat([quotes_df, element_df])
-            quotes_df.to_csv(f'{key}_quotes.csv', index=True)
+            quotes_df.to_csv(f"{key}_quotes.csv", index=True)
     return quotes_df
 
             

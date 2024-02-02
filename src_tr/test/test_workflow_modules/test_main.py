@@ -20,8 +20,8 @@ from src_tr.main.scanners.PreMarketScannerYFDB import PreMarketScannerYFDB
 from src_tr.main.scanners.PreMarketPolygonScanner import PreMarketPolygonScanner
 
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
-from src_tr.main.strategies.StrategyWithStopLoss import StrategyWithStopLoss
-from src_tr.main.strategies.StrategyWithStopLossPrevPrice import StrategyWithStopLossPrevPrice
+from src_tr.main.trading_algorithms.TradingAlgorithmWithStopLoss import TradingAlgorithmWithStopLoss
+from src_tr.main.trading_algorithms.TradingAlgorithmWithStopLossPrevPrice import TradingAlgorithmWithStopLossPrevPrice
 from src_tr.test.test_workflow_modules.TestTradingManager import TestTradingManager
 from src_tr.test.test_workflow_modules.TestTradingManagerDivided import TestTradingManagerDivided
 
@@ -49,7 +49,7 @@ for i, start in enumerate(trading_days[:1]):
         else:
             scanning_day = calculate_scanning_day(trading_day)
 
-        data_manager = DataManager(trading_day=trading_day, scanning_day=scanning_day, run_id=RUN_ID, db_path=DB_PATH)
+        data_manager = DataManager(mode=MODE, trading_day=trading_day, scanning_day=scanning_day, run_id=RUN_ID, db_path=DB_PATH)
         
         #input_symbols = get_nasdaq_symbols(file_path=SYMBOL_CSV_PATH)[0:100]
 
@@ -134,8 +134,8 @@ for i, start in enumerate(trading_days[:1]):
         
         data_generator = PriceDataGeneratorMain(recommended_symbol_list=recommended_symbol_list)
         
-        # Strategy with stop loss compared to the last price when opening the position:
-        # strategy = StrategyWithStopLoss(ma_short=run_parameters['ma_short'],
+        # Trading algorithm with stop loss compared to the last price when opening the position:
+        # trading_algorithm = TradingAlgorithmWithStopLoss(ma_short=run_parameters['ma_short'],
         #                                 ma_long=run_parameters['ma_long'],
         #                                 epsilon=run_parameters['epsilon'],
         #                                 rsi_len=run_parameters['rsi_len'],
@@ -144,8 +144,8 @@ for i, start in enumerate(trading_days[:1]):
         #                                 run_id=RUN_ID,
         #                                 db_path=DB_PATH)
         
-        # Strategy with stop loss compared to the previous price:
-        strategy = StrategyWithStopLossPrevPrice(ma_short=run_parameters['ma_short'],
+        # Trading algorithm with stop loss compared to the previous price:
+        trading_algorithm = TradingAlgorithmWithStopLossPrevPrice(ma_short=run_parameters['ma_short'],
                                                  ma_long=run_parameters['ma_long'],
                                                  epsilon=run_parameters['epsilon'],
                                                  rsi_len=run_parameters['rsi_len'],
@@ -155,7 +155,7 @@ for i, start in enumerate(trading_days[:1]):
                                                  db_path=DB_PATH)
         
         #trading_manager = TestTradingManager(data_generator=data_generator,
-        #                                     strategy=strategy,
+        #                                     trading_algorithm=trading_algorithm,
         #                                     trading_client=trading_client,
         #                                     rsi_threshold=run_parameters['rsi_threshold'],
         #                                     minutes_before_trading_start=run_parameters['rsi_minutes_before_trading_start'],
@@ -163,7 +163,7 @@ for i, start in enumerate(trading_days[:1]):
         #                                     secret_key='test_secret')
         
         trading_manager = TestTradingManagerDivided(data_generator=data_generator,
-                                             strategy=strategy,
+                                             trading_algorithm=trading_algorithm,
                                              trading_client=trading_client,
                                              api_key='test_key',
                                              secret_key='test_secret')

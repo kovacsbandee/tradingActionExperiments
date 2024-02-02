@@ -20,8 +20,8 @@ class TestTradingManagerDividedRSI(TestTradingManagerDivided):
         try:
             self.data_generator.update_symbol_df(minute_bars=self.minute_bars)
             
-            # apply strategy on all symbols
-            self.apply_strategy()
+            # apply trading algorithm on all symbols
+            self.apply_trading_algorithm()
             
             # filter out symbols by RSI value
             if not self.rsi_filtered and len(self.symbols_to_delete) > 0:
@@ -34,7 +34,7 @@ class TestTradingManagerDividedRSI(TestTradingManagerDivided):
         except Exception as e:
             print(str(e))
     
-    def apply_strategy(self):
+    def apply_trading_algorithm(self):
         for symbol, value_dict in self.data_generator.symbol_dict.items():
             # normalize open price
             value_dict['daily_price_data_df'].loc[value_dict['daily_price_data_df'].index[-1], 'open_norm'] = \
@@ -42,12 +42,12 @@ class TestTradingManagerDividedRSI(TestTradingManagerDivided):
                 / value_dict['prev_day_data']['std_open']
             
             symbol_df_length = len(value_dict['daily_price_data_df'])
-            ma_long_value = self.strategy.ma_long
+            ma_long_value = self.trading_algorithm.ma_long
             if symbol_df_length > ma_long_value:
                 current_capital = super().get_current_capital(symbol)
-                self.strategy.update_capital_amount(current_capital)
+                self.trading_algorithm.update_capital_amount(current_capital)
                 previous_position = self.get_previous_position(symbol)
-                self.data_generator.symbol_dict[symbol] = self.strategy.apply_long_strategy(previous_position=previous_position, 
+                self.data_generator.symbol_dict[symbol] = self.trading_algorithm.apply_long_trading_algorithm(previous_position=previous_position, 
                                                                                                 symbol=symbol,  
                                                                                                 symbol_dict=value_dict)
                 current_df: pd.DataFrame = value_dict['daily_price_data_df']
@@ -61,4 +61,4 @@ class TestTradingManagerDividedRSI(TestTradingManagerDivided):
                 else:
                     print("Collecting live data for RSI filtering, no trading is executed")
             else:
-                print(f"Not enough data to apply strategy. Symbol: {symbol}")
+                print(f"Not enough data to apply trading algorithm. Symbol: {symbol}")

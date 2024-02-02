@@ -25,7 +25,7 @@ epoch_time = apple_prevclose[0].timestamp
 date_object = datetime.utcfromtimestamp(epoch_time / 1000)
 formatted_date = date_object.strftime("%Y-%m-%d %H:%M:%S UTC")
 
-print(f'Datetime: {formatted_date}, previous close price: {apple_prevclose[0].close}')
+print(f"Datetime: {formatted_date}, previous close price: {apple_prevclose[0].close}")
 
 
 ## Get Last Trade
