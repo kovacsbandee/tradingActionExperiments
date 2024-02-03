@@ -75,7 +75,7 @@ def create_csvs_by_symbol(symbol_list: list, from_: str, to: str):
         if counter < 5:
             symbol_df = get_bar_data(symbol, from_, to)
             if symbol_df is not None and not symbol_df.empty:
-                split_data_by_day(symbol_df)
+                split_data_by_day(full_symbol_df=symbol_df, filter_length=None, limit_to_market_open=False)
                 counter+=1
         else:
             time.sleep(61)
