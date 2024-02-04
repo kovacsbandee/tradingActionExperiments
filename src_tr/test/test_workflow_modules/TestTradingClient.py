@@ -2,7 +2,7 @@ from typing import List
 
 class TestTradingClient():
     
-    def __init__(self, init_cash, symbol_list, mode = 'same') -> None:
+    def __init__(self, init_cash, symbol_list, mode):
         self.total_free_cash: int = init_cash
         self.symbol_list: List[dict] = symbol_list
         self.mode = mode

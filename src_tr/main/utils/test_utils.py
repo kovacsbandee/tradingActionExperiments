@@ -1,5 +1,8 @@
+import os
+from typing import List
 import pandas as pd
 import json
+import csv
 from datetime import datetime
 from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 from alpaca.data.historical import StockHistoricalDataClient
@@ -59,6 +62,11 @@ def get_yf_local_db_symbols(start):
     yahoo_symbols = [file.split('.')[0] for file in days_and_file_names['common_files']]
     return scanning_day, yahoo_symbols
 
+def get_polygon_local_db_symbols(trading_day: datetime) -> List[str]:
+    csvs = os.listdir(f"{config['resource_paths']['polygon']['daily_data_output_folder']}/{trading_day.strftime('%Y_%m_%d')}")
+    csvs.sort()
+    return [s[:-4] for s in csvs]
+
 def _convert_yf_db_data_yf_db(latest_bars: dict, symbol: str):
     bar_list = []
     for e in latest_bars[symbol]:
@@ -90,6 +98,35 @@ def get_all_symbols_daily_data_yf_db(recommended_symbol_list, s):
     for symbol in recommended_symbol_list:
         daily_data = download_daily_data_yf_db(symbol=symbol['symbol'], start=s)
         all_symbols_daily_data.append(daily_data)
+    return all_symbols_daily_data
+
+def _convert_polygon_data(latest_bars: dict, symbol: str):
+    bar_list = []
+    for e in latest_bars:
+        bar_list.append({
+        'T': 'b',
+        't': e['timestamp'],
+        'S': symbol,
+        'o': float(e['open']),
+        'c': float(e['close']),
+        'h': float(e['high']),
+        'l': float(e['low']),
+        'v': float(e['volume']),
+        'n': int(e['transactions'])
+    })
+    return bar_list
+
+def get_polygon_trading_day_data(recommended_symbols: List[str], trading_day: str):
+    all_symbols_daily_data = []
+    for symbol in recommended_symbols:
+        file_path = f"{config['resource_paths']['polygon']['daily_data_output_folder']}/{trading_day}/{symbol['symbol']}.csv"
+        with open(file_path) as file:
+            data_dict_list = [
+                {k : v for k, v in row.items()}
+                for row in csv.DictReader(file, skipinitialspace=True)
+            ]
+            converted_list = _convert_polygon_data(data_dict_list, symbol["symbol"])
+            all_symbols_daily_data.append(converted_list)
     return all_symbols_daily_data
 
 def run_test_experiment(all_symbols_daily_data, trading_manager):

@@ -8,14 +8,7 @@ class PriceDataGeneratorBase(ABC):
     
     trading_day: datetime
     recommended_symbol_list: List[str]
-    lower_price_boundary: int
-    upper_price_boundary: int
-    lower_volume_boundary: int
-    prev_day_data: DataFrame
-    prev_day_symbol_stats: dict
-    trading_day_symbol_stats: dict #nem köll?
-    
-    symbol_dict: dict = dict()
+    symbol_dict: dict
     """
     symbol_dict = {
         'AAPL': 'symbol_df' : DataFrame [{"T":"b",
@@ -32,7 +25,6 @@ class PriceDataGeneratorBase(ABC):
         'TSLA': []
     }
     """
-    data_window_size: int #nem köll?
     
     def __init__(self,
                  recommended_symbol_list):

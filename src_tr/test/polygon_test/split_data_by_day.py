@@ -42,3 +42,5 @@ def split_downloaded_data():
         if os.path.isfile(csv_file_path):
             full_symbol_df = pd.read_csv(csv_file_path)
             split_data_by_day(full_symbol_df, 200, True)
+            
+split_downloaded_data()
