@@ -4,7 +4,7 @@ import numpy as np
 from src_tr.main.trading_algorithms.TradingAlgorithmBase import TradingAlgorithmBase
 
 class TradingAlgorithmWithStopLossPrevPrice(TradingAlgorithmBase):
-
+    #TODO: rsi_Threshold
     def __init__(self,
                  ma_short, 
                  ma_long,
@@ -51,12 +51,23 @@ class TradingAlgorithmWithStopLossPrevPrice(TradingAlgorithmBase):
         symbol_df['avg_loss'] = symbol_df['loss'].rolling(self.rsi_len, center=False).mean()
         symbol_df['rsi'] = 100 - (100 / (1 + symbol_df['avg_gain'] / symbol_df['avg_loss']))
         last_index = symbol_df.index[-1]
+        
+        # average true/ma_short range
+        current_high = symbol_df.iloc[-1]['h']
+        current_low = symbol_df.iloc[-1]['l']
+        previous_close = symbol_df.iloc[-2]['c']
+        current_range = max([current_high-current_low, abs(current_high-previous_close), abs(current_low-previous_close)])
+        symbol_df.iloc[-1, symbol_df.columns.get_loc('current_range')] = current_range
+        symbol_df['atr_short'] = symbol_df['current_range'].rolling(window=self.ma_short, center=False).mean()
 
         expected_position = None
         small_ind_col = symbol_df.loc[last_index, 'open_small_indicator']
         big_ind_col = symbol_df.loc[last_index, 'open_big_indicator']
 
         # set expected positions:
+        """
+            TODO: RSI-t be kéne építeni!
+        """
         if small_ind_col > self.epsilon and big_ind_col > self.epsilon:
             expected_position = 'long'
         else:
@@ -77,9 +88,12 @@ class TradingAlgorithmWithStopLossPrevPrice(TradingAlgorithmBase):
             symbol_df.loc[last_index, 'trading_action'] = 'sell_previous_long_position'
             symbol_dict['previous_long_buy_position_index'] = None
             
+        # stop loss
         if symbol_dict['previous_long_buy_position_index'] is not None:
             if (symbol_df.loc[last_index, ind_price] < symbol_df.loc[symbol_df.index[-2], ind_price]) \
-                and symbol_df.loc[symbol_df.index[-2], 'position'] != 'out':
+                and symbol_df.loc[symbol_df.index[-2], 'position'] != 'out' \
+                and symbol_df.loc[symbol_df.index[-2], 'trading_action'] != 'buy_next_long_position' \
+                and symbol_df.loc[symbol_df.index[-2], ind_price]-symbol_df.loc[last_index, ind_price] > symbol_df.loc[last_index, 'atr_short']:
                 symbol_df.loc[last_index, 'stop_loss_out_signal'] = 'stop_loss_long'
                 symbol_df.loc[last_index, 'trading_action'] = 'sell_previous_long_position'
         

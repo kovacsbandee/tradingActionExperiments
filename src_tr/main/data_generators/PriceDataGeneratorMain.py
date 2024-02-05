@@ -55,10 +55,13 @@ class PriceDataGeneratorMain():
         self.symbol_dict[symbol]['daily_price_data_df']['loss'] = None
         self.symbol_dict[symbol]['daily_price_data_df']['avg_gain'] = None
         self.symbol_dict[symbol]['daily_price_data_df']['avg_loss'] = None
+        
+        self.symbol_dict[symbol]['daily_price_data_df']['current_range'] = None
+        self.symbol_dict[symbol]['daily_price_data_df']['atr_short'] = None
         #-----TODO-----
         # Mi az AMOUNT_SOLD és az AMOUNT_BOUGHT definíciója? Mit értünk alattuk?
-        self.symbol_dict[symbol]['daily_price_data_df']['amount_sold'] = None
-        self.symbol_dict[symbol]['daily_price_data_df']['amount_bought'] = None
+        #self.symbol_dict[symbol]['daily_price_data_df']['amount_sold'] = None
+        #self.symbol_dict[symbol]['daily_price_data_df']['amount_bought'] = None
                 
     def update_symbol_df(self, minute_bars: List[dict]):
         if minute_bars is not None and len(minute_bars) > 0:

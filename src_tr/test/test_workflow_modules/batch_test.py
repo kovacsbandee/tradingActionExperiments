@@ -27,7 +27,7 @@ ALPACA_KEY = os.environ["ALPACA_KEY"]
 ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
 DB_PATH = config["db_path"]
 
-RUN_ID = 'BATCH_#01'
+RUN_ID = 'BATCH_#02_ATR_short_v2'
 
 MODE = 'POLYGON_LOCAL_DB'
 #if MODE == 'LOCAL_YF_DB':
@@ -37,8 +37,8 @@ daily_folder_dates = os.listdir(config["resource_paths"]["polygon"]["daily_data_
 trading_dates = [datetime.strptime(date,"%Y_%m_%d") for date in daily_folder_dates]
 trading_dates.sort()
 
-trading_days = trading_dates[1:]
-scanning_days = trading_dates[:-1]
+trading_days = [trading_dates[34]]
+scanning_days = [trading_dates[33]]
 
 for scanning_day, trading_day in zip(scanning_days, trading_days):
     try:
@@ -61,6 +61,7 @@ for scanning_day, trading_day in zip(scanning_days, trading_days):
                 'epsilon': 0.0015,
                 'rsi_len': 12,
                 'stop_loss_perc': 0.0
+                #TODO: 'rsi_threshold' : 20
             }
 
         data_manager.create_daily_dirs()
@@ -97,7 +98,7 @@ for scanning_day, trading_day in zip(scanning_days, trading_days):
                                                  stop_loss_perc=run_parameters['stop_loss_perc'],
                                                  trading_day=data_manager.trading_day,
                                                  run_id=RUN_ID,
-                                                 db_path=DB_PATH)
+                                                 db_path=DB_PATH) # TODO: rsi_threshold
         
         trading_manager = TestTradingManagerDivided(data_generator=data_generator,
                                              trading_algorithm=trading_algorithm,
