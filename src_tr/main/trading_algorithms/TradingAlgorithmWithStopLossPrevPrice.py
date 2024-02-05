@@ -58,7 +58,7 @@ class TradingAlgorithmWithStopLossPrevPrice(TradingAlgorithmBase):
         previous_close = symbol_df.iloc[-2]['c']
         current_range = max([current_high-current_low, abs(current_high-previous_close), abs(current_low-previous_close)])
         symbol_df.iloc[-1, symbol_df.columns.get_loc('current_range')] = current_range
-        symbol_df['atr_short'] = symbol_df['current_range'].rolling(window=self.ma_short, center=False).mean()
+        symbol_df['atr_short'] = symbol_df['current_range'].rolling(window=self.ma_short, center=False).mean() #NOTE: window-méret változatok
 
         expected_position = None
         small_ind_col = symbol_df.loc[last_index, 'open_small_indicator']

@@ -27,7 +27,7 @@ ALPACA_KEY = os.environ["ALPACA_KEY"]
 ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
 DB_PATH = config["db_path"]
 
-RUN_ID = 'BATCH_#02_ATR_short_v2'
+RUN_ID = '230316_epsilon_0_004_atr_short'
 
 MODE = 'POLYGON_LOCAL_DB'
 #if MODE == 'LOCAL_YF_DB':
@@ -58,7 +58,7 @@ for scanning_day, trading_day in zip(scanning_days, trading_days):
                 'avg_volume_cond': 10000,
                 'ma_short': 5,
                 'ma_long': 12,
-                'epsilon': 0.0015,
+                'epsilon': 0.004,
                 'rsi_len': 12,
                 'stop_loss_perc': 0.0
                 #TODO: 'rsi_threshold' : 20
