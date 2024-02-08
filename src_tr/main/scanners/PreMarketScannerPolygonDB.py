@@ -15,11 +15,15 @@ class PreMarketScannerPolygonDB(ScannerBase):
                  trading_day,
                  scanning_day,
                  symbols,
+                 run_id,
+                 daily_dir_name,
                  lower_price_boundary=10,
                  upper_price_boundary=250,
                  price_range_perc_cond=10,
                  avg_volume_cond=25000):
         super().__init__(trading_day, scanning_day, symbols)
+        self.run_id = run_id
+        self.daily_dir_name = daily_dir_name
         self.lower_price_boundary = lower_price_boundary
         self.upper_price_boundary = upper_price_boundary
         self.price_range_perc_cond = price_range_perc_cond
@@ -28,6 +32,7 @@ class PreMarketScannerPolygonDB(ScannerBase):
     def _download_symbol_history(self, symbol: str):
         try:
             scanning_day_str = self.scanning_day.strftime('%Y_%m_%d')
+            # TODO: metódus, ami visszadja az X előző darab valid kereskedési napot -> több nap hosszan nézzük az indikátorokat a scanner-ben....
             symbol_scanning_day_df = pd.read_csv(
                 os.path.join(config["resource_paths"]["polygon"]["daily_data_output_folder"], scanning_day_str, f"{symbol}.csv"))
             #NOTE: kell ez ide?
@@ -102,7 +107,7 @@ class PreMarketScannerPolygonDB(ScannerBase):
     def calculate_filtering_stats(self) -> List:
         self.pre_market_stats = self._create_pre_market_stats()
         date = self.trading_day.strftime('%Y_%m_%d')
-        self.pre_market_stats.to_csv(f"{config['db_path']}/scanner_stats/pre_market_stats_{date}.csv", index=False)
+        self.pre_market_stats.to_csv(f"{config['db_path']}/output/{self.run_id}/{self.daily_dir_name}/pre_market_stats_{date}.csv", index=False)
         return self.pre_market_stats
 
     def _create_pre_market_stats(self) -> DataFrame:

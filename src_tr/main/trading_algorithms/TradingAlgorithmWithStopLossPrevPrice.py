@@ -25,7 +25,7 @@ class TradingAlgorithmWithStopLossPrevPrice(TradingAlgorithmBase):
         self.run_id = run_id
         self.db_path = db_path
         self.name = 'trading_algorithm_with_stoploss_prev_price'
-        self.daily_dir_name = self.run_id + '_' + 'trading_day' + '_' + self.trading_day
+        self.daily_dir_name = 'trading_day' + '_' + self.trading_day
 
     def update_capital_amount(self, account_cash):
         self.capital = account_cash
@@ -97,7 +97,7 @@ class TradingAlgorithmWithStopLossPrevPrice(TradingAlgorithmBase):
                 symbol_df.loc[last_index, 'stop_loss_out_signal'] = 'stop_loss_long'
                 symbol_df.loc[last_index, 'trading_action'] = 'sell_previous_long_position'
         
-        symbol_df.to_csv(f'{self.db_path}/{self.daily_dir_name}/daily_files/csvs/{symbol}_{self.trading_day}_{self.name}.csv')
+        symbol_df.to_csv(f'{self.db_path}/output/{self.run_id}/{self.daily_dir_name}/daily_files/csvs/{symbol}_{self.trading_day}_{self.name}.csv')
         
         # update the current symbol DataFrame
         symbol_dict['daily_price_data_df'] = symbol_df

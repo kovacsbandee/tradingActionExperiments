@@ -82,8 +82,11 @@ def create_csvs_by_symbol(symbol_list: list, from_: str, to: str):
             counter = 0
             
 
-create_csvs_by_symbol(nasdaq_symbols, "2023-01-26", "2023-04-03")
-create_csvs_by_symbol(nasdaq_symbols, "2023-04-04", "2023-07-03")
-create_csvs_by_symbol(nasdaq_symbols, "2023-07-04", "2023-10-02")
-create_csvs_by_symbol(nasdaq_symbols, "2023-10-03", "2023-12-01")
+#create_csvs_by_symbol(nasdaq_symbols, "2023-01-26", "2023-04-03")
+
+# create_csvs_by_symbol(nasdaq_symbols, "2023-04-04", "2023-07-03")
+# create_csvs_by_symbol(nasdaq_symbols, "2023-07-04", "2023-10-02")
+
+create_csvs_by_symbol(nasdaq_symbols, "2023-10-03", "2023-12-31")
+
 create_csvs_by_symbol(nasdaq_symbols, "2024-01-01", "2024-01-26")

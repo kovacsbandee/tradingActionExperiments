@@ -1,5 +1,7 @@
 import os
 from typing import List
+
+import pandas as pd
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 import traceback
@@ -27,53 +29,58 @@ ALPACA_KEY = os.environ["ALPACA_KEY"]
 ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
 DB_PATH = config["db_path"]
 
-RUN_ID = '230316_epsilon_0_004_atr_short'
+RUN_ID = 'BATCH_test'
 
 MODE = 'POLYGON_LOCAL_DB'
 #if MODE == 'LOCAL_YF_DB':
 #    trading_dates, scanning_days = get_possible_local_yf_trading_days()
     
 daily_folder_dates = os.listdir(config["resource_paths"]["polygon"]["daily_data_output_folder"])
+
 trading_dates = [datetime.strptime(date,"%Y_%m_%d") for date in daily_folder_dates]
 trading_dates.sort()
 
-trading_days = [trading_dates[34]]
-scanning_days = [trading_dates[33]]
+trading_dates = trading_dates[23:27]
+
+trading_days = trading_dates[1:]
+scanning_days = trading_dates[:-1]
+
+run_parameters = \
+    {
+        'run_id': RUN_ID,
+        'trading_days': [td.strftime('%Y_%m_%d') for td in  trading_days],
+        'scanning_days': [sd.strftime('%Y_%m_%d') for sd in scanning_days],
+        'symbol_csvs': SYMBOL_CSV_PATH,
+        'init_cash': 10000,
+        'lower_price_boundary': 10,
+        'upper_price_boundary': 400,
+        'price_range_perc_cond': 5,
+        'avg_volume_cond': 10000,
+        'ma_short': 5,
+        'ma_long': 12,
+        'epsilon': 0.0015,
+        'rsi_len': 12,
+        'stop_loss_perc': 0.0
+    }
 
 for scanning_day, trading_day in zip(scanning_days, trading_days):
     try:
-        data_manager = DataManager(mode=MODE, trading_day=trading_day, scanning_day=scanning_day, run_id=RUN_ID, db_path=DB_PATH)
+        data_manager = DataManager(data_source=MODE, trading_day=trading_day, scanning_day=scanning_day, run_id=RUN_ID, db_path=DB_PATH)
         
         input_symbols: List[str] = get_polygon_local_db_symbols(trading_day=trading_day)
-
-        run_parameters = \
-            {
-                'run_id': RUN_ID,
-                'trading_day': trading_day.strftime('%Y_%m_%d'),
-                'symbol_csvs': SYMBOL_CSV_PATH,
-                'init_cash': 10000,
-                'lower_price_boundary': 10,
-                'upper_price_boundary': 400,
-                'price_range_perc_cond': 5,
-                'avg_volume_cond': 10000,
-                'ma_short': 5,
-                'ma_long': 12,
-                'epsilon': 0.004,
-                'rsi_len': 12,
-                'stop_loss_perc': 0.0
-                #TODO: 'rsi_threshold' : 20
-            }
 
         data_manager.create_daily_dirs()
         data_manager.save_params(params=run_parameters)
 
         scanner = PreMarketScannerPolygonDB(trading_day=data_manager.trading_day,
-                                   scanning_day=data_manager.scanning_day,
-                                   symbols=input_symbols,
-                                   lower_price_boundary=run_parameters['lower_price_boundary'],
-                                   upper_price_boundary=run_parameters['upper_price_boundary'],
-                                   price_range_perc_cond=run_parameters['price_range_perc_cond'],
-                                   avg_volume_cond=run_parameters['avg_volume_cond'])
+                                            scanning_day=data_manager.scanning_day,
+                                            symbols=input_symbols,
+                                            run_id=data_manager.run_id,
+                                            daily_dir_name=data_manager.daily_dir_name,
+                                            lower_price_boundary=run_parameters['lower_price_boundary'],
+                                            upper_price_boundary=run_parameters['upper_price_boundary'],
+                                            price_range_perc_cond=run_parameters['price_range_perc_cond'],
+                                            avg_volume_cond=run_parameters['avg_volume_cond'])
         
         scanner.calculate_filtering_stats()
         recommended_symbol_list: List[dict] = scanner.recommend_premarket_watchlist()
@@ -101,10 +108,10 @@ for scanning_day, trading_day in zip(scanning_days, trading_days):
                                                  db_path=DB_PATH) # TODO: rsi_threshold
         
         trading_manager = TestTradingManagerDivided(data_generator=data_generator,
-                                             trading_algorithm=trading_algorithm,
-                                             trading_client=trading_client,
-                                             api_key='test_key',
-                                             secret_key='test_secret')
+                                                    trading_algorithm=trading_algorithm,
+                                                    trading_client=trading_client,
+                                                    api_key='test_key',
+                                                    secret_key='test_secret')
         
         data_generator.initialize_symbol_dict()
 
@@ -129,11 +136,16 @@ for scanning_day, trading_day in zip(scanning_days, trading_days):
         data_manager.save_daily_statistics_and_aggregated_plots(recommended_symbols=scanner.recommended_symbols,
                                                                 symbol_dict=data_generator.symbol_dict)
         data_manager.save_daily_charts(symbol_dict=data_generator.symbol_dict)
+        daily_yield_perc = ((data_manager.total_recommended_symbol_statistics['last_capital_td'].sum() / (len(scanner.recommended_symbols) * run_parameters['init_cash'])) - 1) * 100
+        print('Total daily yield percent: ', daily_yield_perc)
         print('Experiment ran successfully, with run id: ', data_manager.run_id, 'and run parameters', data_manager.run_parameters)
-        
-        del data_manager
-        del scanner
-        del trading_client
-        del data_generator
-        del trading_algorithm
-        del trading_manager
+        # symbols above 1% last_yield, symbols below 0%, symbols above 1% last_yield / all symbols
+        pd.DataFrame.from_dict(
+            {'run_id': [RUN_ID], 'trading_day': [trading_day], 'daily_yield_perc': [daily_yield_perc]}, orient='index').to_csv(
+            f"{DB_PATH}/output/{data_manager.run_id}/{data_manager.daily_dir_name}/yield_{data_manager.daily_dir_name}", index=False)
+        # del data_manager
+        # del scanner
+        # del trading_client
+        # del data_generator
+        # del trading_algorithm
+        # del trading_manager

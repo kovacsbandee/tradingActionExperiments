@@ -45,4 +45,5 @@ class TestTradingManagerDivided(TestTradingManager):
         elif trading_action == 'sell_previous_long_position' and current_position == 'long':
             self.close_current_position(symbol=symbol, price=current_df.iloc[-1]['o'])
         else:
-            print('no_action')
+            None
+            #print('no_action')

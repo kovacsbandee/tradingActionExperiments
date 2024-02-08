@@ -34,8 +34,8 @@ DB_PATH = os.environ['DB_PATH']
 
 RUN_ID = 'DEV_RUN_ID_valami'
 
-MODE = 'LOCAL_YF_DB'
-if MODE == 'LOCAL_YF_DB':
+DATA_SOURCE = 'LOCAL_YF_DB'
+if DATA_SOURCE == 'LOCAL_YF_DB':
     trading_days, scanning_days = get_possible_local_yf_trading_days()
 
 for i, start in enumerate(trading_days[:1]):
@@ -44,12 +44,12 @@ for i, start in enumerate(trading_days[:1]):
         end = start + timedelta(hours=23) + timedelta(minutes=59)
         trading_day = check_trading_day(start)
 
-        if MODE == 'LOCAL_YF_DB':
+        if DATA_SOURCE == 'LOCAL_YF_DB':
             scanning_day = scanning_days[i]
         else:
             scanning_day = calculate_scanning_day(trading_day)
 
-        data_manager = DataManager(mode=MODE, trading_day=trading_day, scanning_day=scanning_day, run_id=RUN_ID, db_path=DB_PATH)
+        data_manager = DataManager(data_source=DATA_SOURCE, trading_day=trading_day, scanning_day=scanning_day, run_id=RUN_ID, db_path=DB_PATH)
         
         #input_symbols = get_nasdaq_symbols(file_path=SYMBOL_CSV_PATH)[0:100]
 
@@ -69,7 +69,8 @@ for i, start in enumerate(trading_days[:1]):
                 'ma_long': 12,
                 'epsilon': 0.0015,
                 'rsi_len': 12,
-                'stop_loss_perc': 0.0
+                'stop_loss_perc': 0.0,
+                'mode': DATA_SOURCE
                 #'rsi_threshold': 20,
                 #'rsi_minutes_before_trading_start': 45
             }
