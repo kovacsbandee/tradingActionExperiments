@@ -27,7 +27,7 @@ ALPACA_KEY = os.environ["ALPACA_KEY"]
 ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
 DB_PATH = config["db_path"]
 
-RUN_ID = '230316_epsilon_0_004_atr_short'
+RUN_ID = 'SimpleAVG_timelimit4hours_origscanner_sp500only'
 
 MODE = 'POLYGON_LOCAL_DB'
 #if MODE == 'LOCAL_YF_DB':
@@ -37,14 +37,18 @@ daily_folder_dates = os.listdir(config["resource_paths"]["polygon"]["daily_data_
 trading_dates = [datetime.strptime(date,"%Y_%m_%d") for date in daily_folder_dates]
 trading_dates.sort()
 
-trading_days = [trading_dates[34]]
-scanning_days = [trading_dates[33]]
+trading_days = trading_dates[1:]
+scanning_days = trading_dates[:-1]
+
+# range
+#trading_days = [trading_dates[34]]
+#scanning_days = [trading_dates[33]]
 
 for scanning_day, trading_day in zip(scanning_days, trading_days):
     try:
         data_manager = DataManager(mode=MODE, trading_day=trading_day, scanning_day=scanning_day, run_id=RUN_ID, db_path=DB_PATH)
         
-        input_symbols: List[str] = get_polygon_local_db_symbols(trading_day=trading_day)
+        input_symbols: List[str] = get_polygon_local_db_symbols(trading_day=trading_day, only_sp_500=True)
 
         run_parameters = \
             {
@@ -58,7 +62,7 @@ for scanning_day, trading_day in zip(scanning_days, trading_days):
                 'avg_volume_cond': 10000,
                 'ma_short': 5,
                 'ma_long': 12,
-                'epsilon': 0.004,
+                'epsilon': 0.0015,
                 'rsi_len': 12,
                 'stop_loss_perc': 0.0
                 #TODO: 'rsi_threshold' : 20
@@ -118,7 +122,10 @@ for scanning_day, trading_day in zip(scanning_days, trading_days):
         #                                                          s=trading_day)
         
         all_symbols_daily_data = get_polygon_trading_day_data(recommended_symbols=recommended_symbol_list,
-                                                              trading_day=trading_day.strftime("%Y_%m_%d"))
+                                                              trading_day=trading_day.strftime("%Y_%m_%d"),
+                                                              limit=240) # NOTE: 240 = 4h
+        
+        # limit_trading
 
         run_test_experiment(all_symbols_daily_data=all_symbols_daily_data, trading_manager=trading_manager)
 

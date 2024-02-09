@@ -9,7 +9,7 @@ from alpaca.data.historical import StockHistoricalDataClient
 from alpaca.data.requests import StockBarsRequest
 
 from config import config
-
+from src_tr.main.data_sources.sp500 import sp500
 
 def download_daily_data_base(symbol, start, end, alpaca_key, alpaca_secret_key):
     client = StockHistoricalDataClient(alpaca_key, alpaca_secret_key)
@@ -62,10 +62,15 @@ def get_yf_local_db_symbols(start):
     yahoo_symbols = [file.split('.')[0] for file in days_and_file_names['common_files']]
     return scanning_day, yahoo_symbols
 
-def get_polygon_local_db_symbols(trading_day: datetime) -> List[str]:
+def get_polygon_local_db_symbols(trading_day: datetime, only_sp_500=True) -> List[str]:
     csvs = os.listdir(f"{config['resource_paths']['polygon']['daily_data_output_folder']}/{trading_day.strftime('%Y_%m_%d')}")
     csvs.sort()
-    return [s[:-4] for s in csvs]
+    symbol_list = [s[:-4] for s in csvs]
+    if only_sp_500:
+        intersection = set(symbol_list).intersection(set(sp500))
+        return list(intersection)
+    else:
+        return symbol_list
 
 def _convert_yf_db_data_yf_db(latest_bars: dict, symbol: str):
     bar_list = []
@@ -116,7 +121,7 @@ def _convert_polygon_data(latest_bars: dict, symbol: str):
     })
     return bar_list
 
-def get_polygon_trading_day_data(recommended_symbols: List[str], trading_day: str):
+def get_polygon_trading_day_data(recommended_symbols: List[str], trading_day: str, limit=None):
     all_symbols_daily_data = []
     for symbol in recommended_symbols:
         file_path = f"{config['resource_paths']['polygon']['daily_data_output_folder']}/{trading_day}/{symbol['symbol']}.csv"
@@ -126,12 +131,14 @@ def get_polygon_trading_day_data(recommended_symbols: List[str], trading_day: st
                 for row in csv.DictReader(file, skipinitialspace=True)
             ]
             converted_list = _convert_polygon_data(data_dict_list, symbol["symbol"])
+            if limit:
+                converted_list = converted_list[:limit]
             all_symbols_daily_data.append(converted_list)
     return all_symbols_daily_data
 
 def run_test_experiment(all_symbols_daily_data, trading_manager):
     i = 0
-    while i < len(all_symbols_daily_data[0]):
+    while i < len(all_symbols_daily_data[0])-1:
         minute_bars = []
         for symbol_daily_data in all_symbols_daily_data:
             minute_bars.append(symbol_daily_data[i])

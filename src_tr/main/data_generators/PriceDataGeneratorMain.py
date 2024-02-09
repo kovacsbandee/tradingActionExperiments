@@ -58,6 +58,7 @@ class PriceDataGeneratorMain():
         
         self.symbol_dict[symbol]['daily_price_data_df']['current_range'] = None
         self.symbol_dict[symbol]['daily_price_data_df']['atr_short'] = None
+        self.symbol_dict[symbol]['daily_price_data_df']['stop_loss_ma_short'] = None
         #-----TODO-----
         # Mi az AMOUNT_SOLD és az AMOUNT_BOUGHT definíciója? Mit értünk alattuk?
         #self.symbol_dict[symbol]['daily_price_data_df']['amount_sold'] = None

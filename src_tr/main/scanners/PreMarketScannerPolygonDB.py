@@ -43,6 +43,12 @@ class PreMarketScannerPolygonDB(ScannerBase):
 
             if symbol_history is not None and not symbol_history.empty:
 
+                # volatility+volume/transactions
+                symbol_history["percentage_change"] = (symbol_history['close'] - symbol_history['close'].shift(1)) / symbol_history['close'].shift(1) * 100
+                volatility = symbol_history["percentage_change"].std()
+                avg_transaction = symbol_history["transactions"].mean()
+
+                # Kovi-féle eredetiek:
                 avg_open = symbol_history['open'].mean()
                 median_open = symbol_history['open'].median()
                 std_open = symbol_history['open'].std()
@@ -74,6 +80,8 @@ class PreMarketScannerPolygonDB(ScannerBase):
 
                 return {
                     'symbol': symbol,
+                    'volatility' : volatility,
+                    'avg_transaction' : avg_transaction,
                     'avg_open': avg_open,
                     'median_open': median_open,
                     'std_open': std_open,
@@ -118,17 +126,20 @@ class PreMarketScannerPolygonDB(ScannerBase):
             return None
 
     def recommend_premarket_watchlist(self) -> List[dict]:
-        '''
-        Filters the pre_market_stats dataframe with, price boundaries and price ranges and volume.
-        '''
+        ## NOTE: új
+        ##self.pre_market_stats['volatility_rank'] = self.pre_market_stats['volatility'].rank(ascending=False)
+        ##self.pre_market_stats['transactions_rank'] = self.pre_market_stats['avg_transaction'].rank(ascending=False)
+        ##self.pre_market_stats['combined_rank'] = self.pre_market_stats['volatility_rank'] + self.pre_market_stats['transactions_rank']
+        #self.recommended_symbols = self.pre_market_stats.sort_values(by=['volatility'], ascending=False)
+
+        # NOTE: régi
         self.recommended_symbols: pd.DataFrame = self.pre_market_stats[
             (self.lower_price_boundary < self.pre_market_stats['avg_open']) & \
             (self.pre_market_stats['avg_open'] < self.upper_price_boundary) & \
             (self.price_range_perc_cond < self.pre_market_stats['price_range_perc']) & \
             (self.avg_volume_cond < self.pre_market_stats['avg_volume'])]
-        print(
-            f"The recommended watchlist for {self.trading_day} is the following DataFrame: {self.recommended_symbols}")
 
+        self.recommended_symbols.to_csv(f"{config['db_path']}/scanner_stats/recommended_symbols_{self.trading_day.strftime('%Y_%m_%d')}.csv", index=False)
         symbol_dict_list = []
         if self.recommended_symbols is not None:
             for index, row in self.recommended_symbols.iterrows():

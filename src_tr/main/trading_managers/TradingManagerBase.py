@@ -5,7 +5,6 @@ import websocket
 from src_tr.main.scanners.ScannerBase import ScannerBase
 from src_tr.main.data_generators.PriceDataGeneratorBase import PriceDataGeneratorBase
 from src_tr.main.trading_algorithms.TradingAlgorithmBase import TradingAlgorithmBase
-from src_tr.main.data_streams.DataStreamBase import DataStreamBase
 from src_tr.main.trading_clients.TradingClientBase import TradingClientBase
 
 class TradingManagerBase(ABC):
@@ -13,7 +12,6 @@ class TradingManagerBase(ABC):
     scanner: ScannerBase
     price_data_generator: PriceDataGeneratorBase
     trading_algorithm: TradingAlgorithmBase
-    data_stream: DataStreamBase
     trading_client: TradingClientBase
     ws: websocket.WebSocketApp
     key: str
@@ -35,7 +33,6 @@ class TradingManagerBase(ABC):
         self.scanner = scanner
         self.price_data_generator = price_data_generator
         self.trading_algorithm = trading_algorithm
-        self.data_stream = data_stream
         self.trading_client = trading_client
         self.key = key
         self.secret_key = secret_key

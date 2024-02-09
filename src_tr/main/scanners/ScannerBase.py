@@ -9,7 +9,7 @@ class ScannerBase(ABC):
     trading_day: datetime 
     scanning_day: datetime # nem kell, származtatjuk
     symbols: List[str]
-    pre_market_stats: List
+    pre_market_stats: pd.DataFrame
     recommended_symbols: pd.DataFrame
 
     def __init__(self, 

@@ -1,11 +1,13 @@
 import os
 import csv
 import json
+from datetime import datetime
 from config import config
 
 def _convert_to_float(symbol_daily_output_list):
     converted_list = []
     for e in symbol_daily_output_list:
+        e['t'] = datetime.strptime(e['t'], "%Y-%m-%d %H:%M:%S%z")
         e['o'] = float(e['o'])
         e['c'] = float(e['c'])
         e['h'] = float(e['h'])
@@ -29,11 +31,18 @@ def _convert_to_float(symbol_daily_output_list):
 
 def _calculate_symbol_stats(symbol_data_list):
     symbol = symbol_data_list[0]["S"]
-    capital_list = [i["current_capital"] for i in symbol_data_list]
-    max_cash = max(i for i in capital_list if i is not None)
+    capital_ts_dict_list = [{"current_capital" : i["current_capital"], "timestamp" : i['t']} for i in symbol_data_list]
+    max_cash = 0
+    max_cash_ts = None
+    for i in capital_ts_dict_list:
+        curr_cap = i["current_capital"]
+        curr_ts = i["timestamp"]
+        if curr_cap is not None and curr_ts is not None and curr_cap > max_cash:
+            max_cash = curr_cap
+            max_cash_ts = curr_ts
     
     end_cash = None
-    capital_list_reverse = capital_list[::-1]
+    capital_list_reverse = [i["current_capital"] for i in capital_ts_dict_list if i['current_capital'] is not None][::-1]
     for c in capital_list_reverse:
         if c is not None and c != 0:
             end_cash = c
@@ -65,6 +74,7 @@ def _calculate_symbol_stats(symbol_data_list):
     return {
         "symbol" : symbol,
         "max_cash" : max_cash,
+        "max_cash_ts" : max_cash_ts.strftime("%Y-%m-%d %H:%M:%S%z"),
         "end_cash" : end_cash,
         "market_buy_count" : market_buy_count,
         "avg_long_position_length" : avg_long_position_length,
@@ -75,15 +85,14 @@ def _calculate_symbol_stats(symbol_data_list):
         "stop_loss_percentage" : stop_loss_percentage,
         "rsi_avg" : rsi_avg
     }
-    
 
-def create_stats(output_folder):
-    output_path = os.path.join(config['db_path'], output_folder, "daily_files/csvs")
-    output_csvs = os.listdir(output_path)
-    output_csvs.sort()
+def create_stats_by_symbol(input_folder):
+    input_path = os.path.join(config['db_path'], "output_stats/folders", input_folder, "daily_files/csvs")
+    csvs = os.listdir(input_path)
+    csvs.sort()
     stats_by_symbol = []
-    for filename in output_csvs:
-        with open(file=f"{output_path}/{filename}") as symbol_output:
+    for filename in csvs:
+        with open(file=f"{input_path}/{filename}") as symbol_output:
             symbol_daily_output_list = [
                 {k : v for k, v in row.items()}
                 for row in csv.DictReader(symbol_output, skipinitialspace=True)
@@ -92,14 +101,49 @@ def create_stats(output_folder):
             calculated_stats = _calculate_symbol_stats(converted)
             stats_by_symbol.append(calculated_stats)
     return stats_by_symbol
-    
-#batch_foldername = "BATCH_#02_ATR_short_v2_trading_day_2023_03_16"
-batch_foldername = "230316_epsilon_0_004_atr_short_trading_day_2023_03_16"
-stat_list = create_stats(batch_foldername)
-symbols_with_loss = [{k : v for k, v in i.items()} for i in stat_list if i["end_cash"] < 10000]
-print(len(stat_list), len(symbols_with_loss))
-stat_list.append(symbols_with_loss)
 
-with open(f"{batch_foldername}.json", "w") as file:
-    json.dump(stat_list, file)
+def create_overall_stats(stat_list, cash_by_symbol):
+    result_dict = dict()
+    starting_total_cash = len(stat_list) * cash_by_symbol
+    result_dict["starting_total_cash"] = starting_total_cash
+    max_cash_sum = sum([s["max_cash"] for s in stat_list])
+    max_cash_ts_list = [i["max_cash_ts"] for i in stat_list]
+    end_cash_sum = sum([s["end_cash"] for s in stat_list])
+    symbols_with_profit = len([i for i in stat_list if i["end_cash"] > cash_by_symbol])
+    symbols_with_loss = len([i for i in stat_list if i["end_cash"] < cash_by_symbol])
+    profit_loss_ratio = f"{symbols_with_profit}:{symbols_with_loss}"
+    
+    result_dict["max_profit_sum"] = round(max_cash_sum - starting_total_cash, 4)
+    result_dict["max_profit_pct"] = round(max_cash_sum / starting_total_cash * 100, 4)
+    result_dict["max_cash_ts_list"] = max_cash_ts_list
+    result_dict["end_profit_sum"] = round(end_cash_sum - starting_total_cash, 4)
+    result_dict["end_profit_pct"] = round(end_cash_sum / starting_total_cash * 100, 4)
+    result_dict["profit_loss_ratio"] = profit_loss_ratio
+    return result_dict
+
+def compose_output(foldername, overall_stats, stats_by_symbol, symbols_with_loss):
+    return {
+        "foldername" : foldername,
+        "overall_stats" : overall_stats,
+        "stats_by_symbol" : stats_by_symbol,
+        "symbols_with_loss" : symbols_with_loss
+    }
+
+folders = os.listdir(f"{config['db_path']}/output_stats/folders")
+for folder in folders:
+    batch_foldername = folder
+    cash_by_symbol = 10000
+    stat_list = create_stats_by_symbol(input_folder=batch_foldername)
+    overall_stats = create_overall_stats(stat_list=stat_list,
+                                        cash_by_symbol=cash_by_symbol)
+
+    symbols_with_loss = [{k : v for k, v in i.items()} for i in stat_list if i["end_cash"] < cash_by_symbol]
+
+    output_dict = compose_output(foldername=batch_foldername,
+                                overall_stats=overall_stats,
+                                stats_by_symbol=stat_list,
+                                symbols_with_loss=symbols_with_loss)
+
+    with open(f"{config['db_path']}/output_stats/json/{batch_foldername}.json", "w") as file:
+        json.dump(output_dict, file)
     

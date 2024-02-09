@@ -56,11 +56,16 @@ class TradingAlgorithmWithStopLossPrevPrice(TradingAlgorithmBase):
         current_high = symbol_df.iloc[-1]['h']
         current_low = symbol_df.iloc[-1]['l']
         previous_close = symbol_df.iloc[-2]['c']
+        
         current_range = max([current_high-current_low, abs(current_high-previous_close), abs(current_low-previous_close)])
         symbol_df.iloc[-1, symbol_df.columns.get_loc('current_range')] = current_range
         symbol_df['atr_short'] = symbol_df['current_range'].rolling(window=self.ma_short, center=False).mean() #NOTE: window-méret változatok
+        
+        symbol_df["stop_loss_ma_short"] = symbol_df['o'].rolling(window=self.ma_short, center=False).mean()
+        curr_sl = symbol_df.loc[last_index, 'stop_loss_ma_short']
+        curr_price = symbol_df.loc[symbol_df.index[-1], ind_price]
 
-        expected_position = None
+        expected_position = 'out'
         small_ind_col = symbol_df.loc[last_index, 'open_small_indicator']
         big_ind_col = symbol_df.loc[last_index, 'open_big_indicator']
 
@@ -71,7 +76,8 @@ class TradingAlgorithmWithStopLossPrevPrice(TradingAlgorithmBase):
         if small_ind_col > self.epsilon and big_ind_col > self.epsilon:
             expected_position = 'long'
         else:
-            expected_position = 'out'
+            if previous_position == 'long':
+                expected_position = 'long'
 
         symbol_df.loc[symbol_df.index[-1], 'position'] = expected_position
         symbol_df.loc[symbol_df.index[-2], 'position'] = previous_position
@@ -88,12 +94,20 @@ class TradingAlgorithmWithStopLossPrevPrice(TradingAlgorithmBase):
             symbol_df.loc[last_index, 'trading_action'] = 'sell_previous_long_position'
             symbol_dict['previous_long_buy_position_index'] = None
             
-        # stop loss
+        # stop loss ATR
+        # if symbol_dict['previous_long_buy_position_index'] is not None:
+        #     if (symbol_df.loc[last_index, ind_price] < symbol_df.loc[symbol_df.index[-2], ind_price]) \
+        #         and symbol_df.loc[symbol_df.index[-2], 'position'] != 'out' \
+        #         and symbol_df.loc[symbol_df.index[-2], 'trading_action'] != 'buy_next_long_position' \
+        #         and symbol_df.loc[symbol_df.index[-2], ind_price]-symbol_df.loc[last_index, ind_price] > symbol_df.loc[last_index, 'atr_short']:
+        #         symbol_df.loc[last_index, 'stop_loss_out_signal'] = 'stop_loss_long'
+        #         symbol_df.loc[last_index, 'trading_action'] = 'sell_previous_long_position'
+                
+        # stop loss fix %
         if symbol_dict['previous_long_buy_position_index'] is not None:
             if (symbol_df.loc[last_index, ind_price] < symbol_df.loc[symbol_df.index[-2], ind_price]) \
                 and symbol_df.loc[symbol_df.index[-2], 'position'] != 'out' \
-                and symbol_df.loc[symbol_df.index[-2], 'trading_action'] != 'buy_next_long_position' \
-                and symbol_df.loc[symbol_df.index[-2], ind_price]-symbol_df.loc[last_index, ind_price] > symbol_df.loc[last_index, 'atr_short']:
+                and symbol_df.loc[symbol_df.index[-1], ind_price] <= curr_sl: #NOTE 0.3 vagy horvát
                 symbol_df.loc[last_index, 'stop_loss_out_signal'] = 'stop_loss_long'
                 symbol_df.loc[last_index, 'trading_action'] = 'sell_previous_long_position'
         
