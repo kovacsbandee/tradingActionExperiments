@@ -1,7 +1,7 @@
 import os
 from typing import List
 from dotenv import load_dotenv
-from datetime import datetime, timedelta
+from datetime import date
 import traceback
 
 from src_tr.test.test_workflow_modules.TestTradingClientDivided import TestTradingClientDivided
@@ -27,24 +27,31 @@ ALPACA_KEY = os.environ["ALPACA_KEY"]
 ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
 DB_PATH = config["db_path"]
 
-RUN_ID = 'only_short_ind'
+RUN_ID = 'MACD_26_12_9'
 
 MODE = 'POLYGON_LOCAL_DB'
 #if MODE == 'LOCAL_YF_DB':
 #    trading_dates, scanning_days = get_possible_local_yf_trading_days()
     
 daily_folder_dates = os.listdir(config["resource_paths"]["polygon"]["daily_data_output_folder"])
-trading_dates = [datetime.strptime(date,"%Y_%m_%d") for date in daily_folder_dates]
+trading_dates = [date.fromisoformat(d.replace("_","-")) for d in daily_folder_dates]
 trading_dates.sort()
 
-#trading_days = trading_dates[1:]
-#scanning_days = trading_dates[:-1]
+trading_days = trading_dates[1:]
+scanning_days = trading_dates[:-1]
 
 # range
-trading_days = [trading_dates[35]]
-scanning_days = [trading_dates[34]]
+#trading_days = [trading_dates[35]]
+#scanning_days = [trading_dates[34]]
 
-for scanning_day, trading_day in zip(scanning_days, trading_days):
+macd_long = 26
+macd_short = 12
+signal_line_ema = 9
+
+for i in range(macd_long, len(trading_dates)-1):
+    trading_day = trading_dates[i]
+    scanning_day = trading_dates[i-1]
+    macd_date_list = trading_dates[i-macd_long : i]
     try:
         data_manager = DataManager(mode=MODE, trading_day=trading_day, scanning_day=scanning_day, run_id=RUN_ID, db_path=DB_PATH)
         
@@ -64,8 +71,10 @@ for scanning_day, trading_day in zip(scanning_days, trading_days):
                 'ma_long': 12,
                 'epsilon': 0.0015,
                 'rsi_len': 12,
-                'stop_loss_perc': 0.0
-                #TODO: 'rsi_threshold' : 20
+                'stop_loss_perc': 0.0,
+                'macd_long' : macd_long,
+                'macd_short' : macd_short,
+                'signal_line' : signal_line_ema
             }
 
         data_manager.create_daily_dirs()
@@ -74,13 +83,16 @@ for scanning_day, trading_day in zip(scanning_days, trading_days):
         scanner = PreMarketScannerPolygonDB(run_id=RUN_ID, 
                                     trading_day=data_manager.trading_day,
                                     scanning_day=data_manager.scanning_day,
+                                    macd_date_list=macd_date_list,
+                                    macd_ema_long=macd_long,
+                                    macd_ema_short=macd_short,
+                                    signal_line_ema=signal_line_ema,
                                     symbols=input_symbols,
                                     lower_price_boundary=run_parameters['lower_price_boundary'],
                                     upper_price_boundary=run_parameters['upper_price_boundary'],
                                     price_range_perc_cond=run_parameters['price_range_perc_cond'],
                                     avg_volume_cond=run_parameters['avg_volume_cond'])
         
-        scanner.calculate_filtering_stats()
         recommended_symbol_list: List[dict] = scanner.recommend_premarket_watchlist()
 
         data_manager.recommended_symbol_list = recommended_symbol_list

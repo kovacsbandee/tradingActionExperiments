@@ -78,7 +78,7 @@ class TradingAlgorithmWithStopLossPrevPrice(TradingAlgorithmBase):
         """
             TODO: RSI-t be kéne építeni!
         """
-        if small_ind_col > self.epsilon: #and big_ind_col > self.epsilon:
+        if small_ind_col > self.epsilon and big_ind_col > self.epsilon:
             expected_position = 'long'
         else:
             if previous_position == 'long':
