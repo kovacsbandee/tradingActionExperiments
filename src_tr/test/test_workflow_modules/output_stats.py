@@ -87,7 +87,7 @@ def _calculate_symbol_stats(symbol_data_list):
     }
 
 def create_stats_by_symbol(input_folder):
-    input_path = os.path.join(config['db_path'], "output_stats/folders", input_folder, "daily_files/csvs")
+    input_path = os.path.join(config['db_path'], input_folder, "daily_files/csvs")
     csvs = os.listdir(input_path)
     csvs.sort()
     stats_by_symbol = []
@@ -129,21 +129,21 @@ def compose_output(foldername, overall_stats, stats_by_symbol, symbols_with_loss
         "symbols_with_loss" : symbols_with_loss
     }
 
-folders = os.listdir(f"{config['db_path']}/output_stats/folders")
-for folder in folders:
-    batch_foldername = folder
-    cash_by_symbol = 10000
-    stat_list = create_stats_by_symbol(input_folder=batch_foldername)
-    overall_stats = create_overall_stats(stat_list=stat_list,
-                                        cash_by_symbol=cash_by_symbol)
+#folders = os.listdir(f"{config['db_path']}/SimpleAVG_timelimit4hours_origscanner_sp500only_trading_day_2023_03_16")
+#for folder in folders:
+batch_foldername = "only_short_ind_trading_day_2023_03_17"
+cash_by_symbol = 10000
+stat_list = create_stats_by_symbol(input_folder=batch_foldername)
+overall_stats = create_overall_stats(stat_list=stat_list,
+                                    cash_by_symbol=cash_by_symbol)
 
-    symbols_with_loss = [{k : v for k, v in i.items()} for i in stat_list if i["end_cash"] < cash_by_symbol]
+symbols_with_loss = [{k : v for k, v in i.items()} for i in stat_list if i["end_cash"] < cash_by_symbol]
 
-    output_dict = compose_output(foldername=batch_foldername,
-                                overall_stats=overall_stats,
-                                stats_by_symbol=stat_list,
-                                symbols_with_loss=symbols_with_loss)
+output_dict = compose_output(foldername=batch_foldername,
+                            overall_stats=overall_stats,
+                            stats_by_symbol=stat_list,
+                            symbols_with_loss=symbols_with_loss)
 
-    with open(f"{config['db_path']}/output_stats/json/{batch_foldername}.json", "w") as file:
-        json.dump(output_dict, file)
+with open(f"{config['db_path']}/output_stats/json/{batch_foldername}.json", "w") as file:
+    json.dump(output_dict, file)
     

@@ -27,7 +27,7 @@ ALPACA_KEY = os.environ["ALPACA_KEY"]
 ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
 DB_PATH = config["db_path"]
 
-RUN_ID = 'SimpleAVG_timelimit4hours_origscanner_sp500only'
+RUN_ID = 'only_short_ind'
 
 MODE = 'POLYGON_LOCAL_DB'
 #if MODE == 'LOCAL_YF_DB':
@@ -37,12 +37,12 @@ daily_folder_dates = os.listdir(config["resource_paths"]["polygon"]["daily_data_
 trading_dates = [datetime.strptime(date,"%Y_%m_%d") for date in daily_folder_dates]
 trading_dates.sort()
 
-trading_days = trading_dates[1:]
-scanning_days = trading_dates[:-1]
+#trading_days = trading_dates[1:]
+#scanning_days = trading_dates[:-1]
 
 # range
-#trading_days = [trading_dates[34]]
-#scanning_days = [trading_dates[33]]
+trading_days = [trading_dates[35]]
+scanning_days = [trading_dates[34]]
 
 for scanning_day, trading_day in zip(scanning_days, trading_days):
     try:
@@ -71,13 +71,14 @@ for scanning_day, trading_day in zip(scanning_days, trading_days):
         data_manager.create_daily_dirs()
         data_manager.save_params(params=run_parameters)
 
-        scanner = PreMarketScannerPolygonDB(trading_day=data_manager.trading_day,
-                                   scanning_day=data_manager.scanning_day,
-                                   symbols=input_symbols,
-                                   lower_price_boundary=run_parameters['lower_price_boundary'],
-                                   upper_price_boundary=run_parameters['upper_price_boundary'],
-                                   price_range_perc_cond=run_parameters['price_range_perc_cond'],
-                                   avg_volume_cond=run_parameters['avg_volume_cond'])
+        scanner = PreMarketScannerPolygonDB(run_id=RUN_ID, 
+                                    trading_day=data_manager.trading_day,
+                                    scanning_day=data_manager.scanning_day,
+                                    symbols=input_symbols,
+                                    lower_price_boundary=run_parameters['lower_price_boundary'],
+                                    upper_price_boundary=run_parameters['upper_price_boundary'],
+                                    price_range_perc_cond=run_parameters['price_range_perc_cond'],
+                                    avg_volume_cond=run_parameters['avg_volume_cond'])
         
         scanner.calculate_filtering_stats()
         recommended_symbol_list: List[dict] = scanner.recommend_premarket_watchlist()

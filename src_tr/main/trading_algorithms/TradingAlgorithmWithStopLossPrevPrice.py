@@ -50,6 +50,11 @@ class TradingAlgorithmWithStopLossPrevPrice(TradingAlgorithmBase):
         symbol_df['avg_gain'] = symbol_df['gain'].rolling(self.rsi_len, center=False).mean()
         symbol_df['avg_loss'] = symbol_df['loss'].rolling(self.rsi_len, center=False).mean()
         symbol_df['rsi'] = 100 - (100 / (1 + symbol_df['avg_gain'] / symbol_df['avg_loss']))
+        # TODO : rsi 10-30 között mindenképp beszállunk
+        #   rsi >= 70 semmiképp nem szállunk be
+        # TODO: MACD above signal line beszállunk
+        # TODO: súlyozott kiszállási átlag
+        #       rsi >= 70 mindenképp kiszállunk
         last_index = symbol_df.index[-1]
         
         # average true/ma_short range
@@ -63,7 +68,7 @@ class TradingAlgorithmWithStopLossPrevPrice(TradingAlgorithmBase):
         
         symbol_df["stop_loss_ma_short"] = symbol_df['o'].rolling(window=self.ma_short, center=False).mean()
         curr_sl = symbol_df.loc[last_index, 'stop_loss_ma_short']
-        curr_price = symbol_df.loc[symbol_df.index[-1], ind_price]
+        curr_price = symbol_df.loc[symbol_df.index[-1], 'c']
 
         expected_position = 'out'
         small_ind_col = symbol_df.loc[last_index, 'open_small_indicator']
@@ -73,7 +78,7 @@ class TradingAlgorithmWithStopLossPrevPrice(TradingAlgorithmBase):
         """
             TODO: RSI-t be kéne építeni!
         """
-        if small_ind_col > self.epsilon and big_ind_col > self.epsilon:
+        if small_ind_col > self.epsilon: #and big_ind_col > self.epsilon:
             expected_position = 'long'
         else:
             if previous_position == 'long':
