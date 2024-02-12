@@ -131,7 +131,7 @@ def compose_output(foldername, overall_stats, stats_by_symbol, symbols_with_loss
 
 #folders = os.listdir(f"{config['db_path']}/SimpleAVG_timelimit4hours_origscanner_sp500only_trading_day_2023_03_16")
 #for folder in folders:
-batch_foldername = "only_short_ind_trading_day_2023_03_17"
+batch_foldername = "MACD_26_12_9_trading_day_2023_03_06"
 cash_by_symbol = 10000
 stat_list = create_stats_by_symbol(input_folder=batch_foldername)
 overall_stats = create_overall_stats(stat_list=stat_list,
