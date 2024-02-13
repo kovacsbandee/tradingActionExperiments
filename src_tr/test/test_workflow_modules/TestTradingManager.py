@@ -1,5 +1,6 @@
 import pandas as pd
 from typing import List
+import traceback
 
 from src_tr.main.trading_managers.TradingManagerMain import TradingManagerMain
 
@@ -13,8 +14,8 @@ class TestTradingManager(TradingManagerMain):
                 if len(self.minute_bars) == len(self.data_generator.recommended_symbol_list):
                     self.execute_all()
                     self.minute_bars = []
-        except Exception as e:
-            print(str(e))
+        except:
+            traceback.print_exc()
 
     #Override
     def on_open(self, ws):
@@ -50,13 +51,13 @@ class TestTradingManager(TradingManagerMain):
         try:
             self.trading_client.submit_order(symbol=symbol, qty=quantity, price=price)
             self.data_generator.decrease_out_positions()
-        except Exception as e:
-            print(str(e))
+        except:
+            traceback.print_exc()
             
     #Override
     def close_current_position(self, symbol, position=None, price=None):
         try:
             self.trading_client.close_position(symbol, price)
             self.data_generator.increase_out_positions()
-        except Exception as e:
-            print(str(e))
+        except:
+            traceback.print_exc()

@@ -20,14 +20,15 @@ class TestTradingManagerDivided(TestTradingManager):
             (value_dict['daily_price_data_df'].loc[value_dict['daily_price_data_df'].index[-1], 'o'] - value_dict['prev_day_data']['avg_open']) / value_dict['prev_day_data']['std_open']
             
             SYMBOL_DF_length = len(value_dict['daily_price_data_df'])
-            ma_long_value = self.trading_algorithm.ma_long
+            ma_long_value = self.algo_params["entry_windows"]["long"]
             if SYMBOL_DF_length > ma_long_value:
                 current_capital = self.get_current_capital(symbol)
                 self.trading_algorithm.update_capital_amount(current_capital)
                 previous_position = self.get_previous_position(symbol)
                 self.data_generator.symbol_dict[symbol] = self.trading_algorithm.apply_long_trading_algorithm(previous_position=previous_position, 
                                                                                                 symbol=symbol,  
-                                                                                                symbol_dict=value_dict)
+                                                                                                symbol_dict=value_dict,
+                                                                                                algo_params=self.algo_params)
                 current_df: pd.DataFrame = value_dict['daily_price_data_df']
                 self.execute_trading_action(symbol, current_df)
             else:

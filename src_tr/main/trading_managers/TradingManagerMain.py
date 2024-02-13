@@ -4,22 +4,25 @@ from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
 import pandas as pd
+import traceback
 
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
-from src_tr.main.trading_algorithms.TradingAlgorithmWithStopLoss import TradingAlgorithmWithStopLoss
+from src_tr.main.trading_algorithms.TradingAlgorithmWithStopLossPrevPrice import TradingAlgorithmWithStopLossPrevPrice
 from src_tr.main.helpers.converter import string_to_dict_list
 
 class TradingManagerMain():
 
     def __init__(self,
                 data_generator: PriceDataGeneratorMain,
-                trading_algorithm: TradingAlgorithmWithStopLoss,
+                trading_algorithm: TradingAlgorithmWithStopLossPrevPrice,
+                algo_params: dict,
                 trading_client: TradingClient,
                 api_key: str,
                 secret_key: str
                 ):
         self.data_generator = data_generator
         self.trading_algorithm = trading_algorithm
+        self.algo_params=algo_params
         self.trading_client = trading_client
         self.api_key = api_key
         self.secret_key = secret_key
@@ -39,8 +42,8 @@ class TradingManagerMain():
 
             else:
                 print('Authentication and data initialization')
-        except Exception as e:
-            print(str(e))
+        except:
+            traceback.print_exc()
 
     def on_open(self, ws: websocket.WebSocketApp):
         print(f"WebSocket connection opened on URL: {ws.url}")
@@ -63,8 +66,8 @@ class TradingManagerMain():
             
             # apply trading algorithm on all symbols
             self.apply_trading_algorithm()
-        except Exception as e:
-            print(str(e))
+        except:
+            traceback.print_exc()
             
     def get_current_capital(self):
         return float(self.trading_client.get_account().cash)
@@ -87,14 +90,15 @@ class TradingManagerMain():
             (value_dict['daily_price_data_df'].loc[value_dict['daily_price_data_df'].index[-1], 'o'] - value_dict['prev_day_data']['avg_open']) / value_dict['prev_day_data']['std_open']
             
             symbol_df_length = len(value_dict['daily_price_data_df'])
-            ma_long_value = self.trading_algorithm.ma_long
+            ma_long_value = self.algo_params["entry_windows"]["long"]
             if symbol_df_length > ma_long_value:
                 current_capital = self.get_current_capital()
                 self.trading_algorithm.update_capital_amount(current_capital)
                 previous_position = self.get_previous_position(symbol)
                 self.data_generator.symbol_dict[symbol] = self.trading_algorithm.apply_long_trading_algorithm(previous_position=previous_position, 
                                                                                                 symbol=symbol,  
-                                                                                                symbol_dict=value_dict)
+                                                                                                symbol_dict=value_dict,
+                                                                                                algo_params=self.algo_params)
                 current_df: pd.DataFrame = value_dict['daily_price_data_df']
                 self.execute_trading_action(symbol, current_df)
             else:
@@ -135,8 +139,8 @@ class TradingManagerMain():
             self.trading_client.submit_order(order_data=market_order_data)
             self.data_generator.decrease_out_positions()
             print('Buy order completed')
-        except Exception as e:
-            print(str(e))
+        except:
+            traceback.print_exc()
 
     def place_sell_order(self, quantity, symbol, price=None):
         try:
@@ -149,16 +153,16 @@ class TradingManagerMain():
             self.trading_client.submit_order(order_data=market_order_data)
             self.data_generator.decrease_out_positions()
             print('Sell order completed')
-        except Exception as e:
-            print(str(e))
+        except:
+            traceback.print_exc()
 
     def close_current_position(self, symbol, position=None, price=None):
         try:
             self.trading_client.close_position(symbol)
             self.data_generator.increase_out_positions()
             print(f'{position} position closed successfully')
-        except Exception as e:
-            print(str(e))
+        except:
+            traceback.print_exc()
         
     def on_ping(self, ws, ping_payload):
         print(f"Ping sent: {ping_payload}")

@@ -9,16 +9,17 @@ param_list = [
         },
         "algo_params" : {
             "entry_signal" : "default",
+            "rsi_length" : 12,
             "entry_rsi" : {
                 "overbought" : 70,
                 "oversold" : 30
             },
             "entry_windows" : {
-                "short" : 5,
-                "long" : 12,
+                "short" : 4,
+                "long" : 10,
                 "epsilon" : 0.0015
             },
-            "entry_weighted" : True,
+            "entry_weighted" : False,
             "close_signal" : "AVG",
             "close_rsi" : {
                 "overbought" : 70,
@@ -38,6 +39,7 @@ param_list = [
         },
         "algo_params" : {
             "entry_signal" : "MACD",
+            "rsi_length" : 12,
             "entry_rsi" : None,
             "entry_windows" : {
                 "short" : 12,

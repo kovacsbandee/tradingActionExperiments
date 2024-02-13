@@ -16,10 +16,8 @@ class PreMarketScannerPolygonDB(ScannerBase):
     def __init__(self,
                  trading_day,
                  scanning_day,
+                 scanner_params,
                  macd_date_list,
-                 macd_ema_long,
-                 macd_ema_short,
-                 signal_line_ema,
                  symbols,
                  run_id,
                  lower_price_boundary=10,
@@ -27,10 +25,8 @@ class PreMarketScannerPolygonDB(ScannerBase):
                  price_range_perc_cond=10,
                  avg_volume_cond=25000):
         super().__init__(trading_day, scanning_day, symbols)
+        self.scanner_params = scanner_params
         self.macd_date_list = macd_date_list
-        self.macd_ema_long = macd_ema_long
-        self.macd_ema_short = macd_ema_short
-        self.signal_line_ema = signal_line_ema
         self.run_id = run_id
         self.lower_price_boundary = lower_price_boundary
         self.upper_price_boundary = upper_price_boundary
@@ -57,6 +53,9 @@ class PreMarketScannerPolygonDB(ScannerBase):
             return None
         
     def _assess_uptrend(self, macd_days_symbol_history):
+        macd_ema_short = self.scanner_params["windows"]["short"]
+        macd_ema_long = self.scanner_params["windows"]["long"]
+        signal_line_ema = self.scanner_params["windows"]["signal"]
         macd_df = pd.DataFrame()
         for date in self.macd_date_list:
             df: pd.DataFrame = macd_days_symbol_history[macd_days_symbol_history['date'] == date]
@@ -66,15 +65,15 @@ class PreMarketScannerPolygonDB(ScannerBase):
                 macd_df = pd.concat([macd_df, df.tail(1)])
                 
         #NOTE: close helyett adj_close
-        macd_df[f"EMA{self.macd_ema_short}"] = macd_df['close'].ewm(span=self.macd_ema_short, adjust=False).mean()
-        macd_df[f"EMA{self.macd_ema_long}"] = macd_df['close'].ewm(span=self.macd_ema_long, adjust=False).mean()
-        macd_df['MACD'] = macd_df[f"EMA{self.macd_ema_short}"] - macd_df[f"EMA{self.macd_ema_long}"]
-        macd_df['signal_line'] = macd_df['MACD'].ewm(span=self.signal_line_ema, adjust=False).mean()
+        macd_df[f"EMA{macd_ema_short}"] = macd_df['close'].ewm(span=macd_ema_short, adjust=False).mean()
+        macd_df[f"EMA{macd_ema_long}"] = macd_df['close'].ewm(span=macd_ema_long, adjust=False).mean()
+        macd_df['MACD'] = macd_df[f"EMA{macd_ema_short}"] - macd_df[f"EMA{macd_ema_long}"]
+        macd_df[f"signal_EMA{signal_line_ema}"] = macd_df['MACD'].ewm(span=signal_line_ema, adjust=False).mean()
         #NOTE: histogram = macd_df['MACD'] - macd_df['signal_line'] ?
         
-        if macd_df.iloc[-3]['MACD'] < macd_df.iloc[-3]['signal_line'] and \
-            macd_df.iloc[-2]['MACD'] > macd_df.iloc[-2]['signal_line'] and \
-                macd_df.iloc[-1]['MACD'] > macd_df.iloc[-1]['signal_line']:
+        if macd_df.iloc[-3]['MACD'] < macd_df.iloc[-3][f"signal_EMA{signal_line_ema}"] and \
+            macd_df.iloc[-2]['MACD'] > macd_df.iloc[-2][f"signal_EMA{signal_line_ema}"] and \
+                macd_df.iloc[-1]['MACD'] > macd_df.iloc[-1][f"signal_EMA{signal_line_ema}"]:
             logging.info("MACD line crossed above signal line")
             return True
         else:
@@ -183,10 +182,11 @@ class PreMarketScannerPolygonDB(ScannerBase):
         ##self.pre_market_stats['volatility_rank'] = self.pre_market_stats['volatility'].rank(ascending=False)
         ##self.pre_market_stats['transactions_rank'] = self.pre_market_stats['avg_transaction'].rank(ascending=False)
         ##self.pre_market_stats['combined_rank'] = self.pre_market_stats['volatility_rank'] + self.pre_market_stats['transactions_rank']
-        self.recommended_symbols = self.pre_market_stats[(self.pre_market_stats["is_uptrend"] == True)]
+        self.recommended_symbols = self.pre_market_stats.sort_values(by=['avg_transaction'], ascending=False)
         #self.recommended_symbols = self.recommended_symbols.sort_values(by=['avg_volume'], ascending=False)
-        self.recommended_symbols = self.recommended_symbols.sort_values(by=['avg_transaction'], ascending=False)
-        self.recommended_symbols = self.recommended_symbols.sort_values(by=['volatility'], ascending=False)
+        #self.recommended_symbols = self.recommended_symbols.sort_values(by=['volatility'], ascending=False)
+        self.recommended_symbols = self.recommended_symbols.head(1)
+        #self.recommended_symbols = self.pre_market_stats[(self.pre_market_stats["is_uptrend"] == True)]
         
         #self.recommended_symbols = self.pre_market_stats.sort_values(by=['avg_transaction'], ascending=False)
         #self.recommended_symbols = self.recommended_symbols[(self.recommended_symbols['avg_transaction'] > 300.0)]

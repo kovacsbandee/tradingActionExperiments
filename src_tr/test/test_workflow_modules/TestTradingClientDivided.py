@@ -5,6 +5,7 @@ from .TestTradingClient import TestTradingClient
 class TestTradingClientDivided(TestTradingClient):
     
     def initialize_positions(self):
+        symbol_free_cash = 0
         if self.mode == 'divide':
             symbol_free_cash = self.total_free_cash / len(self.symbol_list)
         if self.mode == 'same':

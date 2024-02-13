@@ -1,9 +1,8 @@
 import pandas as pd
 import numpy as np
 
-from src_tr.main.trading_algorithms.TradingAlgorithmBase import TradingAlgorithmBase
 
-class TradingAlgorithmWithStopLoss(TradingAlgorithmBase):
+class TradingAlgorithmWithStopLoss():
 
     def __init__(self,
                  ma_short, 
@@ -14,7 +13,6 @@ class TradingAlgorithmWithStopLoss(TradingAlgorithmBase):
                  trading_day,
                  run_id,
                  db_path):
-        super().__init__()
         self.ma_short = ma_short
         self.ma_long = ma_long
         self.rsi_len = rsi_len

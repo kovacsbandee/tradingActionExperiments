@@ -18,6 +18,7 @@ from src_tr.main.scanners.PreMarketScannerPolygonDB import PreMarketScannerPolyg
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
 from src_tr.main.trading_algorithms.TradingAlgorithmWithStopLossPrevPrice import TradingAlgorithmWithStopLossPrevPrice
 from src_tr.test.test_workflow_modules.TestTradingManagerDivided import TestTradingManagerDivided
+from src_tr.main.data_sources.trading_algo_param_list import param_list
 
 from config import config
 
@@ -27,7 +28,7 @@ ALPACA_KEY = os.environ["ALPACA_KEY"]
 ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
 DB_PATH = config["db_path"]
 
-RUN_ID = 'MACD_26_12_9'
+RUN_ID = 'defaultAlgo_weighted_malong10_mashort4'
 
 MODE = 'POLYGON_LOCAL_DB'
 #if MODE == 'LOCAL_YF_DB':
@@ -44,14 +45,14 @@ scanning_days = trading_dates[:-1]
 #trading_days = [trading_dates[35]]
 #scanning_days = [trading_dates[34]]
 
-macd_long = 26
-macd_short = 12
-signal_line_ema = 9
+algo_params: dict = param_list[0]["algo_params"]
+scanner_params: dict = param_list[0]["scanner_params"]
+scanner_macd_long = scanner_params["windows"]["long"]
 
-for i in range(macd_long, len(trading_dates)-1):
+for i in range(scanner_macd_long, len(trading_dates)-1):
     trading_day = trading_dates[i]
     scanning_day = trading_dates[i-1]
-    macd_date_list = trading_dates[i-macd_long : i]
+    macd_date_list = trading_dates[i-scanner_macd_long : i]
     try:
         data_manager = DataManager(mode=MODE, trading_day=trading_day, scanning_day=scanning_day, run_id=RUN_ID, db_path=DB_PATH)
         
@@ -67,14 +68,14 @@ for i in range(macd_long, len(trading_dates)-1):
                 'upper_price_boundary': 400,
                 'price_range_perc_cond': 5,
                 'avg_volume_cond': 10000,
-                'ma_short': 5,
-                'ma_long': 12,
-                'epsilon': 0.0015,
+                'ma_short': algo_params["entry_windows"]["short"],
+                'ma_long': algo_params["entry_windows"]["long"],
+                'epsilon': algo_params["entry_windows"]["epsilon"],
                 'rsi_len': 12,
                 'stop_loss_perc': 0.0,
-                'macd_long' : macd_long,
-                'macd_short' : macd_short,
-                'signal_line' : signal_line_ema
+                'macd_long' : scanner_params["windows"]["long"],
+                'macd_short' : scanner_params["windows"]["short"],
+                'signal_line' : scanner_params["windows"]["signal"]
             }
 
         data_manager.create_daily_dirs()
@@ -83,16 +84,14 @@ for i in range(macd_long, len(trading_dates)-1):
         scanner = PreMarketScannerPolygonDB(run_id=RUN_ID, 
                                     trading_day=data_manager.trading_day,
                                     scanning_day=data_manager.scanning_day,
+                                    scanner_params=scanner_params,
                                     macd_date_list=macd_date_list,
-                                    macd_ema_long=macd_long,
-                                    macd_ema_short=macd_short,
-                                    signal_line_ema=signal_line_ema,
                                     symbols=input_symbols,
                                     lower_price_boundary=run_parameters['lower_price_boundary'],
                                     upper_price_boundary=run_parameters['upper_price_boundary'],
                                     price_range_perc_cond=run_parameters['price_range_perc_cond'],
                                     avg_volume_cond=run_parameters['avg_volume_cond'])
-        
+
         recommended_symbol_list: List[dict] = scanner.recommend_premarket_watchlist()
 
         data_manager.recommended_symbol_list = recommended_symbol_list
@@ -108,17 +107,13 @@ for i in range(macd_long, len(trading_dates)-1):
         
         data_generator = PriceDataGeneratorMain(recommended_symbol_list=recommended_symbol_list)
                 
-        trading_algorithm = TradingAlgorithmWithStopLossPrevPrice(ma_short=run_parameters['ma_short'],
-                                                 ma_long=run_parameters['ma_long'],
-                                                 epsilon=run_parameters['epsilon'],
-                                                 rsi_len=run_parameters['rsi_len'],
-                                                 stop_loss_perc=run_parameters['stop_loss_perc'],
-                                                 trading_day=data_manager.trading_day,
-                                                 run_id=RUN_ID,
-                                                 db_path=DB_PATH) # TODO: rsi_threshold
+        trading_algorithm = TradingAlgorithmWithStopLossPrevPrice(trading_day=trading_day,
+                                                                  run_id=RUN_ID,
+                                                                  db_path=DB_PATH)
         
         trading_manager = TestTradingManagerDivided(data_generator=data_generator,
                                              trading_algorithm=trading_algorithm,
+                                             algo_params=algo_params,
                                              trading_client=trading_client,
                                              api_key='test_key',
                                              secret_key='test_secret')
