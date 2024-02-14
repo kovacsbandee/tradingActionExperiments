@@ -87,7 +87,7 @@ def _calculate_symbol_stats(symbol_data_list):
     }
 
 def create_stats_by_symbol(input_folder):
-    input_path = os.path.join(config['db_path'], input_folder, "daily_files/csvs")
+    input_path = os.path.join(input_folder, "daily_files/csvs")
     csvs = os.listdir(input_path)
     csvs.sort()
     stats_by_symbol = []
@@ -129,21 +129,47 @@ def compose_output(foldername, overall_stats, stats_by_symbol, symbols_with_loss
         "symbols_with_loss" : symbols_with_loss
     }
 
-#folders = os.listdir(f"{config['db_path']}/SimpleAVG_timelimit4hours_origscanner_sp500only_trading_day_2023_03_16")
-#for folder in folders:
-batch_foldername = "MACD_26_12_9_trading_day_2023_03_06"
-cash_by_symbol = 10000
-stat_list = create_stats_by_symbol(input_folder=batch_foldername)
-overall_stats = create_overall_stats(stat_list=stat_list,
-                                    cash_by_symbol=cash_by_symbol)
+# Create JSON outputs for each day
+run_ids = os.listdir(f"{config['output_stats']}")
+for id in run_ids:
+    daily_folders = os.listdir(f"{config['output_stats']}/{id}")
+    for folder in daily_folders:
+        if folder != "json":
+            cash_by_symbol = 10000
+            daily_folder_path = f"{config['output_stats']}/{id}/{folder}"
+            stat_list = create_stats_by_symbol(input_folder=daily_folder_path)
+            overall_stats = create_overall_stats(stat_list=stat_list,
+                                                cash_by_symbol=cash_by_symbol)
 
-symbols_with_loss = [{k : v for k, v in i.items()} for i in stat_list if i["end_cash"] < cash_by_symbol]
+            symbols_with_loss = [{k : v for k, v in i.items()} for i in stat_list if i["end_cash"] < cash_by_symbol]
 
-output_dict = compose_output(foldername=batch_foldername,
-                            overall_stats=overall_stats,
-                            stats_by_symbol=stat_list,
-                            symbols_with_loss=symbols_with_loss)
-
-with open(f"{config['db_path']}/output_stats/json/{batch_foldername}.json", "w") as file:
-    json.dump(output_dict, file)
+            output_dict = compose_output(foldername=folder,
+                                        overall_stats=overall_stats,
+                                        stats_by_symbol=stat_list,
+                                        symbols_with_loss=symbols_with_loss)
+            if "json" not in os.listdir(f"{config['output_stats']}/{id}"):
+                os.mkdir(f"{config['output_stats']}/{id}/json")
+                
+            with open(f"{config['output_stats']}/{id}/json/{folder}.json", "w") as file:
+                json.dump(output_dict, file)
+                
+"""
+    TODO:
+    1.) minden run_id JSON-ból kiszedni az összesített adatokat, hogy lássunk egy általános teljesítményt
+        - kiszedni a max_cash-hez tartozó timestampet
+    2.) kigyűjteni, hogy melyik run_id-hoz, milyen részvények tartoztak és teljesítmény alapján sorba kell rendezni őket
+        - pl.:
+            234j4horvátheölh52929 : [AAPL, NVDA, MSFT],
+            25l23g5g5wittekbéla : [AAPL, MSFT, TSLA]
+    3.) összeállítani egy részvény-alapján csoportosított run_id halmazt / melyik run_id-val volt az adott részvény a legjobb?
+        - pl.:
+            {
+                AAPL : [234j4horvátheölh52929, 25l23g5g5wittekbéla],
+                NVDA : [234j4horvátheölh52929]
+            }
+    -----------------------------------------------------------------------------------------
+    4.) PriceDataGenerator-ban inicializálni adott részvényhez a run_id-t minden futás elején
+        - az algo ezután specifikusan ezzel fog dolgozni
+    5.) futás során visszamérni az adott run_id teljesítményét, szükség esetén cserélni
+"""
     

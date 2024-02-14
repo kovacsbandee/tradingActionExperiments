@@ -1,17 +1,16 @@
 import pandas as pd
 import numpy as np
 
+from config import config
+
 class TradingAlgorithmWithStopLossPrevPrice():
     def __init__(self,
                  trading_day,
-                 run_id,
-                 db_path):
+                 daily_dir_name):
         self.comission_ratio = 0.0
         self.trading_day = trading_day.strftime('%Y_%m_%d')
-        self.run_id = run_id
-        self.db_path = db_path
         self.name = 'trading_algorithm_with_stoploss_prev_price'
-        self.daily_dir_name = self.run_id + '_' + 'trading_day' + '_' + self.trading_day
+        self.daily_dir_name = daily_dir_name
 
     def update_capital_amount(self, account_cash):
         self.capital = account_cash
@@ -41,7 +40,11 @@ class TradingAlgorithmWithStopLossPrevPrice():
                                                         weighted=algo_params["entry_weighted"],
                                                         previous_position=previous_position)
             elif algo_params["entry_signal"] == "MACD":
-                symbol_df = self.entry_signal_MACD()
+                symbol_df = self.entry_signal_MACD(symbol_df=symbol_df,
+                                                   macd_windows=algo_params['entry_windows'],
+                                                   rsi=algo_params['entry_rsi'],
+                                                   weighted=algo_params['entry_weighted'],
+                                                   previous_position=previous_position)
                 
             eval_result = self.set_buy_action(symbol_df, symbol_dict)
                 
@@ -60,7 +63,7 @@ class TradingAlgorithmWithStopLossPrevPrice():
         symbol_df = eval_result["symbol_df"]
         symbol_dict = eval_result["symbol_dict"]
         
-        symbol_df.to_csv(f'{self.db_path}/{self.daily_dir_name}/daily_files/csvs/{symbol}_{self.trading_day}_{self.name}.csv')
+        symbol_df.to_csv(f"{config['output_stats']}/{self.daily_dir_name}/daily_files/csvs/{symbol}_{self.trading_day}_{self.name}.csv")
         
         # update the current symbol DataFrame
         symbol_dict['daily_price_data_df'] = symbol_df
@@ -136,17 +139,27 @@ class TradingAlgorithmWithStopLossPrevPrice():
         ema_short = macd_windows["short"]
         ema_long = macd_windows["long"]
         signal_ema = macd_windows["signal"]
-        symbol_df[f"EMA{ema_short}"] = symbol_df['close'].ewm(span=ema_short, adjust=False).mean()
-        symbol_df[f"EMA{ema_long}"] = symbol_df['close'].ewm(span=ema_long, adjust=False).mean()
+        symbol_df[f"EMA{ema_short}"] = symbol_df['c'].ewm(span=ema_short, adjust=False).mean()
+        symbol_df[f"EMA{ema_long}"] = symbol_df['c'].ewm(span=ema_long, adjust=False).mean()
         symbol_df['MACD'] = symbol_df[f"EMA{ema_short}"] - symbol_df[f"EMA{ema_long}"]
         symbol_df['signal_line'] = symbol_df['MACD'].ewm(span=signal_ema, adjust=False).mean()
         
-        if symbol_df.iloc[-2]['MACD'] < symbol_df.iloc[-2]['signal_line'] \
-            and symbol_df.iloc[-1]['MACD'] > symbol_df.iloc[-1]['signal_line']:
-            expected_position = 'long'
-        else:
-            if previous_position == 'long':
+        if rsi:
+            if symbol_df.iloc[-1]['rsi'] <= rsi["oversold"]:
                 expected_position = 'long'
+            elif symbol_df.iloc[-2]['MACD'] < symbol_df.iloc[-2]['signal_line'] \
+                and symbol_df.iloc[-1]['MACD'] > symbol_df.iloc[-1]['signal_line']:
+                expected_position = 'long'
+            else:
+                if previous_position == 'long':
+                    expected_position = 'long'
+        else:
+            if symbol_df.iloc[-2]['MACD'] < symbol_df.iloc[-2]['signal_line'] \
+                and symbol_df.iloc[-1]['MACD'] > symbol_df.iloc[-1]['signal_line']:
+                expected_position = 'long'
+            else:
+                if previous_position == 'long':
+                    expected_position = 'long'
 
         symbol_df.loc[symbol_df.index[-1], 'position'] = expected_position
         symbol_df.loc[symbol_df.index[-2], 'position'] = previous_position
@@ -162,9 +175,17 @@ class TradingAlgorithmWithStopLossPrevPrice():
                 
             current_close_avg = symbol_df.loc[symbol_df.index[-1], 'close_signal_avg']
             
-            if symbol_df.loc[symbol_df.index[-1], 'c'] <= current_close_avg:
-                symbol_df.loc[symbol_df.index[-1], 'stop_loss_out_signal'] = 'stop_loss_long'
-                symbol_df.loc[symbol_df.index[-1], 'trading_action'] = 'sell_previous_long_position'
+            if rsi:
+                if symbol_df.iloc[-1]['rsi'] >= rsi['overbought']:
+                    symbol_df.loc[symbol_df.index[-1], 'stop_loss_out_signal'] = 'stop_loss_long'
+                    symbol_df.loc[symbol_df.index[-1], 'trading_action'] = 'sell_previous_long_position'
+                elif symbol_df.loc[symbol_df.index[-1], 'c'] <= current_close_avg:
+                    symbol_df.loc[symbol_df.index[-1], 'stop_loss_out_signal'] = 'stop_loss_long'
+                    symbol_df.loc[symbol_df.index[-1], 'trading_action'] = 'sell_previous_long_position'
+            else:
+                if symbol_df.loc[symbol_df.index[-1], 'c'] <= current_close_avg:
+                    symbol_df.loc[symbol_df.index[-1], 'stop_loss_out_signal'] = 'stop_loss_long'
+                    symbol_df.loc[symbol_df.index[-1], 'trading_action'] = 'sell_previous_long_position'
                 
             symbol_df.loc[symbol_df.index[-1], 'position'] = 'out'
             return symbol_df
@@ -172,7 +193,7 @@ class TradingAlgorithmWithStopLossPrevPrice():
             symbol_df.loc[symbol_df.index[-1], 'position'] = previous_position
             return symbol_df
 
-    def close_signal_atr(self, symbol_df: pd.DataFrame, symbol_dict: dict, rsi: dict, window_size: int, weighted: bool):
+    def close_signal_atr(self, symbol_df: pd.DataFrame, symbol_dict: dict, rsi: dict, window_size: int, weighted: bool, previous_position: str):
         if (symbol_df.loc[symbol_df.index[-1], 'c'] < symbol_df.loc[symbol_df.index[-2], 'o']):
             current_high = symbol_df.iloc[-1]['h']
             current_low = symbol_df.iloc[-1]['l']
@@ -190,4 +211,8 @@ class TradingAlgorithmWithStopLossPrevPrice():
                 symbol_df.loc[symbol_df.index[-1], 'trading_action'] = 'sell_previous_long_position'
                 symbol_dict['previous_long_buy_position_index'] = None
         
-        return symbol_df
+            symbol_df.loc[symbol_df.index[-1], 'position'] = 'out'
+            return symbol_df
+        else:
+            symbol_df.loc[symbol_df.index[-1], 'position'] = previous_position
+            return symbol_df

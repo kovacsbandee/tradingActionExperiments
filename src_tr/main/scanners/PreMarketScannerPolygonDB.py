@@ -20,6 +20,7 @@ class PreMarketScannerPolygonDB(ScannerBase):
                  macd_date_list,
                  symbols,
                  run_id,
+                 daily_dir_name,
                  lower_price_boundary=10,
                  upper_price_boundary=250,
                  price_range_perc_cond=10,
@@ -28,6 +29,7 @@ class PreMarketScannerPolygonDB(ScannerBase):
         self.scanner_params = scanner_params
         self.macd_date_list = macd_date_list
         self.run_id = run_id
+        self.daily_dir_name = daily_dir_name
         self.lower_price_boundary = lower_price_boundary
         self.upper_price_boundary = upper_price_boundary
         self.price_range_perc_cond = price_range_perc_cond
@@ -46,6 +48,9 @@ class PreMarketScannerPolygonDB(ScannerBase):
                     symbol_history_df = daily_df
                 elif isinstance(symbol_history_df, pd.DataFrame):
                     symbol_history_df = pd.concat([symbol_history_df, daily_df], ignore_index=True)
+            """TODO!: bug - 2023_03_14-nél azt mondja, hogy:
+                raise AttributeError("Can only use .dt accessor with datetimelike values")
+                AttributeError: Can only use .dt accessor with datetimelike values"""
             symbol_history_df['date'] = symbol_history_df['timestamp'].dt.date
             return symbol_history_df
         except:
@@ -170,7 +175,8 @@ class PreMarketScannerPolygonDB(ScannerBase):
             
             if stats_df is not None and not stats_df.empty:
                 self.pre_market_stats = stats_df
-                self.pre_market_stats.to_csv(f"{config['db_path']}/scanner_stats/pre_market_stats_{date}.csv", index=False)
+                self.pre_market_stats.to_csv(\
+                    f"{config['output_stats']}/{self.daily_dir_name}/daily_files/scanner_stats/pre_market_stats_{date}.csv", index=False)
             else:
                 logging.error(f"Failed to create pre-market stats for trading day: %s", date)
         except:
@@ -185,7 +191,7 @@ class PreMarketScannerPolygonDB(ScannerBase):
         self.recommended_symbols = self.pre_market_stats.sort_values(by=['avg_transaction'], ascending=False)
         #self.recommended_symbols = self.recommended_symbols.sort_values(by=['avg_volume'], ascending=False)
         #self.recommended_symbols = self.recommended_symbols.sort_values(by=['volatility'], ascending=False)
-        self.recommended_symbols = self.recommended_symbols.head(1)
+        self.recommended_symbols = self.recommended_symbols.head(20)
         #self.recommended_symbols = self.pre_market_stats[(self.pre_market_stats["is_uptrend"] == True)]
         
         #self.recommended_symbols = self.pre_market_stats.sort_values(by=['avg_transaction'], ascending=False)
@@ -199,7 +205,8 @@ class PreMarketScannerPolygonDB(ScannerBase):
         #    (self.price_range_perc_cond < self.pre_market_stats['price_range_perc']) & \
         #    (self.avg_volume_cond < self.pre_market_stats['avg_volume'])]
 
-        self.recommended_symbols.to_csv(f"{config['db_path']}/scanner_stats/recommended_symbols_{self.trading_day.strftime('%Y_%m_%d')}.csv", index=False)
+        self.recommended_symbols.to_csv(\
+            f"{config['output_stats']}/{self.daily_dir_name}/daily_files/scanner_stats/recommended_symbols_{self.trading_day.strftime('%Y_%m_%d')}.csv", index=False)
         symbol_dict_list = []
         if self.recommended_symbols is not None:
             for index, row in self.recommended_symbols.iterrows():
