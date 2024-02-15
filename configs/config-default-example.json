@@ -1,6 +1,7 @@
 {
 	"project_path": "PATH_TO_YOUR_PROJECT/tradingActionExperiments",
 	"db_path": "PATH_TO_YOUR_DATABASE",
+	"output_stats" : "PATH_TO_YOUR_DATABASE/output_stats",
 	"resource_paths": {
 		"nasdaq_symbols_csv": "src_tr/main/data_sources/nasdaq_symbols_original.csv",
 		"polygon" : {

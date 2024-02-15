@@ -20,6 +20,8 @@ def split_data_by_day(full_symbol_df: pd.DataFrame, filter_length=None, limit_to
             raise ValueError(f"Daily DataFrame contains more than 1 symbol: {symbol.tolist()}")
         else:
             symbol = symbol[0]
+            if '/' in symbol:
+                symbol = symbol.replace('/', '.')
             date_str = date.strftime('%Y_%m_%d')
             
             daily_df.set_index('timestamp', inplace=True)
