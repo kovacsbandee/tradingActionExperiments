@@ -43,15 +43,12 @@ class PreMarketScannerPolygonDB(ScannerBase):
                 daily_df = pd.read_csv(
                     os.path.join(config["resource_paths"]["polygon"]["daily_data_output_folder"], date, f"{symbol}.csv"))
                 daily_df.columns = ["timestamp","open","close","volume","high","low","volume_weighted_avg_price","transactions"]
-                daily_df["timestamp"] = pd.to_datetime(daily_df["timestamp"], format="%Y-%m-%d %H:%M:%S%z")
                 if symbol_history_df is None:
                     symbol_history_df = daily_df
                 elif isinstance(symbol_history_df, pd.DataFrame):
                     symbol_history_df = pd.concat([symbol_history_df, daily_df], ignore_index=True)
-            """TODO!: bug - 2023_03_14-nél azt mondja, hogy:
-                raise AttributeError("Can only use .dt accessor with datetimelike values")
-                AttributeError: Can only use .dt accessor with datetimelike values"""
-            symbol_history_df['date'] = symbol_history_df['timestamp'].dt.date
+            timestamps_conv = pd.to_datetime(symbol_history_df['timestamp'], format="%Y-%m-%d %H:%M:%S%z", utc=True)
+            symbol_history_df['date'] = timestamps_conv.dt.date
             return symbol_history_df
         except:
             traceback.print_exc()

@@ -129,29 +129,39 @@ def compose_output(foldername, overall_stats, stats_by_symbol, symbols_with_loss
         "symbols_with_loss" : symbols_with_loss
     }
 
-# Create JSON outputs for each day
-run_ids = os.listdir(f"{config['output_stats']}")
-for id in run_ids:
-    daily_folders = os.listdir(f"{config['output_stats']}/{id}")
-    for folder in daily_folders:
-        if folder != "json":
-            cash_by_symbol = 10000
-            daily_folder_path = f"{config['output_stats']}/{id}/{folder}"
-            stat_list = create_stats_by_symbol(input_folder=daily_folder_path)
-            overall_stats = create_overall_stats(stat_list=stat_list,
-                                                cash_by_symbol=cash_by_symbol)
+def create_daily_JSON_files():
+    run_ids = os.listdir(f"{config['output_stats']}")
+    outputs_per_run_id = dict()
+    for id in run_ids:
+        if id != "json":
+            daily_folders = os.listdir(f"{config['output_stats']}/{id}")
+            outputs_per_run_id[id] = []
+            for folder in daily_folders:
+                if folder != "json":
+                    cash_by_symbol = 10000
+                    daily_folder_path = f"{config['output_stats']}/{id}/{folder}"
+                    stat_list = create_stats_by_symbol(input_folder=daily_folder_path)
+                    overall_stats = create_overall_stats(stat_list=stat_list,
+                                                        cash_by_symbol=cash_by_symbol)
 
-            symbols_with_loss = [{k : v for k, v in i.items()} for i in stat_list if i["end_cash"] < cash_by_symbol]
+                    symbols_with_loss = [{k : v for k, v in i.items()} for i in stat_list if i["end_cash"] < cash_by_symbol]
 
-            output_dict = compose_output(foldername=folder,
-                                        overall_stats=overall_stats,
-                                        stats_by_symbol=stat_list,
-                                        symbols_with_loss=symbols_with_loss)
-            if "json" not in os.listdir(f"{config['output_stats']}/{id}"):
-                os.mkdir(f"{config['output_stats']}/{id}/json")
-                
-            with open(f"{config['output_stats']}/{id}/json/{folder}.json", "w") as file:
-                json.dump(output_dict, file)
+                    output_dict = compose_output(foldername=folder,
+                                                overall_stats=overall_stats,
+                                                stats_by_symbol=stat_list,
+                                                symbols_with_loss=symbols_with_loss)
+                    if "json" not in os.listdir(f"{config['output_stats']}/{id}"):
+                        os.mkdir(f"{config['output_stats']}/{id}/json")
+                    
+                    outputs_per_run_id[id].append(output_dict)
+                    with open(f"{config['output_stats']}/{id}/json/{folder}.json", "w") as file:
+                        json.dump(output_dict, file)
+    return outputs_per_run_id
+
+
+with open(f"{config['output_stats']}/json/all_ids.json", "w") as jsonfile:
+    all_run_id_outputs = create_daily_JSON_files()
+    json.dump(all_run_id_outputs, jsonfile)
                 
 """
     TODO:
