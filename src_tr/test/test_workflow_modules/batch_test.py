@@ -40,7 +40,7 @@ daily_folder_dates = os.listdir(config["resource_paths"]["polygon"]["daily_data_
 trading_dates = [datetime.strptime(date,"%Y_%m_%d") for date in daily_folder_dates]
 trading_dates.sort()
 
-trading_dates = trading_dates[23:27]
+trading_dates = trading_dates[23:25]
 
 trading_days = trading_dates[1:]
 scanning_days = trading_dates[:-1]
@@ -136,13 +136,13 @@ for scanning_day, trading_day in zip(scanning_days, trading_days):
         data_manager.save_daily_statistics_and_aggregated_plots(recommended_symbols=scanner.recommended_symbols,
                                                                 symbol_dict=data_generator.symbol_dict)
         data_manager.save_daily_charts(symbol_dict=data_generator.symbol_dict)
-        daily_yield_perc = ((data_manager.total_recommended_symbol_statistics['last_capital_td'].sum() / (len(scanner.recommended_symbols) * run_parameters['init_cash'])) - 1) * 100
+        daily_yield_perc = ((data_manager.total_recommended_symbol_statistics['last_capital_td'].sum() / (len(scanner.recommended_symbols) * run_parameters['init_cash'])) - 1) * 10
         print('Total daily yield percent: ', daily_yield_perc)
         print('Experiment ran successfully, with run id: ', data_manager.run_id, 'and run parameters', data_manager.run_parameters)
         # symbols above 1% last_yield, symbols below 0%, symbols above 1% last_yield / all symbols
         pd.DataFrame.from_dict(
-            {'run_id': [RUN_ID], 'trading_day': [trading_day], 'daily_yield_perc': [daily_yield_perc]}, orient='index').to_csv(
-            f"{DB_PATH}/output/{data_manager.run_id}/{data_manager.daily_dir_name}/yield_{data_manager.daily_dir_name}", index=False)
+            {'run_id': [RUN_ID], 'trading_day': [trading_day], 'daily_algo_yield_perc': [daily_yield_perc]}, orient='index').to_csv(
+            f"{DB_PATH}/output/{data_manager.run_id}/{data_manager.daily_dir_name}/yield_{data_manager.daily_dir_name}.csv", index=False)
         # del data_manager
         # del scanner
         # del trading_client

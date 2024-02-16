@@ -7,7 +7,7 @@ def get_stat_desricptions():
     return \
         {
             'baseline_yield_perc_td': ' baseline_yield_perc ',
-            'last_yield_perc_td': 'last_yield_perc (a capital utolsó értékének és az init cash %-os aránya',
+            'last_yield_perc_td': 'last_yield_perc (hány szzalékot hozott)',
             'avg_yield_perc_td': 'avg_yield_perc (mindenkori max capital és az init cash %-os aránya)',
             'max_yield_perc_td': 'max_yield_perc (mindenkori max capital és az init cash %-os aránya)',
             'min_yield_perc_td': 'min_yield_perc (mindenkori min capital és az init cash %-os aránya)',

@@ -29,7 +29,7 @@ class DataManager:
         daily_symbol_dir_name = 'daily_files'
         if self.run_id not in os.listdir(f'{self.db_path}/output/'):
             os.mkdir(f"{self.db_path}/output/{self.run_id}")
-        if self.daily_dir_name in os.listdir(f'{self.db_path}/output/{self.run_id}'):
+        if self.daily_dir_name not in os.listdir(f'{self.db_path}/output/{self.run_id}'):
             os.mkdir(f"{self.db_path}/output/{self.run_id}/{self.daily_dir_name}")
             os.mkdir(f"{self.db_path}/output/{self.run_id}/{self.daily_dir_name}/{daily_symbol_dir_name}")
             os.mkdir(f"{self.db_path}/output/{self.run_id}/{self.daily_dir_name}/{daily_symbol_dir_name}/csvs")
@@ -59,7 +59,8 @@ class DataManager:
             daily_stats = dict()
             daily_stats['symbol'] = symbol
             daily_stats['last_capital_td'] = daily_df[(daily_df['current_capital'] >= 1.0) & (~daily_df['current_capital'].isna())]['current_capital'][-1]
-            daily_stats['baseline_yield_perc_td'] = (daily_stats['last_capital_td'] / (self.run_parameters['init_cash'] * (daily_df['o'][-1] / daily_df['o'][0])) - 1) * 100
+            daily_stats['basline_yield_td'] = (self.run_parameters['init_cash'] * (daily_df['o'][-1] / daily_df['o'][0]))
+            daily_stats['baseline_yield_perc_td'] = ((daily_stats['last_capital_td'] / (self.run_parameters['init_cash'] * (daily_df['o'][-1] / daily_df['o'][0]))) - 1) * 100
             daily_stats['last_yield_perc_td'] = ((daily_df[(daily_df['current_capital'] >= 1.0) & \
                                                         (~daily_df['current_capital'].isna())]['current_capital'][-1] / self.run_parameters['init_cash']) - 1) * 100
             daily_stats['avg_yield_perc_td'] = ((daily_df[(daily_df['current_capital'] >= 1.0)]['current_capital'].mean() / self.run_parameters['init_cash']) - 1) * 100
