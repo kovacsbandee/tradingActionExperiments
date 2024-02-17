@@ -12,7 +12,7 @@ from src_tr.main.utils.local_yf_db_handler import get_possible_local_yf_trading_
 
 from src_tr.main.checks.checks import check_trading_day
 from src_tr.main.utils.utils import calculate_scanning_day, get_nasdaq_symbols
-from src_tr.main.utils.data_management import DataManager
+from src_tr.main.utils.DataManager import DataManager
 from src_tr.main.utils.plots import daily_time_series_charts, plot_daily_statistics
 from src_tr.main.scanners.PreMarketScanner import PreMarketScanner
 from src_tr.main.scanners.PreMarketScannerYFDB import PreMarketScannerYFDB

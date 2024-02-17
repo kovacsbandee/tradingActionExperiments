@@ -188,7 +188,7 @@ class PreMarketScannerPolygonDB(ScannerBase):
         self.recommended_symbols = self.pre_market_stats.sort_values(by=['avg_transaction'], ascending=False)
         #self.recommended_symbols = self.recommended_symbols.sort_values(by=['avg_volume'], ascending=False)
         #self.recommended_symbols = self.recommended_symbols.sort_values(by=['volatility'], ascending=False)
-        self.recommended_symbols = self.recommended_symbols.head(20)
+        self.recommended_symbols = self.recommended_symbols.head(1)
         #self.recommended_symbols = self.pre_market_stats[(self.pre_market_stats["is_uptrend"] == True)]
         
         #self.recommended_symbols = self.pre_market_stats.sort_values(by=['avg_transaction'], ascending=False)

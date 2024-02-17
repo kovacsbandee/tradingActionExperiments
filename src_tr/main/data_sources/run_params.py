@@ -56,7 +56,37 @@ param_dict = {
     #            "close_weighted" : True 
     #        }
     #    },
-    "macd_entryRSI_closeRSI" : {
+    #"macd_entryRSI_closeRSI" : {
+    #        "scanner_params" : {
+    #            "windows" : {
+    #                "short" : 12,
+    #                "long" : 26,
+    #                "signal" : 9
+    #            }
+    #        },
+    #        "algo_params" : {
+    #            "entry_signal" : "MACD",
+    #            "rsi_length" : 12,
+    #            "entry_rsi" : {
+    #                "overbought" : 70,
+    #                "oversold" : 10
+    #            },
+    #            "entry_windows" : {
+    #                "short" : 12,
+    #                "long" : 26,
+    #                "signal" : 9
+    #            },
+    #            "entry_weighted" : True,
+    #            "close_signal" : "AVG",
+    #            "close_rsi" : {
+    #                "overbought" : 70,
+    #                "oversold" : 10
+    #            },
+    #            "close_window" : 5,
+    #            "close_weighted" : True 
+    #        }
+    #    },
+    "macd_entryRSI30_closeRSI" : {
             "scanner_params" : {
                 "windows" : {
                     "short" : 12,
@@ -69,7 +99,7 @@ param_dict = {
                 "rsi_length" : 12,
                 "entry_rsi" : {
                     "overbought" : 70,
-                    "oversold" : 10
+                    "oversold" : 30
                 },
                 "entry_windows" : {
                     "short" : 12,

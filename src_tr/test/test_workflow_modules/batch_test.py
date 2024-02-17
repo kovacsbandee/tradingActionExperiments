@@ -8,12 +8,9 @@ import uuid
 from src_tr.test.test_workflow_modules.TestTradingClientDivided import TestTradingClientDivided
 from src_tr.main.utils.test_utils import run_test_experiment
 
-from src_tr.main.utils.test_utils import get_yf_local_db_symbols, get_all_symbols_daily_data_yf_db, get_polygon_local_db_symbols, get_polygon_trading_day_data
-from src_tr.main.utils.local_yf_db_handler import get_possible_local_yf_trading_days
+from src_tr.main.utils.test_utils import get_polygon_local_db_symbols, get_polygon_trading_day_data
 
-from src_tr.main.checks.checks import check_trading_day
-from src_tr.main.utils.utils import calculate_scanning_day, get_nasdaq_symbols
-from src_tr.main.utils.data_management import DataManager
+from src_tr.main.utils.DataManager import DataManager
 from src_tr.main.scanners.PreMarketScannerPolygonDB import PreMarketScannerPolygonDB
 
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
@@ -60,6 +57,7 @@ def run():
                 
                 input_symbols: List[str] = get_polygon_local_db_symbols(trading_day=trading_day, only_sp_500=True)
 
+                #TODO: ennek majd a param-fájlból kell jönnie
                 run_parameters = \
                     {
                         'run_id': run_id,
@@ -72,6 +70,7 @@ def run():
                         'avg_volume_cond': 10000,
                         'ma_short': algo_params["entry_windows"]["short"],
                         'ma_long': algo_params["entry_windows"]["long"],
+                        'entry_signal': algo_params["entry_windows"]["signal"] if "signal" in algo_params["entry_windows"] else 0.0,
                         'epsilon': algo_params["entry_windows"]["epsilon"] if "epsilon" in algo_params["entry_windows"] else 0.0,
                         'rsi_len': 12,
                         'stop_loss_perc': 0.0,
@@ -137,7 +136,7 @@ def run():
                 
                 run_test_experiment(all_symbols_daily_data=all_symbols_daily_data, trading_manager=trading_manager)
 
-            except Exception as e:
+            except Exception:
                 traceback.print_exc()
 
             finally:
