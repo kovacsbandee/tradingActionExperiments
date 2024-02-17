@@ -2,6 +2,9 @@ import os
 import csv
 import json
 from datetime import datetime
+from itertools import chain
+from statistics import mean 
+
 from config import config
 
 def _convert_to_float(symbol_daily_output_list):
@@ -158,28 +161,55 @@ def create_daily_JSON_files():
                         json.dump(output_dict, file)
     return outputs_per_run_id
 
+def rank_symbol_performance_by_id(all_run_id_outputs):
+    #TODO: kiszervezni, refaktorálni, stb.
+    run_id_symbol_dict = dict.fromkeys(all_run_id_outputs.keys(), dict())
+    for run_id, daily_stats in all_run_id_outputs.items():
+        results_per_run_id = {
+            run_id : {}
+        }
+        daily_stats_by_symbol = [i['stats_by_symbol'] for i in daily_stats]
+        for j in daily_stats_by_symbol:
+            for element in j:
+                if element['symbol'] in results_per_run_id[run_id]:
+                    results_per_run_id[run_id][element['symbol']].append(element['end_cash'])
+                else:
+                    results_per_run_id[run_id][element['symbol']] = []
+                    results_per_run_id[run_id][element['symbol']].append(element['end_cash'])
+        run_id_symbol_dict[run_id] = results_per_run_id[run_id]
+        
+    for key, value in run_id_symbol_dict.items():
+        for k, v in value.items():
+            value[k] = mean(v)
+            
+    symbols = []
+    for value in run_id_symbol_dict.values():
+        symbols.append([s for s in value.keys()])
+    unique_symbols = set(chain.from_iterable(symbols))
+    
+    symbol_run_id_list_dict = dict()
+    for symbol in unique_symbols:
+        symbol_run_id_list_dict[symbol] = []
+        for key, value in run_id_symbol_dict.items():
+            if symbol in value:
+                symbol_run_id_list_dict[symbol].append({key:value[symbol]})
+            
+    return symbol_run_id_list_dict
+        
+        
+all_run_id_outputs = create_daily_JSON_files()
+symbol_ranking_by_run_ids = rank_symbol_performance_by_id(all_run_id_outputs)
 
 with open(f"{config['output_stats']}/json/all_ids.json", "w") as jsonfile:
-    all_run_id_outputs = create_daily_JSON_files()
     json.dump(all_run_id_outputs, jsonfile)
+    
+with open(f"{config['output_stats']}/json/symbol_run_id_ranking.json", "w") as jsonfile:
+    json.dump(symbol_ranking_by_run_ids, jsonfile)
                 
 """
     TODO:
-    1.) minden run_id JSON-ból kiszedni az összesített adatokat, hogy lássunk egy általános teljesítményt
-        - kiszedni a max_cash-hez tartozó timestampet
-    2.) kigyűjteni, hogy melyik run_id-hoz, milyen részvények tartoztak és teljesítmény alapján sorba kell rendezni őket
-        - pl.:
-            234j4horvátheölh52929 : [AAPL, NVDA, MSFT],
-            25l23g5g5wittekbéla : [AAPL, MSFT, TSLA]
-    3.) összeállítani egy részvény-alapján csoportosított run_id halmazt / melyik run_id-val volt az adott részvény a legjobb?
-        - pl.:
-            {
-                AAPL : [234j4horvátheölh52929, 25l23g5g5wittekbéla],
-                NVDA : [234j4horvátheölh52929]
-            }
-    -----------------------------------------------------------------------------------------
-    4.) PriceDataGenerator-ban inicializálni adott részvényhez a run_id-t minden futás elején
+    1.) PriceDataGenerator-ban inicializálni adott részvényhez a run_id-t minden futás elején
         - az algo ezután specifikusan ezzel fog dolgozni
-    5.) futás során visszamérni az adott run_id teljesítményét, szükség esetén cserélni
+    2.) futás során visszamérni az adott run_id teljesítményét, szükség esetén cserélni
 """
     
