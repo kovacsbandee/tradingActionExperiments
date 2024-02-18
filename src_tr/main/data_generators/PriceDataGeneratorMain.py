@@ -37,21 +37,16 @@ class PriceDataGeneratorMain():
     def initialize_additional_columns(self, symbol):
         self.symbol_dict[symbol]['daily_price_data_df']['position'] = 'out'
         self.symbol_dict[symbol]['daily_price_data_df']['trading_action'] = 'no_action'
-        self.symbol_dict[symbol]['daily_price_data_df']['current_capital'] = 0.0 #TODO: check!
-        self.symbol_dict[symbol]['daily_price_data_df']['stop_loss_out_signal'] = 'no_stop_loss_out_signal'
+        self.symbol_dict[symbol]['daily_price_data_df']['current_capital'] = 0.0
+        self.symbol_dict[symbol]['daily_price_data_df']['entry_signal_type'] = None
+        self.symbol_dict[symbol]['daily_price_data_df']['close_signal_type'] = None
         self.symbol_dict[symbol]['daily_price_data_df']['rsi'] = None
-        self.symbol_dict[symbol]['daily_price_data_df']['open_small_indicator'] = None
-        self.symbol_dict[symbol]['daily_price_data_df']['open_big_indicator'] = None
         self.symbol_dict[symbol]['daily_price_data_df']['open_norm'] = None
         self.symbol_dict[symbol]['daily_price_data_df']['gain_loss'] = None
         self.symbol_dict[symbol]['daily_price_data_df']['gain'] = None
         self.symbol_dict[symbol]['daily_price_data_df']['loss'] = None
         self.symbol_dict[symbol]['daily_price_data_df']['avg_gain'] = None
         self.symbol_dict[symbol]['daily_price_data_df']['avg_loss'] = None
-        
-        self.symbol_dict[symbol]['daily_price_data_df']['current_range'] = None
-        self.symbol_dict[symbol]['daily_price_data_df']['atr_short'] = None
-        self.symbol_dict[symbol]['daily_price_data_df']['stop_loss_ma_short'] = None
                 
     def update_symbol_df(self, minute_bars: List[dict]):
         if minute_bars is not None and len(minute_bars) > 0:

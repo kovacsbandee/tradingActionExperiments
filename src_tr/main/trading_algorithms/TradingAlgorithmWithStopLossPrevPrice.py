@@ -28,6 +28,10 @@ class TradingAlgorithmWithStopLossPrevPrice():
         # calculate RSI
         symbol_df = self.calculate_current_rsi(symbol_df, algo_params["rsi_length"])
         
+        # calculate current range
+        if algo_params['close_signal'] == 'ATR':
+            symbol_df = self.calculate_current_range(symbol_df)
+        
         # evaluate current position
         eval_result = None
         if symbol_dict['previous_long_buy_position_index'] is None:
@@ -56,7 +60,12 @@ class TradingAlgorithmWithStopLossPrevPrice():
                                                   weighted=algo_params["close_weighted"],
                                                   previous_position=previous_position)
             elif algo_params["close_signal"] == "ATR":
-                symbol_df = self.close_signal_atr()
+                symbol_df = self.close_signal_atr(symbol_df=symbol_df,
+                                                  symbol_dict=symbol_dict,
+                                                  rsi=algo_params["close_rsi"],
+                                                  window_size=algo_params["close_window"],
+                                                  weighted=algo_params["close_weighted"],
+                                                  previous_position=previous_position)
                 
             eval_result = self.set_close_action(symbol_df=symbol_df, symbol_dict=symbol_dict)
         
@@ -78,6 +87,15 @@ class TradingAlgorithmWithStopLossPrevPrice():
         symbol_df['rsi'] = 100 - (100 / (1 + symbol_df['avg_gain'] / symbol_df['avg_loss']))
         return symbol_df
     
+    def calculate_current_range(self, symbol_df: pd.DataFrame):
+        current_high = symbol_df.iloc[-1]['h']
+        current_low = symbol_df.iloc[-1]['l']
+        previous_close = symbol_df.iloc[-2]['c']
+        symbol_df.loc[symbol_df.index[-1], "current_range"] = \
+            max([current_high-current_low, abs(current_high-previous_close), abs(current_low-previous_close)])
+            
+        return symbol_df
+
     def set_buy_action(self, symbol_df: pd.DataFrame, symbol_dict: dict):
         if symbol_df.iloc[-1]['position'] == symbol_df.iloc[-2]['position']:
             symbol_df.loc[symbol_df.index[-1], 'trading_action'] = 'no_action'
@@ -147,9 +165,11 @@ class TradingAlgorithmWithStopLossPrevPrice():
         if rsi:
             if symbol_df.iloc[-1]['rsi'] <= rsi["oversold"]:
                 expected_position = 'long'
+                symbol_df.loc[symbol_df.index[-1], 'entry_signal_type'] = 'entry_RSI'
             elif symbol_df.iloc[-2]['MACD'] < symbol_df.iloc[-2]['signal_line'] \
                 and symbol_df.iloc[-1]['MACD'] > symbol_df.iloc[-1]['signal_line']:
                 expected_position = 'long'
+                symbol_df.loc[symbol_df.index[-1], 'entry_signal_type'] = 'entry_MACD'
             else:
                 if previous_position == 'long':
                     expected_position = 'long'
@@ -157,6 +177,7 @@ class TradingAlgorithmWithStopLossPrevPrice():
             if symbol_df.iloc[-2]['MACD'] < symbol_df.iloc[-2]['signal_line'] \
                 and symbol_df.iloc[-1]['MACD'] > symbol_df.iloc[-1]['signal_line']:
                 expected_position = 'long'
+                symbol_df.loc[symbol_df.index[-1], 'entry_signal_type'] = 'entry_MACD'
             else:
                 if previous_position == 'long':
                     expected_position = 'long'
@@ -177,17 +198,20 @@ class TradingAlgorithmWithStopLossPrevPrice():
             
             if rsi:
                 if symbol_df.iloc[-1]['rsi'] >= rsi['overbought']:
-                    symbol_df.loc[symbol_df.index[-1], 'stop_loss_out_signal'] = 'stop_loss_long'
-                    symbol_df.loc[symbol_df.index[-1], 'trading_action'] = 'sell_previous_long_position'
+                    symbol_df.loc[symbol_df.index[-1], 'position'] = 'out'
+                    symbol_df.loc[symbol_df.index[-1], 'close_signal_type'] = 'close_RSI'
                 elif symbol_df.loc[symbol_df.index[-1], 'c'] <= current_close_avg:
-                    symbol_df.loc[symbol_df.index[-1], 'stop_loss_out_signal'] = 'stop_loss_long'
-                    symbol_df.loc[symbol_df.index[-1], 'trading_action'] = 'sell_previous_long_position'
+                    symbol_df.loc[symbol_df.index[-1], 'position'] = 'out'
+                    symbol_df.loc[symbol_df.index[-1], 'close_signal_type'] = 'close_AVG'
+                else:
+                    symbol_df.loc[symbol_df.index[-1], 'position'] = previous_position
             else:
                 if symbol_df.loc[symbol_df.index[-1], 'c'] <= current_close_avg:
-                    symbol_df.loc[symbol_df.index[-1], 'stop_loss_out_signal'] = 'stop_loss_long'
-                    symbol_df.loc[symbol_df.index[-1], 'trading_action'] = 'sell_previous_long_position'
+                    symbol_df.loc[symbol_df.index[-1], 'position'] = 'out'
+                    symbol_df.loc[symbol_df.index[-1], 'close_signal_type'] = 'close_AVG'
+                else:
+                    symbol_df.loc[symbol_df.index[-1], 'position'] = previous_position
                 
-            symbol_df.loc[symbol_df.index[-1], 'position'] = 'out'
             return symbol_df
         else:
             symbol_df.loc[symbol_df.index[-1], 'position'] = previous_position
@@ -195,23 +219,27 @@ class TradingAlgorithmWithStopLossPrevPrice():
 
     def close_signal_atr(self, symbol_df: pd.DataFrame, symbol_dict: dict, rsi: dict, window_size: int, weighted: bool, previous_position: str):
         if (symbol_df.loc[symbol_df.index[-1], 'c'] < symbol_df.loc[symbol_df.index[-2], 'o']):
-            current_high = symbol_df.iloc[-1]['h']
-            current_low = symbol_df.iloc[-1]['l']
-            previous_close = symbol_df.iloc[-2]['c']
-            
-            current_range = max([current_high-current_low, abs(current_high-previous_close), abs(current_low-previous_close)])
-            symbol_df.iloc[-1, symbol_df.columns.get_loc('current_range')] = current_range
             if weighted:
                 symbol_df['atr_short'] = symbol_df['current_range'].ewm(span=window_size, adjust=False).mean()
             else:
                 symbol_df['atr_short'] = symbol_df['current_range'].rolling(window=window_size, center=False).mean()
             
-            if symbol_df.loc[symbol_df.index[-2], 'o']-symbol_df.loc[symbol_df.index[-1], 'c'] > symbol_df.loc[symbol_df.index[-1], 'atr_short']:
-                symbol_df.loc[symbol_df.index[-1], 'stop_loss_out_signal'] = 'stop_loss_long'
-                symbol_df.loc[symbol_df.index[-1], 'trading_action'] = 'sell_previous_long_position'
-                symbol_dict['previous_long_buy_position_index'] = None
+            if rsi:
+                if symbol_df.iloc[-1]['rsi'] >= rsi['overbought']:
+                    symbol_df.loc[symbol_df.index[-1], 'position'] = 'out'
+                    symbol_df.loc[symbol_df.index[-1], 'close_signal_type'] = 'close_RSI'
+                elif symbol_df.loc[symbol_df.index[-2], 'o']-symbol_df.loc[symbol_df.index[-1], 'c'] > symbol_df.loc[symbol_df.index[-1], 'atr_short']:
+                    symbol_df.loc[symbol_df.index[-1], 'position'] = 'out'
+                    symbol_df.loc[symbol_df.index[-1], 'close_signal_type'] = 'close_ATR'
+                else:
+                    symbol_df.loc[symbol_df.index[-1], 'position'] = previous_position
+            else:
+                if symbol_df.loc[symbol_df.index[-2], 'o']-symbol_df.loc[symbol_df.index[-1], 'c'] > symbol_df.loc[symbol_df.index[-1], 'atr_short']:
+                    symbol_df.loc[symbol_df.index[-1], 'position'] = 'out'
+                    symbol_df.loc[symbol_df.index[-1], 'close_signal_type'] = 'close_ATR'
+                else:
+                    symbol_df.loc[symbol_df.index[-1], 'position'] = previous_position
         
-            symbol_df.loc[symbol_df.index[-1], 'position'] = 'out'
             return symbol_df
         else:
             symbol_df.loc[symbol_df.index[-1], 'position'] = previous_position

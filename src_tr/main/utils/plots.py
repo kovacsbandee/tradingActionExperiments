@@ -60,6 +60,8 @@ def daily_time_series_charts(symbol_dict,
                                  mode='lines',
                                  marker=dict(color='blue'),
                                  connectgaps=True), row=1, col=1)
+        fig.update_yaxes(title = 'Capital', title_font=dict(color='blue'), secondary_y=False, row=1, col=1)
+
         
         #2 Price data chart
         fig.add_trace(go.Candlestick(x=time_dimension,
@@ -87,6 +89,7 @@ def daily_time_series_charts(symbol_dict,
                             mode='lines',
                             marker={'color': 'black'},
                             connectgaps=True), row=4, col=1)
+        fig.update_yaxes(title = 'RSI', title_font=dict(color='black'), secondary_y=False, row=4, col=1)
         
         #4 algo indicators
         if epsilon > 0.0:
@@ -143,24 +146,42 @@ def daily_time_series_charts(symbol_dict,
                                  mode='lines',
                                  marker={'color': 'chocolate'},
                                  connectgaps=True), row=5, col=1)
+            fig.update_yaxes(title = 'MACD', title_font=dict(color='blue'), secondary_y=False, row=5, col=1)
+            
+        #1 entry/close types
+        fig.add_trace(go.Scatter(x=plot_df.index,
+                                 y=plot_df['entry_signal_type'],
+                                 mode='markers',
+                                 name='entry type',
+                                 hovertext=plot_df['entry_signal_type'],
+                                 marker_color='green',
+                                 marker_size=6), row=6, col=1)
+        fig.add_trace(go.Scatter(x=plot_df.index,
+                                 y=plot_df['close_signal_type'],
+                                 mode='markers',
+                                 name='close type',
+                                 hovertext=plot_df['close_signal_type'],
+                                 marker_color='red',
+                                 marker_size=6), row=6, col=1)
+        fig.update_yaxes(title = 'Entry/close types', title_font=dict(color='green'), secondary_y=False, row=6, col=1)
             
         #5 Number of transactions, etc.
-        fig.add_trace(go.Bar(x=time_dimension,
-                             y=plot_df['v'],
-                             showlegend=False,
-                             hovertext='volume',
-                             marker={'color': 'blue'}),
-                      secondary_y=False, row=6, col=1)
-        fig.update_yaxes(title='volume', title_font=dict(color='blue'), secondary_y=False, row=6, col=1)
-        
-        if 'n' in plot_df.columns:
-            fig.add_trace(go.Bar(x=time_dimension,
-                                 y=plot_df['n'],
-                                 hovertext='number of transactions',
-                                 showlegend=False,
-                                 marker={'color': 'red'}),
-                          secondary_y=True, row=6, col=1)
-            fig.update_yaxes(title = 'number of transactions', title_font=dict(color='red'), autorange = 'reversed', secondary_y=True, row=6, col=1)
+        #fig.add_trace(go.Bar(x=time_dimension,
+        #                     y=plot_df['v'],
+        #                     showlegend=False,
+        #                     hovertext='volume',
+        #                     marker={'color': 'blue'}),
+        #              secondary_y=False, row=6, col=1)
+        #fig.update_yaxes(title='volume', title_font=dict(color='blue'), secondary_y=False, row=6, col=1)
+        #
+        #if 'n' in plot_df.columns:
+        #    fig.add_trace(go.Bar(x=time_dimension,
+        #                         y=plot_df['n'],
+        #                         hovertext='number of transactions',
+        #                         showlegend=False,
+        #                         marker={'color': 'red'}),
+        #                  secondary_y=True, row=6, col=1)
+        #    fig.update_yaxes(title = 'number of transactions', title_font=dict(color='red'), autorange = 'reversed', secondary_y=True, row=6, col=1)
         
         fig.update_xaxes(showticklabels=True)
         fig.update_layout(title=f'{symbol} {date}.', title_font=dict(size=18), xaxis_rangeslider_visible=False, height=1500)

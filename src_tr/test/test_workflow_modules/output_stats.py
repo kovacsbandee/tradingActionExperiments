@@ -19,16 +19,18 @@ def _convert_to_float(symbol_daily_output_list):
         e['n'] = float(e['n'])
         e['current_capital'] = float(e['current_capital']) if e['current_capital'] != '' else None
         e['rsi'] = float(e['rsi']) if e['rsi'] != '' else None
-        e['open_small_indicator'] = float(e['open_small_indicator']) if e['open_small_indicator'] != '' else None
-        e['open_big_indicator'] = float(e['open_big_indicator']) if e['open_big_indicator'] != '' else None
+        if 'open_small_indicator' in e and 'open_big_indicator' in e:
+            e['open_small_indicator'] = float(e['open_small_indicator']) if e['open_small_indicator'] != '' else None
+            e['open_big_indicator'] = float(e['open_big_indicator']) if e['open_big_indicator'] != '' else None
         e['open_norm'] = float(e['open_norm']) if e['open_norm'] != '' else None
         e['gain_loss'] = float(e['gain_loss']) if e['gain_loss'] != '' else None
         e['gain'] = float(e['gain']) if e['gain'] != '' else None
         e['loss'] = float(e['loss']) if e['loss'] != '' else None
         e['avg_gain'] = float(e['avg_gain']) if e['avg_gain'] != '' else None
         e['avg_loss'] = float(e['avg_loss']) if e['avg_loss'] != '' else None
-        e['current_range'] = float(e['current_range']) if e['current_range'] != '' else None
-        e['atr_short'] = float(e['atr_short']) if e['atr_short'] != '' else None
+        if 'current_range' in e and 'atr_short' in e:
+            e['current_range'] = float(e['current_range']) if e['current_range'] != '' else None
+            e['atr_short'] = float(e['atr_short']) if e['atr_short'] != '' else None
         converted_list.append(e)
     return converted_list
 
@@ -69,8 +71,8 @@ def _calculate_symbol_stats(symbol_data_list):
     long_position_length_min = min(longs)
     
     position_close_count = len([i["trading_action"] for i in symbol_data_list if i["trading_action"] == "sell_previous_long_position"])
-    stop_loss_count = len([i["stop_loss_out_signal"] for i in symbol_data_list if i["stop_loss_out_signal"] == "stop_loss_long"])
-    stop_loss_percentage = round(stop_loss_count/position_close_count*100, 2)
+    #stop_loss_count = len([i["close_signal_type"] for i in symbol_data_list if i["stop_loss_out_signal"] == "stop_loss_long"])
+    #stop_loss_percentage = round(stop_loss_count/position_close_count*100, 2)
     
     rsi_avg = sum([i["rsi"] for i in symbol_data_list if i["rsi"] is not None]) / len(symbol_data_list)
     
@@ -85,7 +87,7 @@ def _calculate_symbol_stats(symbol_data_list):
         "long_position_length_max" : long_position_length_max,
         "long_position_length_min" : long_position_length_min,
         "position_close_count" : position_close_count,
-        "stop_loss_percentage" : stop_loss_percentage,
+        #"stop_loss_percentage" : stop_loss_percentage,
         "rsi_avg" : rsi_avg
     }
 
