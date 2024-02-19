@@ -6,15 +6,16 @@ import traceback
 import uuid
 
 from src_tr.test.test_workflow_modules.TestTradingClientDivided import TestTradingClientDivided
-from src_tr.main.utils.test_utils import run_test_experiment
+from src_tr.test.test_workflow_modules.test_utils import run_test_experiment
 
-from src_tr.main.utils.test_utils import get_polygon_local_db_symbols, get_polygon_trading_day_data
+from src_tr.test.test_workflow_modules.test_utils import get_polygon_local_db_symbols, get_polygon_trading_day_data
 
 from src_tr.main.utils.DataManager import DataManager
-from src_tr.main.scanners.PreMarketScannerPolygonDB import PreMarketScannerPolygonDB
+from src_tr.main.utils.data_loaders import load_MACD_days_polygon_data, download_scanning_day_alpaca_data
+from src_tr.main.scanners.PreMarketScannerMain import PreMarketScannerMain
 
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
-from src_tr.main.trading_algorithms.TradingAlgorithmWithStopLossPrevPrice import TradingAlgorithmWithStopLossPrevPrice
+from src_tr.main.trading_algorithms.TradingAlgorithmMain import TradingAlgorithmMain
 from src_tr.test.test_workflow_modules.TestTradingManagerDivided import TestTradingManagerDivided
 from src_tr.main.data_sources.run_params import param_dict
 
@@ -83,17 +84,22 @@ def run():
                 data_manager.save_params(params=run_parameters)
                 daily_dir_name = f"{run_id}/{data_manager.daily_dir_name}"
 
-                scanner = PreMarketScannerPolygonDB(run_id=run_id,
-                                            daily_dir_name=daily_dir_name,
-                                            trading_day=trading_day,
-                                            scanning_day=scanning_day,
-                                            scanner_params=scanner_params,
-                                            macd_date_list=macd_date_list,
-                                            symbols=input_symbols,
-                                            lower_price_boundary=run_parameters['lower_price_boundary'],
-                                            upper_price_boundary=run_parameters['upper_price_boundary'],
-                                            price_range_perc_cond=run_parameters['price_range_perc_cond'],
-                                            avg_volume_cond=run_parameters['avg_volume_cond'])
+                #data_loader_func = load_MACD_days_polygon_data
+                data_loader_func = download_scanning_day_alpaca_data
+                scanner = PreMarketScannerMain(run_id=run_id,
+                                               data_loader_func=data_loader_func,
+                                               key=ALPACA_KEY,
+                                               secret_key=ALPACA_SECRET_KEY,
+                                               daily_dir_name=daily_dir_name,
+                                               trading_day=trading_day,
+                                               scanning_day=scanning_day,
+                                               scanner_params=scanner_params,
+                                               macd_date_list=None,
+                                               symbols=input_symbols,
+                                               lower_price_boundary=run_parameters['lower_price_boundary'],
+                                               upper_price_boundary=run_parameters['upper_price_boundary'],
+                                               price_range_perc_cond=run_parameters['price_range_perc_cond'],
+                                               avg_volume_cond=run_parameters['avg_volume_cond'])
 
                 recommended_symbol_list: List[dict] = scanner.recommend_premarket_watchlist()
 
@@ -110,7 +116,7 @@ def run():
                 
                 data_generator = PriceDataGeneratorMain(recommended_symbol_list=recommended_symbol_list)
                         
-                trading_algorithm = TradingAlgorithmWithStopLossPrevPrice(trading_day=trading_day, daily_dir_name=daily_dir_name)
+                trading_algorithm = TradingAlgorithmMain(trading_day=trading_day, daily_dir_name=daily_dir_name)
                 
                 trading_manager = TestTradingManagerDivided(data_generator=data_generator,
                                                     trading_algorithm=trading_algorithm,

@@ -7,52 +7,43 @@ from joblib import Parallel, delayed
 import logging
 import traceback
 
-from src_tr.main.scanners.ScannerBase import ScannerBase
 from config import config
 
 
-class PreMarketScannerPolygonDB(ScannerBase):
+class PreMarketScannerMain():
 
     def __init__(self,
+                 data_loader_func,
+                 key,
+                 secret_key,
                  trading_day,
                  scanning_day,
-                 scanner_params,
-                 macd_date_list,
                  symbols,
+                 scanner_params,
                  run_id,
                  daily_dir_name,
-                 lower_price_boundary=10,
-                 upper_price_boundary=250,
-                 price_range_perc_cond=10,
-                 avg_volume_cond=25000):
-        super().__init__(trading_day, scanning_day, symbols)
+                 lower_price_boundary=None,
+                 upper_price_boundary=None,
+                 price_range_perc_cond=None,
+                 avg_volume_cond=None,
+                 macd_date_list=None):
+        self.data_loader_func = data_loader_func
+        self.key = key
+        self.secret_key = secret_key
+        self.trading_day = trading_day
+        self.scanning_day = scanning_day
+        self.symbols = symbols
         self.scanner_params = scanner_params
         self.macd_date_list = macd_date_list
         self.run_id = run_id
         self.daily_dir_name = daily_dir_name
+        self.recommended_symbols = None
+        self.pre_market_stats = None
+        #TODO: kuka?
         self.lower_price_boundary = lower_price_boundary
         self.upper_price_boundary = upper_price_boundary
         self.price_range_perc_cond = price_range_perc_cond
         self.avg_volume_cond = avg_volume_cond
-
-    def download_daily_symbol_history(self, symbol: str):
-        try:
-            symbol_history_df = None
-            for date in self.macd_date_list:
-                date = date.strftime('%Y_%m_%d')
-                daily_df = pd.read_csv(
-                    os.path.join(config["resource_paths"]["polygon"]["daily_data_output_folder"], date, f"{symbol}.csv"))
-                daily_df.columns = ["timestamp","open","close","volume","high","low","volume_weighted_avg_price","transactions"]
-                if symbol_history_df is None:
-                    symbol_history_df = daily_df
-                elif isinstance(symbol_history_df, pd.DataFrame):
-                    symbol_history_df = pd.concat([symbol_history_df, daily_df], ignore_index=True)
-            timestamps_conv = pd.to_datetime(symbol_history_df['timestamp'], format="%Y-%m-%d %H:%M:%S%z", utc=True)
-            symbol_history_df['date'] = timestamps_conv.dt.date
-            return symbol_history_df
-        except:
-            traceback.print_exc()
-            return None
         
     def _assess_uptrend(self, macd_days_symbol_history):
         macd_ema_short = self.scanner_params["windows"]["short"]
@@ -84,12 +75,27 @@ class PreMarketScannerPolygonDB(ScannerBase):
             
     def get_pre_market_stats(self, symbol: str) -> dict:
         try:
-            macd_days_symbol_history = self.download_daily_symbol_history(symbol=symbol)
-            if macd_days_symbol_history is not None and not macd_days_symbol_history.empty:
-                scanning_day_symbol_history = macd_days_symbol_history[macd_days_symbol_history['date'] == self.scanning_day]
+            symbol_history: pd.DataFrame = None
+            scanning_day_symbol_history: pd.DataFrame = None
+            #possible_uptrend_for_trading_day = None
+            try:
+                if self.macd_date_list is not None and len(self.macd_date_list > 0):
+                    if self.data_loader_func.__name__ == "load_MACD_days_polygon_data":
+                        symbol_history = self.data_loader_func(symbol, self.macd_date_list)
+                    if symbol_history is not None and not symbol_history.empty:
+                        scanning_day_symbol_history = symbol_history[symbol_history['date'] == self.scanning_day]
+                elif self.macd_date_list is None:
+                    if self.data_loader_func.__name__ == "download_scanning_day_alpaca_data":
+                        symbol_history = self.data_loader_func(symbol, self.key, self.secret_key, 
+                                                            self.scanning_day, self.trading_day)
+                        scanning_day_symbol_history = symbol_history
+            except:
+                traceback.print_exc()
+                    
+            if symbol_history is not None and not symbol_history.empty:
 
                 # MACD
-                is_uptrend = self._assess_uptrend(macd_days_symbol_history=macd_days_symbol_history)
+                #possible_uptrend_for_trading_day = self._assess_uptrend(macd_days_symbol_history=symbol_history)
 
                 # volatility+volume/transactions
                 scanning_day_symbol_history["percentage_change"] = \
@@ -129,7 +135,7 @@ class PreMarketScannerPolygonDB(ScannerBase):
 
                 return {
                     'symbol': symbol,
-                    'is_uptrend' : is_uptrend,
+                    #'is_uptrend' : possible_uptrend_for_trading_day,
                     'volatility' : volatility,
                     'avg_transaction' : avg_transaction,
                     'avg_open': avg_open,
@@ -181,14 +187,14 @@ class PreMarketScannerPolygonDB(ScannerBase):
 
     def recommend_premarket_watchlist(self) -> List[dict]:
         self.calculate_filtering_stats()
-        ## NOTE: új
+        self.recommended_symbols = self.pre_market_stats.sort_values(by=['avg_transaction'], ascending=False)
+        self.recommended_symbols = self.recommended_symbols.head(20)
+
         ##self.pre_market_stats['volatility_rank'] = self.pre_market_stats['volatility'].rank(ascending=False)
         ##self.pre_market_stats['transactions_rank'] = self.pre_market_stats['avg_transaction'].rank(ascending=False)
         ##self.pre_market_stats['combined_rank'] = self.pre_market_stats['volatility_rank'] + self.pre_market_stats['transactions_rank']
-        self.recommended_symbols = self.pre_market_stats.sort_values(by=['avg_transaction'], ascending=False)
         #self.recommended_symbols = self.recommended_symbols.sort_values(by=['avg_volume'], ascending=False)
         #self.recommended_symbols = self.recommended_symbols.sort_values(by=['volatility'], ascending=False)
-        self.recommended_symbols = self.recommended_symbols.head(1)
         #self.recommended_symbols = self.pre_market_stats[(self.pre_market_stats["is_uptrend"] == True)]
         
         #self.recommended_symbols = self.pre_market_stats.sort_values(by=['avg_transaction'], ascending=False)

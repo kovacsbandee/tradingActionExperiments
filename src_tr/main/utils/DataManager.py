@@ -18,6 +18,7 @@ class DataManager:
         self.scanning_day = scanning_day
         self.run_id = run_id
         self.daily_dir_name = '_'.join([run_id, trading_day.strftime('%Y_%m_%d')])
+        self.recommended_symbol_list = None
 
     def create_daily_dirs(self):
         '''

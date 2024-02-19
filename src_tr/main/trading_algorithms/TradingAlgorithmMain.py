@@ -3,7 +3,7 @@ import numpy as np
 
 from config import config
 
-class TradingAlgorithmWithStopLossPrevPrice():
+class TradingAlgorithmMain():
     def __init__(self,
                  trading_day,
                  daily_dir_name):

@@ -1,7 +1,6 @@
 import json
 import pandas as pd
 
-# TODO: emberi header-ök
 
 def string_to_dict_list(input_string):
     try:

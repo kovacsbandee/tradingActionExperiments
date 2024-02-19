@@ -7,14 +7,14 @@ import pandas as pd
 import traceback
 
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
-from src_tr.main.trading_algorithms.TradingAlgorithmWithStopLossPrevPrice import TradingAlgorithmWithStopLossPrevPrice
-from src_tr.main.helpers.converter import string_to_dict_list
+from src_tr.main.trading_algorithms.TradingAlgorithmMain import TradingAlgorithmMain
+from src_tr.main.utils.converter import string_to_dict_list
 
 class TradingManagerMain():
 
     def __init__(self,
                 data_generator: PriceDataGeneratorMain,
-                trading_algorithm: TradingAlgorithmWithStopLossPrevPrice,
+                trading_algorithm: TradingAlgorithmMain,
                 algo_params: dict,
                 trading_client: TradingClient,
                 api_key: str,
