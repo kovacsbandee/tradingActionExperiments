@@ -1,5 +1,5 @@
 from typing import List
-from datetime import date
+from datetime import datetime, date
 import os
 import traceback
 import pandas as pd
@@ -31,10 +31,8 @@ def load_MACD_days_polygon_data(symbol: str, macd_date_list: List[date]) -> pd.D
 def download_scanning_day_alpaca_data(symbol: str, alpaca_key: str, alpaca_secret_key: str,
                                       start: date, end: date) -> pd.DataFrame:
     client = StockHistoricalDataClient(alpaca_key, alpaca_secret_key)
-
     symbol = [symbol]
     timeframe = TimeFrame(amount=1, unit=TimeFrameUnit.Minute)
-
     bars_request = StockBarsRequest(
         start=start,
         symbol_or_symbols=symbol,
@@ -42,20 +40,23 @@ def download_scanning_day_alpaca_data(symbol: str, alpaca_key: str, alpaca_secre
         end=end
         #limit=12
     )
-    
     latest_bars = client.get_stock_bars(bars_request)
     bar_df = convert_alpaca_data(latest_bars.df)
-    bar_df.to_csv('latest_bars.csv')
+    print(f"Downloaded {bar_df.loc[bar_df.index[-1], 'symbol']} at {datetime.now()}" )
     return bar_df
 
 def convert_alpaca_data(latest_bars: pd.DataFrame):
     df = latest_bars.reset_index()
+    """
+    TODO:
+      File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/pandas/core/frame.py", line 5870, in set_index
+        raise KeyError(f"None of {missing} are in the columns")
+        KeyError: "None of ['symbol', 'timestamp'] are in the columns"
+    """
     timestamps_conv = pd.to_datetime(df['timestamp'], format="%Y-%m-%d %H:%M:%S%z", utc=True)
     df['date'] = timestamps_conv.dt.date
-
     df = df.rename(columns={
         'trade_count': 'transactions',
         'vwap': 'volume_weighted_avg_price'
     })
-
     return df

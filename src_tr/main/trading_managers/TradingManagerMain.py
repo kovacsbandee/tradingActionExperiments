@@ -39,7 +39,6 @@ class TradingManagerMain():
                         self.execute_all()
                         self.minute_bars = []
                         print('Data available, execute() called')
-
             else:
                 print('Authentication and data initialization')
         except:
@@ -63,8 +62,6 @@ class TradingManagerMain():
     def execute_all(self):
         try:
             self.data_generator.update_symbol_df(minute_bars=self.minute_bars)
-            
-            # apply trading algorithm on all symbols
             self.apply_trading_algorithm()
         except:
             traceback.print_exc()
@@ -72,6 +69,12 @@ class TradingManagerMain():
     def get_current_capital(self):
         return float(self.trading_client.get_account().cash)
     
+    def _normalize_open_price(self, value_dict):
+        value_dict['daily_price_data_df'].loc[value_dict['daily_price_data_df'].index[-1], 'open_norm'] = \
+                (value_dict['daily_price_data_df'].loc[value_dict['daily_price_data_df'].index[-1], 'o']\
+                    - value_dict['prev_day_data']['avg_open']) / value_dict['prev_day_data']['std_open']
+        return value_dict
+                
     def get_previous_position(self, symbol):
         positions = self.trading_client.get_all_positions()
         if positions is not None and len(positions) > 0:
@@ -85,9 +88,8 @@ class TradingManagerMain():
         
     def apply_trading_algorithm(self):
         for symbol, value_dict in self.data_generator.symbol_dict.items():
-            # normalize open price
-            value_dict['daily_price_data_df'].loc[value_dict['daily_price_data_df'].index[-1], 'open_norm'] = \
-            (value_dict['daily_price_data_df'].loc[value_dict['daily_price_data_df'].index[-1], 'o'] - value_dict['prev_day_data']['avg_open']) / value_dict['prev_day_data']['std_open']
+            if self.algo_params["entry_signal"] == "default":
+                value_dict = self._normalize_open_price(value_dict)
             
             symbol_df_length = len(value_dict['daily_price_data_df'])
             ma_long_value = self.algo_params["entry_windows"]["long"]
@@ -95,14 +97,15 @@ class TradingManagerMain():
                 current_capital = self.get_current_capital()
                 self.trading_algorithm.update_capital_amount(current_capital)
                 previous_position = self.get_previous_position(symbol)
-                self.data_generator.symbol_dict[symbol] = self.trading_algorithm.apply_long_trading_algorithm(previous_position=previous_position, 
-                                                                                                symbol=symbol,  
-                                                                                                symbol_dict=value_dict,
-                                                                                                algo_params=self.algo_params)
-                current_df: pd.DataFrame = value_dict['daily_price_data_df']
+                self.data_generator.symbol_dict[symbol] = \
+                    self.trading_algorithm.apply_long_trading_algorithm(previous_position=previous_position, 
+                                                                        symbol=symbol,  
+                                                                        symbol_dict=value_dict,
+                                                                        algo_params=self.algo_params)
+                current_df = value_dict['daily_price_data_df']
                 self.execute_trading_action(symbol, current_df)
             else:
-                print(f"Not enough data to apply trading_algorithm. Symbol: {symbol}")
+                print(f"Collecting data...[symbol: {symbol}, remaining: {ma_long_value-symbol_df_length}min]")
         
     def execute_trading_action(self, symbol, current_df):
         trading_action = current_df.iloc[-1]['trading_action']
@@ -134,7 +137,7 @@ class TradingManagerMain():
                             symbol=symbol,
                             qty=quantity,
                             side=OrderSide.BUY,
-                            time_in_force=TimeInForce.DAY
+                            time_in_force=TimeInForce.IOC
                             )
             self.trading_client.submit_order(order_data=market_order_data)
             self.data_generator.decrease_out_positions()
@@ -146,7 +149,7 @@ class TradingManagerMain():
         try:
             market_order_data = MarketOrderRequest(
                             symbol=symbol,
-                            qty=round(quantity), #TODO: kell kerekítés?
+                            qty=round(quantity),
                             side=OrderSide.SELL,
                             time_in_force=TimeInForce.DAY
                             )
@@ -171,7 +174,6 @@ class TradingManagerMain():
         print(f"Pong received: {pong_payload}")
 
     def on_close(self, ws, close_status_code, close_msg):
-        # Ide bele kell tenni a daily_price_data_df ábrázolását!
         print(f"Connection closed with status code {close_status_code}: {close_msg}")
 
     def on_error(self, ws, error):

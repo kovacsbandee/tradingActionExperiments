@@ -3,6 +3,7 @@ import pandas as pd
 import json
 import shutil
 from src_tr.main.utils.plots import plot_daily_statistics_correlation_matrix, plot_daily_statistics, daily_time_series_charts
+import logging
 
 from config import config
 
@@ -21,35 +22,26 @@ class DataManager:
         self.recommended_symbol_list = None
 
     def create_daily_dirs(self):
-        '''
-        ebben a mappában lesz a paraméter json
-        a pre_market_stats
-        a post_trading_stats
-        és a symbol_df-ből a program futásának végén generált csv-ket és plot-okat tartalmazó mappa
-        '''
         if self.run_id not in os.listdir(config['output_stats']):
             os.mkdir(f"{config['output_stats']}/{self.run_id}")
             
         daily_symbol_dir_name = 'daily_files'
         if self.daily_dir_name in os.listdir(f"{config['output_stats']}/{self.run_id}"):
             shutil.rmtree(f"{config['output_stats']}/{self.run_id}/{self.daily_dir_name}")
-            print('Previous directory was deleted and a new one was created.')
+            logging.info('Previous directory was deleted and a new one was created.')
 
         os.mkdir(f"{config['output_stats']}/{self.run_id}/{self.daily_dir_name}")
         os.mkdir(f"{config['output_stats']}/{self.run_id}/{self.daily_dir_name}/{daily_symbol_dir_name}")
         os.mkdir(f"{config['output_stats']}/{self.run_id}/{self.daily_dir_name}/{daily_symbol_dir_name}/csvs")
         os.mkdir(f"{config['output_stats']}/{self.run_id}/{self.daily_dir_name}/{daily_symbol_dir_name}/plots")
         os.mkdir(f"{config['output_stats']}/{self.run_id}/{self.daily_dir_name}/{daily_symbol_dir_name}/scanner_stats")
-        print(f"daily data store was created with the name: {self.daily_dir_name}")
+        logging.info(f"daily data store was created with the name: {self.daily_dir_name}")
 
     def save_params(self, params):
-        '''
-        Saves the parameters describing the run as as json.
-        '''
         self.run_parameters = params
         with open(f"{config['output_stats']}/{self.run_id}/{self.daily_dir_name}/run_parameters.json", 'w') as fp:
             json.dump(self.run_parameters, fp)
-        print("run_parameters was successfully saved")
+        logging.info("run_parameters was successfully saved")
 
     def save_daily_statistics_and_aggregated_plots(self, recommended_symbols, symbol_dict):
         daily_stats_for_all_symbols = list()
@@ -63,7 +55,6 @@ class DataManager:
             daily_stats['max_capital_td'] = daily_df['current_capital'].max()
             daily_stats['max_per_input_cap_ratio_td'] = daily_df['current_capital'].max() / self.run_parameters['init_cash']
             daily_stats['in_position_percent_td'] = (len(daily_df[daily_df['position'] != 'out']) / len(daily_df)) * 100
-            # az alábbi néhány szerepel a scanner statisztikák között is
             daily_stats['bear_candle_ratio_td'] = len(daily_df[daily_df['c'] < daily_df['o']]) / len(daily_df)
             daily_stats['bull_candle_ratio_td'] = len(daily_df[daily_df['c'] > daily_df['o']]) / len(daily_df)
             daily_stats['daily_high_max_td'] = daily_df['h'].max()
@@ -78,7 +69,7 @@ class DataManager:
         plot_daily_statistics(plot_df=self.total_recommended_symbol_statistics, db_path=f"{config['output_stats']}/{self.run_id}", daily_dir_name=self.daily_dir_name)
         plot_daily_statistics_correlation_matrix(plot_df=self.total_recommended_symbol_statistics, db_path=f"{config['output_stats']}/{self.run_id}", daily_dir_name=self.daily_dir_name)
         self.total_recommended_symbol_statistics.to_csv(f"{config['output_stats']}/{self.run_id}/{self.daily_dir_name}/recommended_symbols_sd_td_market_stats.csv", index=False)
-        print("Statistics, and daily statistics plots are successfully saved.")
+        logging.info("Statistics, and daily statistics plots are successfully saved.")
 
     def save_daily_charts(self, symbol_dict):
         date = self.trading_day.strftime('%Y_%m_%d')
@@ -88,4 +79,4 @@ class DataManager:
                                  mode=self.mode,
                                  db_path = f"{config['output_stats']}/{self.run_id}",
                                  daily_dir_name = self.daily_dir_name)
-        print('Daily charts were written out successfully.')
+        logging.info('Daily charts were written out successfully.')

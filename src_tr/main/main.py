@@ -93,9 +93,9 @@ ws = websocket.WebSocketApp(url=SOCKET_URL,
                             on_open=trading_manager.on_open,
                             on_message=trading_manager.handle_message,
                             on_close=trading_manager.on_close,
-                            on_error=trading_manager.on_error,
-                            on_ping=trading_manager.on_ping,
-                            on_pong=trading_manager.on_pong)
+                            on_error=trading_manager.on_error)
+                            #on_ping=trading_manager.on_ping,
+                            #on_pong=trading_manager.on_pong)
 
 
 if __name__ == "__main__":

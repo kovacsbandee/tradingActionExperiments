@@ -3,17 +3,13 @@ from typing import List
 from dotenv import load_dotenv
 from datetime import date
 import traceback
-import uuid
 
 from src_tr.test.test_workflow_modules.TestTradingClientDivided import TestTradingClientDivided
 from src_tr.test.test_workflow_modules.test_utils import run_test_experiment
-
 from src_tr.test.test_workflow_modules.test_utils import get_polygon_local_db_symbols, get_polygon_trading_day_data
-
 from src_tr.main.utils.DataManager import DataManager
-from src_tr.main.utils.data_loaders import load_MACD_days_polygon_data, download_scanning_day_alpaca_data
+from src_tr.main.utils.data_loaders import load_MACD_days_polygon_data
 from src_tr.main.scanners.PreMarketScannerMain import PreMarketScannerMain
-
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
 from src_tr.main.trading_algorithms.TradingAlgorithmMain import TradingAlgorithmMain
 from src_tr.test.test_workflow_modules.TestTradingManagerDivided import TestTradingManagerDivided
@@ -27,18 +23,10 @@ ALPACA_KEY = os.environ["ALPACA_KEY"]
 ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
 DB_PATH = config["db_path"]
 
-#RUN_ID = 'defaultAlgo_weighted_malong10_mashort4'
-#RUN_ID = uuid.uuid1()
-#RUN_ID.hex
-
 MODE = 'POLYGON_LOCAL_DB'
 #if MODE == 'LOCAL_YF_DB':
 #    trading_dates, scanning_days = get_possible_local_yf_trading_days()
-    
 
-# range
-#trading_days = [trading_dates[35]]
-#scanning_days = [trading_dates[34]]
 def run():
     for id, params in param_dict.items():
         daily_folder_dates = os.listdir(config["resource_paths"]["polygon"]["daily_data_output_folder"])
@@ -84,17 +72,14 @@ def run():
                 data_manager.save_params(params=run_parameters)
                 daily_dir_name = f"{run_id}/{data_manager.daily_dir_name}"
 
-                #data_loader_func = load_MACD_days_polygon_data
-                data_loader_func = download_scanning_day_alpaca_data
+                data_loader_func = load_MACD_days_polygon_data
                 scanner = PreMarketScannerMain(run_id=run_id,
                                                data_loader_func=data_loader_func,
-                                               key=ALPACA_KEY,
-                                               secret_key=ALPACA_SECRET_KEY,
                                                daily_dir_name=daily_dir_name,
                                                trading_day=trading_day,
                                                scanning_day=scanning_day,
                                                scanner_params=scanner_params,
-                                               macd_date_list=None,
+                                               macd_date_list=macd_date_list,
                                                symbols=input_symbols,
                                                lower_price_boundary=run_parameters['lower_price_boundary'],
                                                upper_price_boundary=run_parameters['upper_price_boundary'],

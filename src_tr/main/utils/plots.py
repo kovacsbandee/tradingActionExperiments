@@ -20,7 +20,7 @@ def plot_daily_statistics_correlation_matrix(plot_df, db_path, daily_dir_name):
                                     z=corr_df))
     fig.write_html(f"{db_path}/{daily_dir_name}/daily_correlation_matrix.html")
 
-def get_marker_df(plot_df, db_path, daily_dir_name, symbol, date):
+def get_marker_df(plot_df):
     plot_df = plot_df.loc[(plot_df['trading_action'] != '')]
     marker_df = plot_df[plot_df['trading_action'] != 'no_action'].copy()
     marker_df['position_symbols'] = np.nan
@@ -71,7 +71,7 @@ def daily_time_series_charts(symbol_dict,
                                      close=plot_df['c'],
                                      name=symbol), row=2, col=1)
         
-        marker_df = get_marker_df(plot_df, db_path=db_path, daily_dir_name=daily_dir_name, symbol=symbol, date=date)
+        marker_df = get_marker_df(plot_df)
         
         fig.add_trace(go.Scatter(x=marker_df.index,
                                  y=marker_df['o'],

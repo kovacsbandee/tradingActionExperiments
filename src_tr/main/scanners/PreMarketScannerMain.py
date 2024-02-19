@@ -14,22 +14,20 @@ class PreMarketScannerMain():
 
     def __init__(self,
                  data_loader_func,
-                 key,
-                 secret_key,
                  trading_day,
                  scanning_day,
                  symbols,
                  scanner_params,
                  run_id,
                  daily_dir_name,
+                 key=None,
+                 secret_key=None,
                  lower_price_boundary=None,
                  upper_price_boundary=None,
                  price_range_perc_cond=None,
                  avg_volume_cond=None,
                  macd_date_list=None):
         self.data_loader_func = data_loader_func
-        self.key = key
-        self.secret_key = secret_key
         self.trading_day = trading_day
         self.scanning_day = scanning_day
         self.symbols = symbols
@@ -37,6 +35,8 @@ class PreMarketScannerMain():
         self.macd_date_list = macd_date_list
         self.run_id = run_id
         self.daily_dir_name = daily_dir_name
+        self.key = key
+        self.secret_key = secret_key
         self.recommended_symbols = None
         self.pre_market_stats = None
         #TODO: kuka?
@@ -79,7 +79,7 @@ class PreMarketScannerMain():
             scanning_day_symbol_history: pd.DataFrame = None
             #possible_uptrend_for_trading_day = None
             try:
-                if self.macd_date_list is not None and len(self.macd_date_list > 0):
+                if self.macd_date_list is not None and len(self.macd_date_list) > 0:
                     if self.data_loader_func.__name__ == "load_MACD_days_polygon_data":
                         symbol_history = self.data_loader_func(symbol, self.macd_date_list)
                     if symbol_history is not None and not symbol_history.empty:
@@ -188,7 +188,7 @@ class PreMarketScannerMain():
     def recommend_premarket_watchlist(self) -> List[dict]:
         self.calculate_filtering_stats()
         self.recommended_symbols = self.pre_market_stats.sort_values(by=['avg_transaction'], ascending=False)
-        self.recommended_symbols = self.recommended_symbols.head(20)
+        self.recommended_symbols = self.recommended_symbols.head(1)
 
         ##self.pre_market_stats['volatility_rank'] = self.pre_market_stats['volatility'].rank(ascending=False)
         ##self.pre_market_stats['transactions_rank'] = self.pre_market_stats['avg_transaction'].rank(ascending=False)
