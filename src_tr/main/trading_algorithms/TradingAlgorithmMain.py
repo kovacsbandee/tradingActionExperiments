@@ -169,7 +169,10 @@ class TradingAlgorithmMain():
             elif symbol_df.iloc[-2]['MACD'] < symbol_df.iloc[-2]['signal_line'] \
                 and symbol_df.iloc[-1]['MACD'] > symbol_df.iloc[-1]['signal_line']:
                 expected_position = 'long'
-                symbol_df.loc[symbol_df.index[-1], 'entry_signal_type'] = 'entry_MACD'
+                symbol_df.loc[symbol_df.index[-1], 'entry_signal_type'] = 'entry_MACD_cross'
+            elif symbol_df.iloc[-1]['MACD'] > symbol_df.iloc[-1]['signal_line']:
+                expected_position = 'long'
+                symbol_df.loc[symbol_df.index[-1], 'entry_signal_type'] = 'entry_MACD_above_signal'
             else:
                 if previous_position == 'long':
                     expected_position = 'long'
