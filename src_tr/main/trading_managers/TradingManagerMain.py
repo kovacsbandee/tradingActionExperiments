@@ -3,12 +3,10 @@ import websocket, json
 from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest
 from alpaca.trading.enums import OrderSide, TimeInForce
-import pandas as pd
 import traceback
 
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
 from src_tr.main.trading_algorithms.TradingAlgorithmMain import TradingAlgorithmMain
-from src_tr.main.utils.converter import string_to_dict_list
 
 class TradingManagerMain():
 
@@ -31,7 +29,7 @@ class TradingManagerMain():
     def handle_message(self, ws, message):
         try:
             print(f"New bar data received at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-            minute_bars = string_to_dict_list(message)
+            minute_bars = self._parse_json(message)
             if minute_bars[0]['T'] == 'b':
                 for item in minute_bars:
                     self.minute_bars.append(item)
@@ -43,6 +41,12 @@ class TradingManagerMain():
                 print('Authentication and data initialization')
         except:
             traceback.print_exc()
+            
+    def _parse_json(self, json_string):
+        try:
+            return json.loads(json_string)
+        except json.JSONDecodeError as e:
+            print(str(e))
 
     def on_open(self, ws: websocket.WebSocketApp):
         print(f"WebSocket connection opened on URL: {ws.url}")

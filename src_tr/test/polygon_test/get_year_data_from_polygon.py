@@ -1,7 +1,5 @@
 from typing import List
-import os
 import time
-from src_tr.main.utils.utils import get_nasdaq_symbols
 import pandas as pd
 import requests
 from requests.adapters import HTTPAdapter
@@ -9,12 +7,9 @@ from urllib3.util.retry import Retry
 import json
 import logging
 
-from config import config
 from src_tr.test.polygon_test.split_data_by_day import split_data_by_day
+from src_tr.main.data_sources.nasdaq_symbols import nasdaq_symbols
 
-SYMBOL_CSV_PATH = config["resource_paths"]["nasdaq_symbols_csv"]
-nasdaq_symbols = get_nasdaq_symbols(file_path=SYMBOL_CSV_PATH)
-nasdaq_symbols = nasdaq_symbols[194:] #AIM
 global_request_counter = 0
 
 def download_aggs(symbol: str, from_: str, to: str) -> List[dict]:

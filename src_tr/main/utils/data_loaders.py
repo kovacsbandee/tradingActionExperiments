@@ -41,22 +41,24 @@ def download_scanning_day_alpaca_data(symbol: str, alpaca_key: str, alpaca_secre
         #limit=12
     )
     latest_bars = client.get_stock_bars(bars_request)
-    bar_df = convert_alpaca_data(latest_bars.df)
-    print(f"Downloaded {bar_df.loc[bar_df.index[-1], 'symbol']} at {datetime.now()}" )
-    return bar_df
+    if latest_bars.data:
+        latest_bars = latest_bars.df
+        latest_bars = latest_bars.droplevel(level=0)
+        latest_bars.reset_index(inplace=True)
+        latest_bars['timestamp'] = pd.DatetimeIndex(pd.to_datetime(latest_bars['timestamp'], utc=True)).tz_convert('US/Eastern')
+        latest_bars['date'] = latest_bars['timestamp'].dt.date
+        latest_bars.set_index('timestamp', inplace=True)
+        latest_bars = latest_bars.rename(columns={
+            'trade_count': 'transactions',
+            'vwap': 'volume_weighted_avg_price'
+        })
+        start_time = datetime.strptime('09:30:00', '%H:%M:%S').time()
+        end_time = datetime.strptime('16:00:00', '%H:%M:%S').time()
+        latest_bars = latest_bars.between_time(start_time, end_time)
+        print(f"Downloaded {symbol} at {datetime.now()}" )
+        return latest_bars
+    else:
+        print(f"No data available for {symbol}")
+        return None
 
-def convert_alpaca_data(latest_bars: pd.DataFrame):
-    df = latest_bars.reset_index()
-    """
-    TODO:
-      File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/pandas/core/frame.py", line 5870, in set_index
-        raise KeyError(f"None of {missing} are in the columns")
-        KeyError: "None of ['symbol', 'timestamp'] are in the columns"
-    """
-    timestamps_conv = pd.to_datetime(df['timestamp'], format="%Y-%m-%d %H:%M:%S%z", utc=True)
-    df['date'] = timestamps_conv.dt.date
-    df = df.rename(columns={
-        'trade_count': 'transactions',
-        'vwap': 'volume_weighted_avg_price'
-    })
-    return df
+    

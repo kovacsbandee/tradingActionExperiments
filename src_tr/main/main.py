@@ -7,8 +7,8 @@ import websocket
 #import logging
 #logging.basicConfig(level=logging.DEBUG)
 
-from src_tr.main.checks.checks import check_trading_day
-from src_tr.main.utils.utils import calculate_scanning_day, get_nasdaq_symbols
+from src_tr.main.utils.utils import check_trading_day
+from src_tr.main.utils.utils import calculate_scanning_day
 from src_tr.main.scanners.PreMarketScannerMain import PreMarketScannerMain
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
 from src_tr.main.trading_algorithms.TradingAlgorithmMain import TradingAlgorithmMain
@@ -29,7 +29,7 @@ MODE='live'
 #scanner_symbols = get_nasdaq_symbols(file_path=SYMBOL_CSV_PATH)
 
 trading_client = TradingClient(ALPACA_KEY, ALPACA_SECRET_KEY, paper=True)
-trading_day = check_trading_day(date(2024, 2, 19))
+trading_day = check_trading_day(date(2024, 2, 20))
 scanning_day = calculate_scanning_day(trading_day)
 run_id = "eMACD16-6-3_cAVG_eRSI10_cRSI70"
 scanner_params = param_dict[run_id]['scanner_params']
