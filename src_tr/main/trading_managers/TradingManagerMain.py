@@ -81,14 +81,13 @@ class TradingManagerMain():
                 
     def get_previous_position(self, symbol):
         positions = self.trading_client.get_all_positions()
+        side = 'out'
         if positions is not None and len(positions) > 0:
             for p in positions:
                 if p.symbol == symbol:
-                    return p.side.value
-                else:
-                    return 'out'
+                    side = p.side.value
         else:
-            return 'out'
+            return side
         
     def apply_trading_algorithm(self):
         for symbol, value_dict in self.data_generator.symbol_dict.items():
@@ -106,8 +105,9 @@ class TradingManagerMain():
                                                                         symbol=symbol,  
                                                                         symbol_dict=value_dict,
                                                                         algo_params=self.algo_params)
-                current_df = value_dict['daily_price_data_df']
-                self.execute_trading_action(symbol, current_df)
+                #current_df = value_dict['daily_price_data_df']
+                self.execute_trading_action(symbol=symbol, 
+                                            current_df=self.data_generator.symbol_dict[symbol]['daily_price_data_df'])
             else:
                 print(f"Collecting data...[symbol: {symbol}, remaining: {ma_long_value-symbol_df_length}min]")
         
@@ -117,19 +117,21 @@ class TradingManagerMain():
 
         # divide capital with amount of OUT positions:
         out_positions = self.data_generator.get_out_positions()
-        quantity_buy_long = current_df.iloc[-1]['current_capital'] / out_positions / current_df.iloc[-1]['o']
+        quantity_buy_long = 0
+        if out_positions > 0:
+            quantity_buy_long = current_df.iloc[-1]['current_capital'] / out_positions / current_df.iloc[-1]['o']
 
         #NOTE sell only a percentage of divided capital
-        quantity_sell_short = (current_df.iloc[-1]['current_capital'] / out_positions * 0.15) / current_df.iloc[-1]['o']
+        #quantity_sell_short = (current_df.iloc[-1]['current_capital'] / out_positions * 0.15) / current_df.iloc[-1]['o']
 
         if trading_action == 'buy_next_long_position' and current_position == 'out':
             self.place_buy_order(quantity_buy_long, symbol)
-        elif trading_action == 'sell_next_short_position' and current_position == 'out':
-            self.place_sell_order(quantity_sell_short, symbol)
+        #elif trading_action == 'sell_next_short_position' and current_position == 'out':
+        #    self.place_sell_order(quantity_sell_short, symbol)
         elif trading_action == 'sell_previous_long_position' and current_position == 'long':
             self.close_current_position(position="Sell previous long", symbol=symbol)
-        elif trading_action == 'buy_previous_short_position' and current_position == 'short':
-            self.close_current_position(position="Buy previous long", symbol=symbol)
+        #elif trading_action == 'buy_previous_short_position' and current_position == 'short':
+        #    self.close_current_position(position="Buy previous long", symbol=symbol)
         else:
             print('no_action')
             
@@ -137,11 +139,12 @@ class TradingManagerMain():
         try:
             # https://alpaca.markets/learn/13-order-types-you-should-know-about/
             # a link szerint a time_in_force-nak inkább 'ioc'-nak kéne lennie szerintem.
+            # KT NOTE: az IOC-val nem lehet törtrészvényt vásárolni?
             market_order_data = MarketOrderRequest(
                             symbol=symbol,
                             qty=quantity,
                             side=OrderSide.BUY,
-                            time_in_force=TimeInForce.IOC
+                            time_in_force=TimeInForce.DAY
                             )
             self.trading_client.submit_order(order_data=market_order_data)
             self.data_generator.decrease_out_positions()
