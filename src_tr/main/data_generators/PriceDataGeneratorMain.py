@@ -41,7 +41,7 @@ class PriceDataGeneratorMain():
         self.symbol_dict[symbol]['daily_price_data_df']['entry_signal_type'] = None
         self.symbol_dict[symbol]['daily_price_data_df']['close_signal_type'] = None
         self.symbol_dict[symbol]['daily_price_data_df']['rsi'] = None
-        self.symbol_dict[symbol]['daily_price_data_df']['open_norm'] = None
+        self.symbol_dict[symbol]['daily_price_data_df']["close_signal_avg"] = None
         self.symbol_dict[symbol]['daily_price_data_df']['gain_loss'] = None
         self.symbol_dict[symbol]['daily_price_data_df']['gain'] = None
         self.symbol_dict[symbol]['daily_price_data_df']['loss'] = None

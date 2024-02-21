@@ -9,6 +9,8 @@ import websocket
 
 from src_tr.main.utils.utils import check_trading_day
 from src_tr.main.utils.utils import calculate_scanning_day
+from src_tr.main.utils.utils import save_watchlist_bin
+from src_tr.main.utils.utils import load_watchlist_bin
 from src_tr.main.scanners.PreMarketScannerMain import PreMarketScannerMain
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
 from src_tr.main.trading_algorithms.TradingAlgorithmMain import TradingAlgorithmMain
@@ -29,7 +31,7 @@ MODE='live'
 #scanner_symbols = get_nasdaq_symbols(file_path=SYMBOL_CSV_PATH)
 
 trading_client = TradingClient(ALPACA_KEY, ALPACA_SECRET_KEY, paper=True)
-trading_day = check_trading_day(date(2024, 2, 20))
+trading_day = check_trading_day(date(2024, 2, 21))
 scanning_day = calculate_scanning_day(trading_day)
 run_id = "eMACD16-6-3_cAVG_eRSI10_cRSI70"
 scanner_params = param_dict[run_id]['scanner_params']
@@ -63,7 +65,7 @@ data_manager.save_params(params=run_parameters)
 daily_dir_name = f"{run_id}/{data_manager.daily_dir_name}"
 
 data_loader = download_scanning_day_alpaca_data
-
+"""
 scanner = PreMarketScannerMain(trading_day=trading_day,
                            scanning_day=scanning_day,
                            symbols=sp500,
@@ -76,6 +78,9 @@ scanner = PreMarketScannerMain(trading_day=trading_day,
 
 # initialize symbol list:
 recommended_symbol_list: List[dict] = scanner.recommend_premarket_watchlist()
+"""
+recommended_symbol_list = load_watchlist_bin(trading_day)
+        
 data_manager.recommended_symbol_list = recommended_symbol_list
 
 data_generator = PriceDataGeneratorMain(recommended_symbol_list=recommended_symbol_list)
@@ -93,9 +98,9 @@ ws = websocket.WebSocketApp(url=SOCKET_URL,
                             on_open=trading_manager.on_open,
                             on_message=trading_manager.handle_message,
                             on_close=trading_manager.on_close,
-                            on_error=trading_manager.on_error)
-                            #on_ping=trading_manager.on_ping,
-                            #on_pong=trading_manager.on_pong)
+                            on_error=trading_manager.on_error,
+                            on_ping=trading_manager.on_ping,
+                            on_pong=trading_manager.on_pong)
 
 
 if __name__ == "__main__":

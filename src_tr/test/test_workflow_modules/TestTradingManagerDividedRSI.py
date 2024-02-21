@@ -46,7 +46,7 @@ class TestTradingManagerDividedRSI(TestTradingManagerDivided):
             if symbol_df_length > ma_long_value:
                 current_capital = super().get_current_capital(symbol)
                 self.trading_algorithm.update_capital_amount(current_capital)
-                previous_position = self.get_previous_position(symbol)
+                previous_position = self.get_previous_positions(symbol)
                 self.data_generator.symbol_dict[symbol] = self.trading_algorithm.apply_long_trading_algorithm(previous_position=previous_position, 
                                                                                                 symbol=symbol,  
                                                                                                 symbol_dict=value_dict,

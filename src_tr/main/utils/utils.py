@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 import pandas as pd
+import pickle
 
 from config import config
 from src_tr.main.data_sources.market_holidays import market_holidays
@@ -47,3 +48,13 @@ def get_nasdaq_symbols():
             output.write(f"'{symbol}', ")
         output.write("]")
     return symbol_list
+
+def save_watchlist_bin(recommended_symbol_list: list, trading_day: date):
+    trading_day = trading_day.strftime(f"%Y-%m-%d")
+    with open(f"src_tr/main/data_sources/watchlist_{trading_day}.p", "wb") as daily_stats:
+        pickle.dump(recommended_symbol_list, daily_stats)
+        
+def load_watchlist_bin(trading_day: date):
+    trading_day = trading_day.strftime(f"%Y-%m-%d")
+    with open(f"src_tr/main/data_sources/watchlist_{trading_day}.p", "rb") as daily_stats:
+        return pickle.load(daily_stats)

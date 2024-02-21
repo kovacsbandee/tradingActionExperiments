@@ -31,7 +31,7 @@ class TradingManagerMain():
             print(f"New bar data received at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
             minute_bars = self._parse_json(message)
             if minute_bars[0]['T'] == 'b':
-                for item in minute_bars:
+                for item in minute_bars: #TODO: máshogy kell kezelni azt, hogy nem egyszerre érkezik be minden részvényhez az adat
                     self.minute_bars.append(item)
                     if len(self.minute_bars) == len(self.data_generator.recommended_symbol_list):
                         self.execute_all()
@@ -79,35 +79,34 @@ class TradingManagerMain():
                     - value_dict['prev_day_data']['avg_open']) / value_dict['prev_day_data']['std_open']
         return value_dict
                 
-    def get_previous_position(self, symbol):
+    def get_previous_positions(self):
+        pos_dict = dict()
+        for item in self.data_generator.recommended_symbol_list:
+            pos_dict[item['symbol']] = 'out'
         positions = self.trading_client.get_all_positions()
-        side = 'out'
         if positions is not None and len(positions) > 0:
             for p in positions:
-                if p.symbol == symbol:
-                    side = p.side.value
-        else:
-            return side
+                pos_dict[p.symbol] = p.side.value
+        return pos_dict
         
     def apply_trading_algorithm(self):
-        for symbol, value_dict in self.data_generator.symbol_dict.items():
+        positions_by_symbol = self.get_previous_positions()
+        for symbol, symbol_dict in self.data_generator.symbol_dict.items():
             if self.algo_params["entry_signal"] == "default":
-                value_dict = self._normalize_open_price(value_dict)
+                symbol_dict = self._normalize_open_price(symbol_dict)
             
-            symbol_df_length = len(value_dict['daily_price_data_df'])
+            symbol_df_length = len(symbol_dict['daily_price_data_df']) if symbol_dict['daily_price_data_df'] is not None else 0
             ma_long_value = self.algo_params["entry_windows"]["long"]
             if symbol_df_length > ma_long_value:
                 current_capital = self.get_current_capital()
                 self.trading_algorithm.update_capital_amount(current_capital)
-                previous_position = self.get_previous_position(symbol)
-                self.data_generator.symbol_dict[symbol] = \
+                previous_position = positions_by_symbol[symbol]
+                symbol_dict = \
                     self.trading_algorithm.apply_long_trading_algorithm(previous_position=previous_position, 
                                                                         symbol=symbol,  
-                                                                        symbol_dict=value_dict,
+                                                                        symbol_dict=symbol_dict,
                                                                         algo_params=self.algo_params)
-                #current_df = value_dict['daily_price_data_df']
-                self.execute_trading_action(symbol=symbol, 
-                                            current_df=self.data_generator.symbol_dict[symbol]['daily_price_data_df'])
+                self.execute_trading_action(symbol=symbol, current_df=symbol_dict['daily_price_data_df'])
             else:
                 print(f"Collecting data...[symbol: {symbol}, remaining: {ma_long_value-symbol_df_length}min]")
         
@@ -117,23 +116,19 @@ class TradingManagerMain():
 
         # divide capital with amount of OUT positions:
         out_positions = self.data_generator.get_out_positions()
-        quantity_buy_long = 0
-        if out_positions > 0:
+        try:
             quantity_buy_long = current_df.iloc[-1]['current_capital'] / out_positions / current_df.iloc[-1]['o']
-
-        #NOTE sell only a percentage of divided capital
-        #quantity_sell_short = (current_df.iloc[-1]['current_capital'] / out_positions * 0.15) / current_df.iloc[-1]['o']
-
-        if trading_action == 'buy_next_long_position' and current_position == 'out':
+        except:
+            traceback.print_exc()
+            
+        if trading_action == 'buy_next_long_position': # and current_position == 'out':
+            print(f"Initiating long position for {symbol} at {datetime.now()}")
             self.place_buy_order(quantity_buy_long, symbol)
-        #elif trading_action == 'sell_next_short_position' and current_position == 'out':
-        #    self.place_sell_order(quantity_sell_short, symbol)
-        elif trading_action == 'sell_previous_long_position' and current_position == 'long':
+        elif trading_action == 'sell_previous_long_position': # and current_position == 'long':
+            print(f"Initiating position close for {symbol} at {datetime.now()}")
             self.close_current_position(position="Sell previous long", symbol=symbol)
-        #elif trading_action == 'buy_previous_short_position' and current_position == 'short':
-        #    self.close_current_position(position="Buy previous long", symbol=symbol)
         else:
-            print('no_action')
+            print(f'No action on {symbol} [{datetime.now()}]')
             
     def place_buy_order(self, quantity, symbol, price=None):
         try:
@@ -148,7 +143,7 @@ class TradingManagerMain():
                             )
             self.trading_client.submit_order(order_data=market_order_data)
             self.data_generator.decrease_out_positions()
-            print('Buy order completed')
+            print(f'Buy order completed\n \t[Symbol:{symbol}]\n \t[Time:{datetime.now()}]\n \t[Quantity: {quantity}]')
         except:
             traceback.print_exc()
 
@@ -170,7 +165,7 @@ class TradingManagerMain():
         try:
             self.trading_client.close_position(symbol)
             self.data_generator.increase_out_positions()
-            print(f'{position} position closed successfully')
+            print(f'{position} position closed successfully\n \t[Symbol:{symbol}\n \tTime:{datetime.now()}]')
         except:
             traceback.print_exc()
         

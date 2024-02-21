@@ -27,7 +27,7 @@ class TestTradingManager(TradingManagerMain):
         return float(self.trading_client.cash)
     
     #Override
-    def get_previous_position(self, symbol):
+    def get_previous_positions(self, symbol):
         return self.trading_client.get_position_by_symbol(symbol)
     
     #Override

@@ -28,21 +28,26 @@ class TradingAlgorithmMain():
         # calculate RSI
         symbol_df = self.calculate_current_rsi(symbol_df, algo_params["rsi_length"])
         
+        # calculate current AVG
+        symbol_df = self.calculate_current_avg(symbol_df=symbol_df, 
+                                               window_size=algo_params['close_window'], 
+                                               weighted=algo_params["close_weighted"])
+        
         # calculate current range
         if algo_params['close_signal'] == 'ATR':
             symbol_df = self.calculate_current_range(symbol_df)
         
         # evaluate current position
         eval_result = None
-        if symbol_dict['previous_long_buy_position_index'] is None:
+        if previous_position == "out":
             if algo_params["entry_signal"] == "default":
                 symbol_df = self.entry_signal_default(symbol_df=symbol_df,
-                                                        ma_short=algo_params["entry_windows"]["short"],
-                                                        ma_long=algo_params["entry_windows"]["long"],
-                                                        epsilon=algo_params["entry_windows"]["epsilon"],
-                                                        rsi=algo_params["entry_rsi"],
-                                                        weighted=algo_params["entry_weighted"],
-                                                        previous_position=previous_position)
+                                                      ma_short=algo_params["entry_windows"]["short"],
+                                                      ma_long=algo_params["entry_windows"]["long"],
+                                                      epsilon=algo_params["entry_windows"]["epsilon"],
+                                                      rsi=algo_params["entry_rsi"],
+                                                      weighted=algo_params["entry_weighted"],
+                                                      previous_position=previous_position)
             elif algo_params["entry_signal"] == "MACD":
                 symbol_df = self.entry_signal_MACD(symbol_df=symbol_df,
                                                    macd_windows=algo_params['entry_windows'],
@@ -50,14 +55,12 @@ class TradingAlgorithmMain():
                                                    weighted=algo_params['entry_weighted'],
                                                    previous_position=previous_position)
                 
-            eval_result = self.set_buy_action(symbol_df, symbol_dict)
+            #eval_result = self.set_buy_action(symbol_df, symbol_dict)
                 
-        elif symbol_dict['previous_long_buy_position_index'] is not None:
+        elif previous_position == "long":
             if algo_params["close_signal"] == "AVG":
                 symbol_df = self.close_signal_avg(symbol_df=symbol_df,
-                                                  rsi=algo_params["close_rsi"], 
-                                                  window_size=algo_params["close_window"], 
-                                                  weighted=algo_params["close_weighted"],
+                                                  rsi=algo_params["close_rsi"],
                                                   previous_position=previous_position)
             elif algo_params["close_signal"] == "ATR":
                 symbol_df = self.close_signal_atr(symbol_df=symbol_df,
@@ -67,8 +70,11 @@ class TradingAlgorithmMain():
                                                   weighted=algo_params["close_weighted"],
                                                   previous_position=previous_position)
                 
-            eval_result = self.set_close_action(symbol_df=symbol_df, symbol_dict=symbol_dict)
+            #eval_result = self.set_close_action(symbol_df=symbol_df, symbol_dict=symbol_dict)
         
+        eval_result = self.set_action(symbol_df=symbol_df, 
+                                      symbol_dict=symbol_dict, 
+                                      previous_position=previous_position)
         symbol_df = eval_result["symbol_df"]
         symbol_dict = eval_result["symbol_dict"]
         
@@ -87,6 +93,13 @@ class TradingAlgorithmMain():
         symbol_df['rsi'] = 100 - (100 / (1 + symbol_df['avg_gain'] / symbol_df['avg_loss']))
         return symbol_df
     
+    def calculate_current_avg(self, symbol_df: pd.DataFrame, window_size: int, weighted: bool):
+        if weighted:    
+            symbol_df["close_signal_avg"] = symbol_df['o'].ewm(span=window_size, adjust=False).mean()
+        else:
+            symbol_df["close_signal_avg"] = symbol_df['o'].rolling(window=window_size, center=False).mean()
+        return symbol_df
+    
     def calculate_current_range(self, symbol_df: pd.DataFrame):
         current_high = symbol_df.iloc[-1]['h']
         current_low = symbol_df.iloc[-1]['l']
@@ -95,6 +108,23 @@ class TradingAlgorithmMain():
             max([current_high-current_low, abs(current_high-previous_close), abs(current_low-previous_close)])
             
         return symbol_df
+    
+    def set_action(self, symbol_df: pd.DataFrame, symbol_dict: dict, previous_position: str):
+        if symbol_df.iloc[-1]['position'] == previous_position:
+            symbol_df.loc[symbol_df.index[-1], 'trading_action'] = 'no_action'
+
+        if symbol_df.iloc[-1]['position'] == 'long' and previous_position == 'out':
+            symbol_df.loc[symbol_df.index[-1], 'trading_action'] = 'buy_next_long_position'
+            symbol_dict['previous_long_buy_position_index'] = symbol_df.index[-1]
+            
+        if symbol_df.iloc[-1]['position'] == 'out' and previous_position == 'long':
+            symbol_df.loc[symbol_df.index[-1], 'trading_action'] = 'sell_previous_long_position'
+            symbol_dict['previous_long_buy_position_index'] = None
+            
+        return {
+            "symbol_df" : symbol_df,
+            "symbol_dict" : symbol_dict
+        }
 
     def set_buy_action(self, symbol_df: pd.DataFrame, symbol_dict: dict):
         if symbol_df.iloc[-1]['position'] == symbol_df.iloc[-2]['position']:
@@ -153,7 +183,7 @@ class TradingAlgorithmMain():
     
     def entry_signal_MACD(self, symbol_df: pd.DataFrame, macd_windows: dict,
                           rsi: dict, weighted: bool, previous_position: str):
-        expected_position = 'out'
+        expected_position = None
         ema_short = macd_windows["short"]
         ema_long = macd_windows["long"]
         signal_ema = macd_windows["signal"]
@@ -167,38 +197,30 @@ class TradingAlgorithmMain():
                 expected_position = 'long'
                 symbol_df.loc[symbol_df.index[-1], 'entry_signal_type'] = 'entry_RSI'
             elif symbol_df.iloc[-2]['MACD'] < symbol_df.iloc[-2]['signal_line'] \
-                and symbol_df.iloc[-1]['MACD'] > symbol_df.iloc[-1]['signal_line']:
+                    and symbol_df.iloc[-1]['MACD'] > symbol_df.iloc[-1]['signal_line']:
                 expected_position = 'long'
                 symbol_df.loc[symbol_df.index[-1], 'entry_signal_type'] = 'entry_MACD_cross'
             elif symbol_df.iloc[-1]['MACD'] > symbol_df.iloc[-1]['signal_line']:
                 expected_position = 'long'
                 symbol_df.loc[symbol_df.index[-1], 'entry_signal_type'] = 'entry_MACD_above_signal'
             else:
-                if previous_position == 'long':
-                    expected_position = 'long'
+                expected_position = previous_position
         else:
             if symbol_df.iloc[-2]['MACD'] < symbol_df.iloc[-2]['signal_line'] \
                 and symbol_df.iloc[-1]['MACD'] > symbol_df.iloc[-1]['signal_line']:
                 expected_position = 'long'
                 symbol_df.loc[symbol_df.index[-1], 'entry_signal_type'] = 'entry_MACD'
             else:
-                if previous_position == 'long':
-                    expected_position = 'long'
+                expected_position = previous_position
 
         symbol_df.loc[symbol_df.index[-1], 'position'] = expected_position
         symbol_df.loc[symbol_df.index[-2], 'position'] = previous_position
         
         return symbol_df
     
-    def close_signal_avg(self, symbol_df: pd.DataFrame, rsi: dict, window_size: int, weighted: bool, previous_position: str):
-        if symbol_df.loc[symbol_df.index[-1], 'c'] < symbol_df.loc[symbol_df.index[-2], 'o']:
-            if weighted:    
-                symbol_df["close_signal_avg"] = symbol_df['o'].ewm(span=window_size, adjust=False).mean()
-            else:
-                symbol_df["close_signal_avg"] = symbol_df['o'].rolling(window=window_size, center=False).mean()
-                
+    def close_signal_avg(self, symbol_df: pd.DataFrame, rsi: dict, previous_position: str):
+        if symbol_df.loc[symbol_df.index[-1], 'c'] < symbol_df.loc[symbol_df.index[-2], 'o']:                
             current_close_avg = symbol_df.loc[symbol_df.index[-1], 'close_signal_avg']
-            
             if rsi:
                 if symbol_df.iloc[-1]['rsi'] >= rsi['overbought']:
                     symbol_df.loc[symbol_df.index[-1], 'position'] = 'out'

@@ -1,0 +1,2199 @@
+no_action
+Traceback (most recent call last):
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/common/rest.py", line 196, in _one_request
+    response.raise_for_status()
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/requests/models.py", line 1021, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 422 Client Error: Unprocessable Entity for url: https://paper-api.alpaca.markets/v2/orders
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tamkiraly/Development/tradingActionExperiments/src_tr/main/trading_managers/TradingManagerMain.py", line 146, in place_buy_order
+    self.trading_client.submit_order(order_data=market_order_data)
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/trading/client.py", line 91, in submit_order
+    response = self.post("/orders", data)
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/common/rest.py", line 234, in post
+    return self._request("POST", path, data)
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/common/rest.py", line 129, in _request
+    return self._one_request(method, url, opts, retry)
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/common/rest.py", line 205, in _one_request
+    raise APIError(error, http_error)
+alpaca.common.exceptions.APIError: {"code":40010001,"message":"qty or notional is required"}
+no_action
+no_action
+no_action
+Collecting data...[symbol: ORCL, remaining: 1min]
+no_action
+Data available, execute() called
+New bar data received at: 2024-02-21 17:10:07
+New bar data received at: 2024-02-21 17:10:07
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 17:11:00
+New bar data received at: 2024-02-21 17:11:00
+New bar data received at: 2024-02-21 17:11:00
+New bar data received at: 2024-02-21 17:11:00
+New bar data received at: 2024-02-21 17:11:00
+New bar data received at: 2024-02-21 17:11:00
+New bar data received at: 2024-02-21 17:11:00
+New bar data received at: 2024-02-21 17:11:00
+New bar data received at: 2024-02-21 17:11:00
+New bar data received at: 2024-02-21 17:11:00
+no_action
+no_action
+no_action
+no_action
+no_action
+no_action
+no_action
+no_action
+no_action
+no_action
+no_action
+no_action
+no_action
+no_action
+Traceback (most recent call last):
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/common/rest.py", line 196, in _one_request
+    response.raise_for_status()
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/requests/models.py", line 1021, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://paper-api.alpaca.markets/v2/positions/ADBE
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tamkiraly/Development/tradingActionExperiments/src_tr/main/trading_managers/TradingManagerMain.py", line 168, in close_current_position
+    self.trading_client.close_position(symbol)
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/trading/client.py", line 307, in close_position
+    response = self.delete(
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/common/rest.py", line 272, in delete
+    return self._request("DELETE", path, data)
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/common/rest.py", line 129, in _request
+    return self._one_request(method, url, opts, retry)
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/common/rest.py", line 205, in _one_request
+    raise APIError(error, http_error)
+alpaca.common.exceptions.APIError: {"code":40410000,"message":"position not found: ADBE"}
+no_action
+no_action
+no_action
+Collecting data...[symbol: ORCL, remaining: 1min]
+no_action
+Data available, execute() called
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 17:12:00
+New bar data received at: 2024-02-21 17:12:00
+New bar data received at: 2024-02-21 17:12:00
+New bar data received at: 2024-02-21 17:12:00
+New bar data received at: 2024-02-21 17:12:00
+New bar data received at: 2024-02-21 17:12:00
+New bar data received at: 2024-02-21 17:12:00
+New bar data received at: 2024-02-21 17:12:00
+New bar data received at: 2024-02-21 17:12:00
+
+[...]
+
+no_action
+Sell previous long position closed successfully
+Traceback (most recent call last):
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/common/rest.py", line 196, in _one_request
+    response.raise_for_status()
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/requests/models.py", line 1021, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 403 Client Error: Forbidden for url: https://paper-api.alpaca.markets/v2/orders
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tamkiraly/Development/tradingActionExperiments/src_tr/main/trading_managers/TradingManagerMain.py", line 146, in place_buy_order
+    self.trading_client.submit_order(order_data=market_order_data)
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/trading/client.py", line 91, in submit_order
+    response = self.post("/orders", data)
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/common/rest.py", line 234, in post
+    return self._request("POST", path, data)
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/common/rest.py", line 129, in _request
+    return self._one_request(method, url, opts, retry)
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/common/rest.py", line 205, in _one_request
+    raise APIError(error, http_error)
+alpaca.common.exceptions.APIError: {"code":40310000,"message":"cost basis must be \u003e= minimal amount of order 1"}
+no_action
+no_action
+no_action
+no_action
+no_action
+no_action
+Sell previous long position closed successfully
+no_action
+Collecting data...[symbol: ORCL, remaining: 1min]
+no_action
+Data available, execute() called
+New bar data received at: 2024-02-21 17:14:07
+New bar data received at: 2024-02-21 17:14:07
+New bar data received at: 2024-02-21 17:14:07
+New bar data received at: 2024-02-21 17:14:07
+New bar data received at: 2024-02-21 17:14:07
+Pong received: b''
+
+[...]
+
+New bar data received at: 2024-02-21 18:21:00
+New bar data received at: 2024-02-21 18:21:00
+New bar data received at: 2024-02-21 18:21:00
+New bar data received at: 2024-02-21 18:21:00
+New bar data received at: 2024-02-21 18:21:00
+New bar data received at: 2024-02-21 18:21:00
+New bar data received at: 2024-02-21 18:21:00
+New bar data received at: 2024-02-21 18:21:00
+New bar data received at: 2024-02-21 18:21:00
+no_action
+no_action
+no_action
+no_action
+no_action
+no_action
+no_action
+no_action
+Sell previous long position closed successfully
+no_action
+no_action
+no_action
+Traceback (most recent call last):
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/common/rest.py", line 196, in _one_request
+    response.raise_for_status()
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/requests/models.py", line 1021, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://paper-api.alpaca.markets/v2/positions/AMAT
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tamkiraly/Development/tradingActionExperiments/src_tr/main/trading_managers/TradingManagerMain.py", line 168, in close_current_position
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/trading/client.py", line 307, in close_position
+    response = self.delete(
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/common/rest.py", line 272, in delete
+    return self._request("DELETE", path, data)
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/common/rest.py", line 129, in _request
+    return self._one_request(method, url, opts, retry)
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/common/rest.py", line 205, in _one_request
+    raise APIError(error, http_error)
+alpaca.common.exceptions.APIError: {"code":40410000,"message":"position not found: AMAT"}
+no_action
+no_action
+no_action
+no_action
+Traceback (most recent call last):
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/common/rest.py", line 196, in _one_request
+    response.raise_for_status()
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/requests/models.py", line 1021, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://paper-api.alpaca.markets/v2/positions/LLY
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/tamkiraly/Development/tradingActionExperiments/src_tr/main/trading_managers/TradingManagerMain.py", line 168, in close_current_position
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/trading/client.py", line 307, in close_position
+    response = self.delete(
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/common/rest.py", line 272, in delete
+    return self._request("DELETE", path, data)
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/common/rest.py", line 129, in _request
+    return self._one_request(method, url, opts, retry)
+  File "/home/tamkiraly/Development/trading_venv/lib/python3.10/site-packages/alpaca/common/rest.py", line 205, in _one_request
+    raise APIError(error, http_error)
+alpaca.common.exceptions.APIError: {"code":40410000,"message":"position not found: LLY"}
+
+----------------------------------------------------------------------
+
+{'T': 'b', 'S': 'NVDA', 'o': 670.9, 'h': 670.9, 'l': 670.315, 'c': 670.58, 'v': 1787, 't': '2024-02-21T17:34:00Z', 'n': 28, 'vw': 670.572037}
+
+----------------------------------------------------------------------
+No action on NVDA [2024-02-21 20:51:00.932074]
+No action on AAPL [2024-02-21 20:51:01.111039]
+Initiating position close for AMD at 2024-02-21 20:51:01.261918
+Sell previous long position closed successfully
+        [Symbol:AMD
+        Time:2024-02-21 20:51:01.377314]
+No action on AMZN [2024-02-21 20:51:01.625086]
+Collecting data...[symbol: MSFT, remaining: 3min]
+No action on INTC [2024-02-21 20:51:01.827733]
+No action on WMT [2024-02-21 20:51:02.031819]
+Initiating long position for GOOG at 2024-02-21 20:51:02.244522
+Buy order completed
+        [Symbol:GOOG]
+        [Time:2024-02-21 20:51:02.427521]
+        [Quantity: 2.8584041697274984]
+No action on DFS [2024-02-21 20:51:02.646913]
+Collecting data...[symbol: COF, remaining: 1min]
+Collecting data...[symbol: KO, remaining: 1min]
+Initiating position close for XOM at 2024-02-21 20:51:02.805096
+Sell previous long position closed successfully
+        [Symbol:XOM
+        Time:2024-02-21 20:51:02.921590]
+Collecting data...[symbol: AMAT, remaining: 10min]
+No action on PFE [2024-02-21 20:51:03.173670]
+Collecting data...[symbol: ADBE, remaining: 2min]
+No action on MU [2024-02-21 20:51:03.373931]
+No action on OXY [2024-02-21 20:51:03.613682]
+Collecting data...[symbol: LLY, remaining: 7min]
+Collecting data...[symbol: ORCL, remaining: 3min]
+No action on CSCO [2024-02-21 20:51:03.785725]
+Data available, execute() called
+New bar data received at: 2024-02-21 20:51:03
+New bar data received at: 2024-02-21 20:51:03
+New bar data received at: 2024-02-21 20:51:03
+New bar data received at: 2024-02-21 20:51:03
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 20:52:00
+New bar data received at: 2024-02-21 20:52:00
+New bar data received at: 2024-02-21 20:52:00
+New bar data received at: 2024-02-21 20:52:00
+New bar data received at: 2024-02-21 20:52:00
+New bar data received at: 2024-02-21 20:52:00
+New bar data received at: 2024-02-21 20:52:00
+Initiating position close for NVDA at 2024-02-21 20:52:00.864961
+Sell previous long position closed successfully
+        [Symbol:NVDA
+        Time:2024-02-21 20:52:01.005695]
+Initiating position close for AAPL at 2024-02-21 20:52:01.168189
+Sell previous long position closed successfully
+        [Symbol:AAPL
+        Time:2024-02-21 20:52:01.312886]
+Initiating long position for AMD at 2024-02-21 20:52:01.534870
+Buy order completed
+        [Symbol:AMD]
+        [Time:2024-02-21 20:52:01.653712]
+        [Quantity: 2.8587506516605843]
+No action on AMZN [2024-02-21 20:52:01.798298]
+Collecting data...[symbol: MSFT, remaining: 2min]
+No action on INTC [2024-02-21 20:52:02.045210]
+No action on WMT [2024-02-21 20:52:02.193760]
+No action on GOOG [2024-02-21 20:52:02.363315]
+No action on DFS [2024-02-21 20:52:02.551197]
+Collecting data...[symbol: COF, remaining: 1min]
+Collecting data...[symbol: KO, remaining: 0min]
+No action on XOM [2024-02-21 20:52:02.700278]
+Collecting data...[symbol: AMAT, remaining: 9min]
+No action on PFE [2024-02-21 20:52:02.859169]
+Collecting data...[symbol: ADBE, remaining: 2min]
+No action on MU [2024-02-21 20:52:03.066244]
+Initiating position close for OXY at 2024-02-21 20:52:03.216447
+Sell previous long position closed successfully
+        [Symbol:OXY
+        Time:2024-02-21 20:52:03.357331]
+Collecting data...[symbol: LLY, remaining: 6min]
+Collecting data...[symbol: ORCL, remaining: 2min]
+No action on CSCO [2024-02-21 20:52:03.502520]
+Data available, execute() called
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 20:53:00
+New bar data received at: 2024-02-21 20:53:00
+New bar data received at: 2024-02-21 20:53:00
+New bar data received at: 2024-02-21 20:53:00
+New bar data received at: 2024-02-21 20:53:00
+New bar data received at: 2024-02-21 20:53:00
+New bar data received at: 2024-02-21 20:53:00
+New bar data received at: 2024-02-21 20:53:00
+New bar data received at: 2024-02-21 20:53:00
+New bar data received at: 2024-02-21 20:53:00
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 20:54:00
+Initiating long position for NVDA at 2024-02-21 20:54:01.245451
+Buy order completed
+        [Symbol:NVDA]
+        [Time:2024-02-21 20:54:01.427463]
+        [Quantity: 0.7742452927094905]
+Initiating long position for AAPL at 2024-02-21 20:54:01.592284
+Buy order completed
+        [Symbol:AAPL]
+        [Time:2024-02-21 20:54:01.714911]
+        [Quantity: 2.858226842314361]
+No action on AMD [2024-02-21 20:54:01.954501]
+No action on AMZN [2024-02-21 20:54:02.160392]
+Collecting data...[symbol: MSFT, remaining: 0min]
+No action on INTC [2024-02-21 20:54:02.326998]
+No action on WMT [2024-02-21 20:54:02.530331]
+Initiating position close for GOOG at 2024-02-21 20:54:02.769771
+Sell previous long position closed successfully
+        [Symbol:GOOG
+        Time:2024-02-21 20:54:02.960511]
+No action on DFS [2024-02-21 20:54:03.189346]
+No action on COF [2024-02-21 20:54:03.384909]
+No action on KO [2024-02-21 20:54:03.532779]
+No action on XOM [2024-02-21 20:54:03.689308]
+Collecting data...[symbol: AMAT, remaining: 9min]
+Initiating position close for PFE at 2024-02-21 20:54:03.899017
+Sell previous long position closed successfully
+        [Symbol:PFE
+        Time:2024-02-21 20:54:04.092083]
+Collecting data...[symbol: ADBE, remaining: 2min]
+No action on MU [2024-02-21 20:54:04.246012]
+No action on OXY [2024-02-21 20:54:04.397853]
+Collecting data...[symbol: LLY, remaining: 6min]
+Collecting data...[symbol: ORCL, remaining: 2min]
+Initiating position close for CSCO at 2024-02-21 20:54:04.591379
+Sell previous long position closed successfully
+        [Symbol:CSCO
+        Time:2024-02-21 20:54:04.713915]
+Data available, execute() called
+New bar data received at: 2024-02-21 20:54:04
+New bar data received at: 2024-02-21 20:54:04
+New bar data received at: 2024-02-21 20:54:04
+New bar data received at: 2024-02-21 20:54:04
+New bar data received at: 2024-02-21 20:54:04
+New bar data received at: 2024-02-21 20:54:04
+New bar data received at: 2024-02-21 20:54:04
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 20:55:00
+New bar data received at: 2024-02-21 20:55:00
+No action on NVDA [2024-02-21 20:55:00.831821]
+No action on AAPL [2024-02-21 20:55:01.036254]
+No action on AMD [2024-02-21 20:55:01.242421]
+No action on AMZN [2024-02-21 20:55:01.432120]
+No action on MSFT [2024-02-21 20:55:01.577605]
+No action on INTC [2024-02-21 20:55:01.734331]
+No action on WMT [2024-02-21 20:55:01.957702]
+Initiating long position for GOOG at 2024-02-21 20:55:02.173410
+Buy order completed
+        [Symbol:GOOG]
+        [Time:2024-02-21 20:55:02.296890]
+        [Quantity: 3.4150803566401327]
+No action on DFS [2024-02-21 20:55:02.456728]
+No action on COF [2024-02-21 20:55:02.613437]
+No action on KO [2024-02-21 20:55:02.777292]
+No action on XOM [2024-02-21 20:55:02.987461]
+Collecting data...[symbol: AMAT, remaining: 9min]
+No action on PFE [2024-02-21 20:55:03.202638]
+Collecting data...[symbol: ADBE, remaining: 1min]
+No action on MU [2024-02-21 20:55:03.351387]
+No action on OXY [2024-02-21 20:55:03.505426]
+Collecting data...[symbol: LLY, remaining: 5min]
+Collecting data...[symbol: ORCL, remaining: 1min]
+Initiating long position for CSCO at 2024-02-21 20:55:03.682154
+Buy order completed
+        [Symbol:CSCO]
+        [Time:2024-02-21 20:55:03.889135]
+        [Quantity: 10.10986143687418]
+Data available, execute() called
+New bar data received at: 2024-02-21 20:55:03
+New bar data received at: 2024-02-21 20:55:03
+New bar data received at: 2024-02-21 20:55:03
+New bar data received at: 2024-02-21 20:55:03
+New bar data received at: 2024-02-21 20:55:03
+New bar data received at: 2024-02-21 20:55:03
+New bar data received at: 2024-02-21 20:55:03
+New bar data received at: 2024-02-21 20:55:03
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 20:56:00
+New bar data received at: 2024-02-21 20:56:00
+New bar data received at: 2024-02-21 20:56:00
+New bar data received at: 2024-02-21 20:56:00
+New bar data received at: 2024-02-21 20:56:00
+No action on NVDA [2024-02-21 20:56:00.835455]
+No action on AAPL [2024-02-21 20:56:01.050271]
+No action on AMD [2024-02-21 20:56:01.256107]
+No action on AMZN [2024-02-21 20:56:01.454912]
+No action on MSFT [2024-02-21 20:56:01.659553]
+No action on INTC [2024-02-21 20:56:01.822179]
+No action on WMT [2024-02-21 20:56:02.112125]
+No action on GOOG [2024-02-21 20:56:02.316895]
+No action on DFS [2024-02-21 20:56:02.518792]
+No action on COF [2024-02-21 20:56:02.675216]
+No action on KO [2024-02-21 20:56:02.819173]
+No action on XOM [2024-02-21 20:56:03.048020]
+Collecting data...[symbol: AMAT, remaining: 9min]
+No action on PFE [2024-02-21 20:56:03.311128]
+Collecting data...[symbol: ADBE, remaining: 0min]
+No action on MU [2024-02-21 20:56:03.501017]
+No action on OXY [2024-02-21 20:56:03.669251]
+Collecting data...[symbol: LLY, remaining: 5min]
+Collecting data...[symbol: ORCL, remaining: 0min]
+No action on CSCO [2024-02-21 20:56:03.817385]
+Data available, execute() called
+New bar data received at: 2024-02-21 20:56:03
+New bar data received at: 2024-02-21 20:56:03
+New bar data received at: 2024-02-21 20:56:03
+New bar data received at: 2024-02-21 20:56:03
+New bar data received at: 2024-02-21 20:56:03
+New bar data received at: 2024-02-21 20:56:03
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 20:57:00
+New bar data received at: 2024-02-21 20:57:00
+New bar data received at: 2024-02-21 20:57:00
+New bar data received at: 2024-02-21 20:57:00
+New bar data received at: 2024-02-21 20:57:00
+New bar data received at: 2024-02-21 20:57:00
+New bar data received at: 2024-02-21 20:57:00
+New bar data received at: 2024-02-21 20:57:00
+New bar data received at: 2024-02-21 20:57:00
+Initiating position close for NVDA at 2024-02-21 20:57:00.780929
+Sell previous long position closed successfully
+        [Symbol:NVDA
+        Time:2024-02-21 20:57:00.894117]
+No action on AAPL [2024-02-21 20:57:01.047292]
+No action on AMD [2024-02-21 20:57:01.256557]
+No action on AMZN [2024-02-21 20:57:01.460295]
+No action on MSFT [2024-02-21 20:57:01.650552]
+No action on INTC [2024-02-21 20:57:01.885029]
+Initiating position close for WMT at 2024-02-21 20:57:02.076389
+Sell previous long position closed successfully
+        [Symbol:WMT
+        Time:2024-02-21 20:57:02.264925]
+No action on GOOG [2024-02-21 20:57:02.499704]
+No action on DFS [2024-02-21 20:57:02.650030]
+No action on COF [2024-02-21 20:57:02.900368]
+No action on KO [2024-02-21 20:57:03.099950]
+Initiating long position for XOM at 2024-02-21 20:57:03.257161
+Buy order completed
+        [Symbol:XOM]
+        [Time:2024-02-21 20:57:03.379980]
+        [Quantity: 5.005547942361198]
+Collecting data...[symbol: AMAT, remaining: 8min]
+No action on PFE [2024-02-21 20:57:03.568015]
+Collecting data...[symbol: ADBE, remaining: 0min]
+No action on MU [2024-02-21 20:57:03.737250]
+No action on OXY [2024-02-21 20:57:03.922461]
+Collecting data...[symbol: LLY, remaining: 3min]
+Initiating position close for ORCL at 2024-02-21 20:57:04.169377
+Sell previous long position closed successfully
+        [Symbol:ORCL
+        Time:2024-02-21 20:57:04.295178]
+No action on CSCO [2024-02-21 20:57:04.532104]
+Data available, execute() called
+New bar data received at: 2024-02-21 20:57:04
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 20:58:00
+New bar data received at: 2024-02-21 20:58:00
+New bar data received at: 2024-02-21 20:58:00
+New bar data received at: 2024-02-21 20:58:00
+New bar data received at: 2024-02-21 20:58:00
+New bar data received at: 2024-02-21 20:58:00
+New bar data received at: 2024-02-21 20:58:00
+New bar data received at: 2024-02-21 20:58:00
+No action on NVDA [2024-02-21 20:58:00.911234]
+Initiating position close for AAPL at 2024-02-21 20:58:01.091735
+Sell previous long position closed successfully
+        [Symbol:AAPL
+        Time:2024-02-21 20:58:01.212022]
+Initiating position close for AMD at 2024-02-21 20:58:01.379620
+Sell previous long position closed successfully
+        [Symbol:AMD
+        Time:2024-02-21 20:58:01.506090]
+Initiating position close for AMZN at 2024-02-21 20:58:01.687146
+Sell previous long position closed successfully
+        [Symbol:AMZN
+        Time:2024-02-21 20:58:01.862608]
+No action on MSFT [2024-02-21 20:58:02.017019]
+No action on INTC [2024-02-21 20:58:02.209826]
+Initiating long position for WMT at 2024-02-21 20:58:02.400618
+Buy order completed
+        [Symbol:WMT]
+        [Time:2024-02-21 20:58:02.573774]
+        [Quantity: 3.0520464499859035]
+No action on GOOG [2024-02-21 20:58:02.738556]
+No action on DFS [2024-02-21 20:58:02.907500]
+No action on COF [2024-02-21 20:58:03.110006]
+No action on KO [2024-02-21 20:58:03.327131]
+Initiating position close for XOM at 2024-02-21 20:58:03.487949
+Sell previous long position closed successfully
+        [Symbol:XOM
+        Time:2024-02-21 20:58:03.612792]
+Collecting data...[symbol: AMAT, remaining: 7min]
+No action on PFE [2024-02-21 20:58:03.769765]
+No action on ADBE [2024-02-21 20:58:03.924617]
+Initiating position close for MU at 2024-02-21 20:58:04.134317
+Sell previous long position closed successfully
+        [Symbol:MU
+        Time:2024-02-21 20:58:04.320222]
+No action on OXY [2024-02-21 20:58:04.475288]
+Collecting data...[symbol: LLY, remaining: 3min]
+Initiating long position for ORCL at 2024-02-21 20:58:04.657659
+Buy order completed
+        [Symbol:ORCL]
+        [Time:2024-02-21 20:58:04.821423]
+        [Quantity: 4.914640745911105]
+No action on CSCO [2024-02-21 20:58:05.002967]
+Data available, execute() called
+New bar data received at: 2024-02-21 20:58:05
+New bar data received at: 2024-02-21 20:58:05
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 20:59:00
+New bar data received at: 2024-02-21 20:59:00
+New bar data received at: 2024-02-21 20:59:00
+New bar data received at: 2024-02-21 20:59:00
+New bar data received at: 2024-02-21 20:59:00
+New bar data received at: 2024-02-21 20:59:00
+New bar data received at: 2024-02-21 20:59:00
+New bar data received at: 2024-02-21 20:59:00
+New bar data received at: 2024-02-21 20:59:00
+New bar data received at: 2024-02-21 20:59:00
+New bar data received at: 2024-02-21 20:59:00
+New bar data received at: 2024-02-21 20:59:00
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:00:00
+No action on NVDA [2024-02-21 21:00:01.754599]
+Initiating long position for AAPL at 2024-02-21 21:00:02.014547
+Buy order completed
+        [Symbol:AAPL]
+        [Time:2024-02-21 21:00:02.184623]
+        [Quantity: 3.0515574491221957]
+Initiating long position for AMD at 2024-02-21 21:00:02.354147
+Buy order completed
+        [Symbol:AMD]
+        [Time:2024-02-21 21:00:02.490559]
+        [Quantity: 3.5167715089952276]
+Initiating long position for AMZN at 2024-02-21 21:00:02.659064
+Buy order completed
+        [Symbol:AMZN]
+        [Time:2024-02-21 21:00:02.779159]
+        [Quantity: 3.433711612832672]
+Initiating position close for MSFT at 2024-02-21 21:00:03.030924
+Sell previous long position closed successfully
+        [Symbol:MSFT
+        Time:2024-02-21 21:00:03.207525]
+Initiating position close for INTC at 2024-02-21 21:00:03.430385
+Sell previous long position closed successfully
+        [Symbol:INTC
+        Time:2024-02-21 21:00:03.546567]
+No action on WMT [2024-02-21 21:00:03.691824]
+No action on GOOG [2024-02-21 21:00:03.946639]
+No action on DFS [2024-02-21 21:00:04.153319]
+No action on COF [2024-02-21 21:00:04.351236]
+No action on KO [2024-02-21 21:00:04.506797]
+Initiating long position for XOM at 2024-02-21 21:00:04.668588
+Buy order completed
+        [Symbol:XOM]
+        [Time:2024-02-21 21:00:04.791435]
+        [Quantity: 5.551517699326421]
+Collecting data...[symbol: AMAT, remaining: 6min]
+Initiating long position for PFE at 2024-02-21 21:00:04.968394
+Buy order completed
+        [Symbol:PFE]
+        [Time:2024-02-21 21:00:05.157542]
+        [Quantity: 21.35525280048441]
+No action on ADBE [2024-02-21 21:00:05.372768]
+No action on MU [2024-02-21 21:00:05.589474]
+No action on OXY [2024-02-21 21:00:05.751712]
+Collecting data...[symbol: LLY, remaining: 2min]
+Initiating position close for ORCL at 2024-02-21 21:00:05.964618
+Sell previous long position closed successfully
+        [Symbol:ORCL
+        Time:2024-02-21 21:00:06.150460]
+Initiating position close for CSCO at 2024-02-21 21:00:06.423557
+Sell previous long position closed successfully
+        [Symbol:CSCO
+        Time:2024-02-21 21:00:06.542124]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:00:06
+New bar data received at: 2024-02-21 21:00:06
+New bar data received at: 2024-02-21 21:00:06
+New bar data received at: 2024-02-21 21:00:06
+New bar data received at: 2024-02-21 21:00:06
+New bar data received at: 2024-02-21 21:00:06
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:01:00
+New bar data received at: 2024-02-21 21:01:00
+No action on NVDA [2024-02-21 21:01:00.608477]
+Initiating position close for AAPL at 2024-02-21 21:01:00.758275
+Sell previous long position closed successfully
+        [Symbol:AAPL
+        Time:2024-02-21 21:01:00.876019]
+No action on AMD [2024-02-21 21:01:01.078624]
+No action on AMZN [2024-02-21 21:01:01.283816]
+Initiating long position for MSFT at 2024-02-21 21:01:01.437555
+Buy order completed
+        [Symbol:MSFT]
+        [Time:2024-02-21 21:01:01.555063]
+        [Quantity: 1.386391126115264]
+No action on INTC [2024-02-21 21:01:01.704562]
+Initiating position close for WMT at 2024-02-21 21:01:01.853860
+Sell previous long position closed successfully
+        [Symbol:WMT
+        Time:2024-02-21 21:01:01.985917]
+No action on GOOG [2024-02-21 21:01:02.222605]
+Initiating position close for DFS at 2024-02-21 21:01:02.430493
+Sell previous long position closed successfully
+        [Symbol:DFS
+        Time:2024-02-21 21:01:02.554553]
+No action on COF [2024-02-21 21:01:02.726277]
+No action on KO [2024-02-21 21:01:02.924031]
+No action on XOM [2024-02-21 21:01:03.129989]
+Collecting data...[symbol: AMAT, remaining: 5min]
+No action on PFE [2024-02-21 21:01:03.280962]
+No action on ADBE [2024-02-21 21:01:03.437564]
+No action on MU [2024-02-21 21:01:03.648293]
+No action on OXY [2024-02-21 21:01:03.822303]
+Collecting data...[symbol: LLY, remaining: 2min]
+Initiating long position for ORCL at 2024-02-21 21:01:04.052548
+Buy order completed
+        [Symbol:ORCL]
+        [Time:2024-02-21 21:01:04.243191]
+        [Quantity: 5.534208848215362]
+Initiating long position for CSCO at 2024-02-21 21:01:04.404305
+Buy order completed
+        [Symbol:CSCO]
+        [Time:2024-02-21 21:01:04.528593]
+        [Quantity: 12.79175397362865]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:01:04
+New bar data received at: 2024-02-21 21:01:04
+New bar data received at: 2024-02-21 21:01:04
+New bar data received at: 2024-02-21 21:01:04
+New bar data received at: 2024-02-21 21:01:04
+New bar data received at: 2024-02-21 21:01:04
+New bar data received at: 2024-02-21 21:01:04
+New bar data received at: 2024-02-21 21:01:04
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:02:00
+New bar data received at: 2024-02-21 21:02:00
+New bar data received at: 2024-02-21 21:02:00
+New bar data received at: 2024-02-21 21:02:00
+New bar data received at: 2024-02-21 21:02:00
+New bar data received at: 2024-02-21 21:02:00
+No action on NVDA [2024-02-21 21:02:00.841191]
+No action on AAPL [2024-02-21 21:02:00.998492]
+No action on AMD [2024-02-21 21:02:01.145278]
+Initiating position close for AMZN at 2024-02-21 21:02:01.308804
+Sell previous long position closed successfully
+        [Symbol:AMZN
+        Time:2024-02-21 21:02:01.485201]
+No action on MSFT [2024-02-21 21:02:01.671024]
+No action on INTC [2024-02-21 21:02:01.838478]
+Initiating long position for WMT at 2024-02-21 21:02:01.992788
+Buy order completed
+        [Symbol:WMT]
+        [Time:2024-02-21 21:02:02.112826]
+        [Quantity: 3.4216899020430267]
+No action on GOOG [2024-02-21 21:02:02.264288]
+No action on DFS [2024-02-21 21:02:02.419606]
+No action on COF [2024-02-21 21:02:02.566499]
+No action on KO [2024-02-21 21:02:02.720653]
+Initiating position close for XOM at 2024-02-21 21:02:02.876175
+Sell previous long position closed successfully
+        [Symbol:XOM
+        Time:2024-02-21 21:02:02.991359]
+Collecting data...[symbol: AMAT, remaining: 4min]
+No action on PFE [2024-02-21 21:02:03.241616]
+No action on ADBE [2024-02-21 21:02:03.393391]
+No action on MU [2024-02-21 21:02:03.594751]
+No action on OXY [2024-02-21 21:02:03.759335]
+Collecting data...[symbol: LLY, remaining: 1min]
+No action on ORCL [2024-02-21 21:02:03.954099]
+No action on CSCO [2024-02-21 21:02:04.158352]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:02:04
+New bar data received at: 2024-02-21 21:02:04
+New bar data received at: 2024-02-21 21:02:04
+New bar data received at: 2024-02-21 21:02:04
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:03:00
+New bar data received at: 2024-02-21 21:03:00
+New bar data received at: 2024-02-21 21:03:00
+New bar data received at: 2024-02-21 21:03:00
+New bar data received at: 2024-02-21 21:03:00
+New bar data received at: 2024-02-21 21:03:00
+New bar data received at: 2024-02-21 21:03:00
+New bar data received at: 2024-02-21 21:03:00
+No action on NVDA [2024-02-21 21:03:00.689566]
+No action on AAPL [2024-02-21 21:03:00.843634]
+No action on AMD [2024-02-21 21:03:01.098720]
+No action on AMZN [2024-02-21 21:03:01.314896]
+No action on MSFT [2024-02-21 21:03:01.502263]
+No action on INTC [2024-02-21 21:03:01.722519]
+Initiating position close for WMT at 2024-02-21 21:03:01.918279
+Sell previous long position closed successfully
+        [Symbol:WMT
+        Time:2024-02-21 21:03:02.103831]
+No action on GOOG [2024-02-21 21:03:02.327258]
+No action on DFS [2024-02-21 21:03:02.535876]
+Initiating position close for COF at 2024-02-21 21:03:02.683647
+Sell previous long position closed successfully
+        [Symbol:COF
+        Time:2024-02-21 21:03:02.801818]
+No action on KO [2024-02-21 21:03:03.042122]
+No action on XOM [2024-02-21 21:03:03.254352]
+Collecting data...[symbol: AMAT, remaining: 4min]
+No action on PFE [2024-02-21 21:03:03.411634]
+No action on ADBE [2024-02-21 21:03:03.562057]
+No action on MU [2024-02-21 21:03:03.747887]
+No action on OXY [2024-02-21 21:03:03.900974]
+Collecting data...[symbol: LLY, remaining: 0min]
+No action on ORCL [2024-02-21 21:03:04.165815]
+No action on CSCO [2024-02-21 21:03:04.372331]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:03:04
+New bar data received at: 2024-02-21 21:03:04
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:04:00
+New bar data received at: 2024-02-21 21:04:00
+New bar data received at: 2024-02-21 21:04:00
+New bar data received at: 2024-02-21 21:04:00
+New bar data received at: 2024-02-21 21:04:00
+New bar data received at: 2024-02-21 21:04:00
+No action on NVDA [2024-02-21 21:04:00.900023]
+No action on AAPL [2024-02-21 21:04:01.106259]
+No action on AMD [2024-02-21 21:04:01.305577]
+No action on AMZN [2024-02-21 21:04:01.572336]
+Initiating position close for MSFT at 2024-02-21 21:04:01.720710
+Sell previous long position closed successfully
+        [Symbol:MSFT
+        Time:2024-02-21 21:04:01.843152]
+No action on INTC [2024-02-21 21:04:02.049736]
+No action on WMT [2024-02-21 21:04:02.240645]
+No action on GOOG [2024-02-21 21:04:02.391345]
+No action on DFS [2024-02-21 21:04:02.641295]
+No action on COF [2024-02-21 21:04:02.846839]
+No action on KO [2024-02-21 21:04:03.048489]
+No action on XOM [2024-02-21 21:04:03.256605]
+Collecting data...[symbol: AMAT, remaining: 3min]
+No action on PFE [2024-02-21 21:04:03.457073]
+No action on ADBE [2024-02-21 21:04:03.660461]
+No action on MU [2024-02-21 21:04:03.871140]
+No action on OXY [2024-02-21 21:04:04.090502]
+Initiating position close for LLY at 2024-02-21 21:04:04.274165
+Sell previous long position closed successfully
+        [Symbol:LLY
+        Time:2024-02-21 21:04:04.389330]
+Initiating position close for ORCL at 2024-02-21 21:04:04.533273
+Sell previous long position closed successfully
+        [Symbol:ORCL
+        Time:2024-02-21 21:04:04.670131]
+No action on CSCO [2024-02-21 21:04:04.891493]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:04:04
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:05:00
+New bar data received at: 2024-02-21 21:05:00
+New bar data received at: 2024-02-21 21:05:00
+New bar data received at: 2024-02-21 21:05:00
+New bar data received at: 2024-02-21 21:05:00
+New bar data received at: 2024-02-21 21:05:00
+New bar data received at: 2024-02-21 21:05:00
+New bar data received at: 2024-02-21 21:05:00
+New bar data received at: 2024-02-21 21:05:00
+No action on NVDA [2024-02-21 21:05:00.945425]
+No action on AAPL [2024-02-21 21:05:01.122455]
+Initiating position close for AMD at 2024-02-21 21:05:01.312631
+Sell previous long position closed successfully
+        [Symbol:AMD
+        Time:2024-02-21 21:05:01.502278]
+No action on AMZN [2024-02-21 21:05:01.659921]
+No action on MSFT [2024-02-21 21:05:01.830400]
+No action on INTC [2024-02-21 21:05:02.036495]
+No action on WMT [2024-02-21 21:05:02.244052]
+No action on GOOG [2024-02-21 21:05:02.442126]
+No action on DFS [2024-02-21 21:05:02.658604]
+No action on COF [2024-02-21 21:05:02.862650]
+No action on KO [2024-02-21 21:05:03.059375]
+No action on XOM [2024-02-21 21:05:03.263819]
+Collecting data...[symbol: AMAT, remaining: 2min]
+No action on PFE [2024-02-21 21:05:03.463249]
+No action on ADBE [2024-02-21 21:05:03.666805]
+No action on MU [2024-02-21 21:05:03.880909]
+No action on OXY [2024-02-21 21:05:04.083158]
+Initiating long position for LLY at 2024-02-21 21:05:04.290589
+Buy order completed
+        [Symbol:LLY]
+        [Time:2024-02-21 21:05:04.471745]
+        [Quantity: 0.8599674711757064]
+Initiating long position for ORCL at 2024-02-21 21:05:04.696861
+Buy order completed
+        [Symbol:ORCL]
+        [Time:2024-02-21 21:05:04.881391]
+        [Quantity: 5.906228404305873]
+Initiating position close for CSCO at 2024-02-21 21:05:05.204689
+Sell previous long position closed successfully
+        [Symbol:CSCO
+        Time:2024-02-21 21:05:05.319271]
+Data available, execute() called
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:06:00
+New bar data received at: 2024-02-21 21:06:00
+New bar data received at: 2024-02-21 21:06:00
+New bar data received at: 2024-02-21 21:06:00
+New bar data received at: 2024-02-21 21:06:00
+New bar data received at: 2024-02-21 21:06:00
+New bar data received at: 2024-02-21 21:06:00
+New bar data received at: 2024-02-21 21:06:00
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:07:00
+New bar data received at: 2024-02-21 21:07:00
+No action on NVDA [2024-02-21 21:07:01.546629]
+No action on AAPL [2024-02-21 21:07:01.755845]
+No action on AMD [2024-02-21 21:07:01.920599]
+No action on AMZN [2024-02-21 21:07:02.168393]
+No action on MSFT [2024-02-21 21:07:02.355939]
+No action on INTC [2024-02-21 21:07:02.575193]
+No action on WMT [2024-02-21 21:07:02.728300]
+Initiating position close for GOOG at 2024-02-21 21:07:02.883850
+Sell previous long position closed successfully
+        [Symbol:GOOG
+        Time:2024-02-21 21:07:03.057479]
+No action on DFS [2024-02-21 21:07:03.276997]
+No action on COF [2024-02-21 21:07:03.491734]
+Initiating position close for KO at 2024-02-21 21:07:03.689277
+Sell previous long position closed successfully
+        [Symbol:KO
+        Time:2024-02-21 21:07:03.871467]
+No action on XOM [2024-02-21 21:07:04.102393]
+Collecting data...[symbol: AMAT, remaining: 2min]
+No action on PFE [2024-02-21 21:07:04.314131]
+Initiating position close for ADBE at 2024-02-21 21:07:04.502033
+Sell previous long position closed successfully
+        [Symbol:ADBE
+        Time:2024-02-21 21:07:04.690769]
+No action on MU [2024-02-21 21:07:04.917462]
+No action on OXY [2024-02-21 21:07:05.124354]
+No action on LLY [2024-02-21 21:07:05.324251]
+Initiating position close for ORCL at 2024-02-21 21:07:05.526913
+Sell previous long position closed successfully
+        [Symbol:ORCL
+        Time:2024-02-21 21:07:05.714746]
+No action on CSCO [2024-02-21 21:07:05.866995]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:07:05
+New bar data received at: 2024-02-21 21:07:05
+New bar data received at: 2024-02-21 21:07:05
+New bar data received at: 2024-02-21 21:07:05
+New bar data received at: 2024-02-21 21:07:05
+New bar data received at: 2024-02-21 21:07:05
+New bar data received at: 2024-02-21 21:07:05
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:08:00
+New bar data received at: 2024-02-21 21:08:00
+New bar data received at: 2024-02-21 21:08:00
+New bar data received at: 2024-02-21 21:08:00
+No action on NVDA [2024-02-21 21:08:01.075704]
+No action on AAPL [2024-02-21 21:08:01.349338]
+No action on AMD [2024-02-21 21:08:01.558779]
+No action on AMZN [2024-02-21 21:08:01.719610]
+No action on MSFT [2024-02-21 21:08:01.885305]
+No action on INTC [2024-02-21 21:08:02.057294]
+No action on WMT [2024-02-21 21:08:02.269741]
+No action on GOOG [2024-02-21 21:08:02.436842]
+No action on DFS [2024-02-21 21:08:02.670370]
+No action on COF [2024-02-21 21:08:02.875224]
+No action on KO [2024-02-21 21:08:03.081990]
+No action on XOM [2024-02-21 21:08:03.297250]
+Collecting data...[symbol: AMAT, remaining: 2min]
+No action on PFE [2024-02-21 21:08:03.489179]
+Initiating long position for ADBE at 2024-02-21 21:08:03.695923
+Buy order completed
+        [Symbol:ADBE]
+        [Time:2024-02-21 21:08:03.879191]
+        [Quantity: 1.2508081651083938]
+No action on MU [2024-02-21 21:08:04.104987]
+Initiating long position for OXY at 2024-02-21 21:08:04.286592
+Buy order completed
+        [Symbol:OXY]
+        [Time:2024-02-21 21:08:04.439532]
+        [Quantity: 11.365127899536462]
+No action on LLY [2024-02-21 21:08:04.818132]
+Initiating long position for ORCL at 2024-02-21 21:08:04.974781
+Buy order completed
+        [Symbol:ORCL]
+        [Time:2024-02-21 21:08:05.107421]
+        [Quantity: 6.195156358230135]
+No action on CSCO [2024-02-21 21:08:05.333692]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:08:05
+New bar data received at: 2024-02-21 21:08:05
+New bar data received at: 2024-02-21 21:08:05
+New bar data received at: 2024-02-21 21:08:05
+New bar data received at: 2024-02-21 21:08:05
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:09:00
+New bar data received at: 2024-02-21 21:09:00
+New bar data received at: 2024-02-21 21:09:00
+New bar data received at: 2024-02-21 21:09:00
+New bar data received at: 2024-02-21 21:09:00
+No action on NVDA [2024-02-21 21:09:00.864991]
+No action on AAPL [2024-02-21 21:09:01.042501]
+No action on AMD [2024-02-21 21:09:01.243303]
+No action on AMZN [2024-02-21 21:09:01.448665]
+No action on MSFT [2024-02-21 21:09:01.657070]
+Initiating long position for INTC at 2024-02-21 21:09:01.858166
+Buy order completed
+        [Symbol:INTC]
+        [Time:2024-02-21 21:09:02.042321]
+        [Quantity: 15.404274904325641]
+No action on WMT [2024-02-21 21:09:02.273297]
+No action on GOOG [2024-02-21 21:09:02.479578]
+No action on DFS [2024-02-21 21:09:02.678027]
+No action on COF [2024-02-21 21:09:02.882232]
+No action on KO [2024-02-21 21:09:03.086418]
+No action on XOM [2024-02-21 21:09:03.291648]
+Collecting data...[symbol: AMAT, remaining: 2min]
+No action on PFE [2024-02-21 21:09:03.491905]
+Initiating position close for ADBE at 2024-02-21 21:09:03.698162
+Sell previous long position closed successfully
+        [Symbol:ADBE
+        Time:2024-02-21 21:09:03.886095]
+Initiating long position for MU at 2024-02-21 21:09:04.228264
+Buy order completed
+        [Symbol:MU]
+        [Time:2024-02-21 21:09:04.398262]
+        [Quantity: 7.989247019744195]
+Initiating position close for OXY at 2024-02-21 21:09:04.621990
+Sell previous long position closed successfully
+        [Symbol:OXY
+        Time:2024-02-21 21:09:04.807463]
+No action on LLY [2024-02-21 21:09:05.027799]
+No action on ORCL [2024-02-21 21:09:05.260078]
+No action on CSCO [2024-02-21 21:09:05.447039]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:09:05
+New bar data received at: 2024-02-21 21:09:05
+New bar data received at: 2024-02-21 21:09:05
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:10:00
+New bar data received at: 2024-02-21 21:10:00
+New bar data received at: 2024-02-21 21:10:00
+New bar data received at: 2024-02-21 21:10:00
+New bar data received at: 2024-02-21 21:10:00
+New bar data received at: 2024-02-21 21:10:00
+New bar data received at: 2024-02-21 21:10:00
+No action on NVDA [2024-02-21 21:10:00.942814]
+No action on AAPL [2024-02-21 21:10:01.150900]
+No action on AMD [2024-02-21 21:10:01.368123]
+No action on AMZN [2024-02-21 21:10:01.543229]
+Initiating long position for MSFT at 2024-02-21 21:10:01.763204
+Buy order completed
+        [Symbol:MSFT]
+        [Time:2024-02-21 21:10:01.948353]
+        [Quantity: 1.6679155804276438]
+No action on INTC [2024-02-21 21:10:02.167561]
+No action on WMT [2024-02-21 21:10:02.329229]
+No action on GOOG [2024-02-21 21:10:02.587059]
+No action on DFS [2024-02-21 21:10:02.789568]
+No action on COF [2024-02-21 21:10:02.993424]
+No action on KO [2024-02-21 21:10:03.195955]
+Initiating long position for XOM at 2024-02-21 21:10:03.399852
+Buy order completed
+        [Symbol:XOM]
+        [Time:2024-02-21 21:10:03.585686]
+        [Quantity: 6.3737078002438015]
+Collecting data...[symbol: AMAT, remaining: 2min]
+No action on PFE [2024-02-21 21:10:03.806029]
+Initiating long position for ADBE at 2024-02-21 21:10:04.027592
+Buy order completed
+        [Symbol:ADBE]
+        [Time:2024-02-21 21:10:04.200220]
+        [Quantity: 1.2511612747540655]
+No action on MU [2024-02-21 21:10:04.424076]
+No action on OXY [2024-02-21 21:10:04.634205]
+No action on LLY [2024-02-21 21:10:04.787562]
+No action on ORCL [2024-02-21 21:10:04.946989]
+No action on CSCO [2024-02-21 21:10:05.143131]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:10:05
+New bar data received at: 2024-02-21 21:10:05
+New bar data received at: 2024-02-21 21:10:05
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:11:00
+New bar data received at: 2024-02-21 21:11:00
+New bar data received at: 2024-02-21 21:11:00
+New bar data received at: 2024-02-21 21:11:00
+New bar data received at: 2024-02-21 21:11:00
+New bar data received at: 2024-02-21 21:11:00
+New bar data received at: 2024-02-21 21:11:00
+New bar data received at: 2024-02-21 21:11:00
+New bar data received at: 2024-02-21 21:11:00
+No action on NVDA [2024-02-21 21:11:01.075785]
+No action on AAPL [2024-02-21 21:11:01.266202]
+No action on AMD [2024-02-21 21:11:01.479011]
+No action on AMZN [2024-02-21 21:11:01.674421]
+No action on MSFT [2024-02-21 21:11:01.867619]
+Initiating position close for INTC at 2024-02-21 21:11:02.092180
+Sell previous long position closed successfully
+        [Symbol:INTC
+        Time:2024-02-21 21:11:02.261902]
+No action on WMT [2024-02-21 21:11:02.443254]
+No action on GOOG [2024-02-21 21:11:02.696406]
+Initiating long position for DFS at 2024-02-21 21:11:02.850553
+Buy order completed
+        [Symbol:DFS]
+        [Time:2024-02-21 21:11:02.981520]
+        [Quantity: 5.455910892442258]
+No action on COF [2024-02-21 21:11:03.205630]
+No action on KO [2024-02-21 21:11:03.408055]
+Initiating position close for XOM at 2024-02-21 21:11:03.624630
+Sell previous long position closed successfully
+        [Symbol:XOM
+        Time:2024-02-21 21:11:03.740760]
+Collecting data...[symbol: AMAT, remaining: 0min]
+Initiating position close for PFE at 2024-02-21 21:11:03.890959
+Sell previous long position closed successfully
+        [Symbol:PFE
+        Time:2024-02-21 21:11:04.107343]
+No action on ADBE [2024-02-21 21:11:04.333901]
+No action on MU [2024-02-21 21:11:04.529580]
+No action on OXY [2024-02-21 21:11:04.705432]
+No action on LLY [2024-02-21 21:11:04.857005]
+No action on ORCL [2024-02-21 21:11:05.041036]
+No action on CSCO [2024-02-21 21:11:05.262532]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:11:05
+New bar data received at: 2024-02-21 21:11:05
+New bar data received at: 2024-02-21 21:11:05
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:12:00
+New bar data received at: 2024-02-21 21:12:00
+New bar data received at: 2024-02-21 21:12:00
+New bar data received at: 2024-02-21 21:12:00
+New bar data received at: 2024-02-21 21:12:00
+New bar data received at: 2024-02-21 21:12:00
+New bar data received at: 2024-02-21 21:12:00
+No action on NVDA [2024-02-21 21:12:00.968644]
+Initiating long position for AAPL at 2024-02-21 21:12:01.162866
+Buy order completed
+        [Symbol:AAPL]
+        [Time:2024-02-21 21:12:01.347206]
+        [Quantity: 3.6622411860216837]
+No action on AMD [2024-02-21 21:12:01.600652]
+Initiating long position for AMZN at 2024-02-21 21:12:01.779757
+Buy order completed
+        [Symbol:AMZN]
+        [Time:2024-02-21 21:12:01.961471]
+        [Quantity: 4.048705868320611]
+Initiating position close for MSFT at 2024-02-21 21:12:02.190488
+Sell previous long position closed successfully
+        [Symbol:MSFT
+        Time:2024-02-21 21:12:02.308902]
+No action on INTC [2024-02-21 21:12:02.551587]
+Initiating long position for WMT at 2024-02-21 21:12:02.799567
+Buy order completed
+        [Symbol:WMT]
+        [Time:2024-02-21 21:12:02.986058]
+        [Quantity: 3.8284673853356836]
+No action on GOOG [2024-02-21 21:12:03.215461]
+No action on DFS [2024-02-21 21:12:03.418195]
+No action on COF [2024-02-21 21:12:03.620203]
+No action on KO [2024-02-21 21:12:03.783803]
+Initiating long position for XOM at 2024-02-21 21:12:04.028184
+Buy order completed
+        [Symbol:XOM]
+        [Time:2024-02-21 21:12:04.214264]
+        [Quantity: 6.35312289661126]
+Collecting data...[symbol: AMAT, remaining: 0min]
+No action on PFE [2024-02-21 21:12:04.447652]
+Initiating position close for ADBE at 2024-02-21 21:12:04.650437
+Sell previous long position closed successfully
+        [Symbol:ADBE
+        Time:2024-02-21 21:12:04.828452]
+Initiating position close for MU at 2024-02-21 21:12:05.106626
+Sell previous long position closed successfully
+        [Symbol:MU
+        Time:2024-02-21 21:12:05.239765]
+No action on OXY [2024-02-21 21:12:05.472436]
+No action on LLY [2024-02-21 21:12:05.670322]
+Initiating position close for ORCL at 2024-02-21 21:12:05.822441
+Sell previous long position closed successfully
+        [Symbol:ORCL
+        Time:2024-02-21 21:12:05.954973]
+No action on CSCO [2024-02-21 21:12:06.112410]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:12:06
+New bar data received at: 2024-02-21 21:12:06
+New bar data received at: 2024-02-21 21:12:06
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:13:00
+New bar data received at: 2024-02-21 21:13:00
+New bar data received at: 2024-02-21 21:13:00
+New bar data received at: 2024-02-21 21:13:00
+New bar data received at: 2024-02-21 21:13:00
+New bar data received at: 2024-02-21 21:13:00
+New bar data received at: 2024-02-21 21:13:00
+New bar data received at: 2024-02-21 21:13:00
+New bar data received at: 2024-02-21 21:13:00
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:14:00
+New bar data received at: 2024-02-21 21:14:00
+Initiating long position for NVDA at 2024-02-21 21:14:01.074987
+Buy order completed
+        [Symbol:NVDA]
+        [Time:2024-02-21 21:14:01.258829]
+        [Quantity: 0.9975867463565412]
+No action on AAPL [2024-02-21 21:14:01.479179]
+No action on AMD [2024-02-21 21:14:01.698222]
+No action on AMZN [2024-02-21 21:14:01.888083]
+No action on MSFT [2024-02-21 21:14:02.099504]
+No action on INTC [2024-02-21 21:14:02.256902]
+No action on WMT [2024-02-21 21:14:02.417362]
+Initiating long position for GOOG at 2024-02-21 21:14:02.610627
+Buy order completed
+        [Symbol:GOOG]
+        [Time:2024-02-21 21:14:02.794919]
+        [Quantity: 4.627599305531279]
+No action on DFS [2024-02-21 21:14:03.016460]
+No action on COF [2024-02-21 21:14:03.227578]
+No action on KO [2024-02-21 21:14:03.433336]
+No action on XOM [2024-02-21 21:14:03.631320]
+Initiating position close for AMAT at 2024-02-21 21:14:03.834004
+Sell previous long position closed successfully
+        [Symbol:AMAT
+        Time:2024-02-21 21:14:04.023688]
+No action on PFE [2024-02-21 21:14:04.268441]
+No action on ADBE [2024-02-21 21:14:04.453866]
+Initiating long position for MU at 2024-02-21 21:14:04.665986
+Buy order completed
+        [Symbol:MU]
+        [Time:2024-02-21 21:14:04.787697]
+        [Quantity: 8.407612900556487]
+No action on OXY [2024-02-21 21:14:04.992205]
+No action on LLY [2024-02-21 21:14:05.172727]
+No action on ORCL [2024-02-21 21:14:05.384359]
+No action on CSCO [2024-02-21 21:14:05.581155]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:14:05
+New bar data received at: 2024-02-21 21:14:05
+New bar data received at: 2024-02-21 21:14:05
+New bar data received at: 2024-02-21 21:14:05
+New bar data received at: 2024-02-21 21:14:05
+New bar data received at: 2024-02-21 21:14:05
+New bar data received at: 2024-02-21 21:14:05
+New bar data received at: 2024-02-21 21:14:05
+New bar data received at: 2024-02-21 21:14:05
+New bar data received at: 2024-02-21 21:14:05
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:15:00
+New bar data received at: 2024-02-21 21:15:00
+New bar data received at: 2024-02-21 21:15:00
+New bar data received at: 2024-02-21 21:15:00
+No action on NVDA [2024-02-21 21:15:00.880265]
+No action on AAPL [2024-02-21 21:15:01.080218]
+Initiating long position for AMD at 2024-02-21 21:15:01.288655
+Buy order completed
+        [Symbol:AMD]
+        [Time:2024-02-21 21:15:01.476124]
+        [Quantity: 4.207359876108329]
+No action on AMZN [2024-02-21 21:15:01.698551]
+No action on MSFT [2024-02-21 21:15:01.958553]
+No action on INTC [2024-02-21 21:15:02.209595]
+No action on WMT [2024-02-21 21:15:02.407831]
+No action on GOOG [2024-02-21 21:15:02.662135]
+No action on DFS [2024-02-21 21:15:02.922255]
+No action on COF [2024-02-21 21:15:03.130776]
+Initiating long position for KO at 2024-02-21 21:15:03.336801
+Buy order completed
+        [Symbol:KO]
+        [Time:2024-02-21 21:15:03.521270]
+        [Quantity: 11.225510371115215]
+Initiating position close for XOM at 2024-02-21 21:15:03.747181
+Sell previous long position closed successfully
+        [Symbol:XOM
+        Time:2024-02-21 21:15:03.929997]
+No action on AMAT [2024-02-21 21:15:04.167506]
+No action on PFE [2024-02-21 21:15:04.368265]
+No action on ADBE [2024-02-21 21:15:04.572328]
+No action on MU [2024-02-21 21:15:04.740819]
+No action on OXY [2024-02-21 21:15:04.908404]
+No action on LLY [2024-02-21 21:15:05.080135]
+No action on ORCL [2024-02-21 21:15:05.280295]
+No action on CSCO [2024-02-21 21:15:05.485230]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:15:05
+New bar data received at: 2024-02-21 21:15:05
+New bar data received at: 2024-02-21 21:15:05
+New bar data received at: 2024-02-21 21:15:05
+New bar data received at: 2024-02-21 21:15:05
+New bar data received at: 2024-02-21 21:15:05
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:16:00
+New bar data received at: 2024-02-21 21:16:00
+New bar data received at: 2024-02-21 21:16:00
+New bar data received at: 2024-02-21 21:16:00
+New bar data received at: 2024-02-21 21:16:00
+No action on NVDA [2024-02-21 21:16:00.881810]
+Initiating position close for AAPL at 2024-02-21 21:16:01.044316
+Sell previous long position closed successfully
+        [Symbol:AAPL
+        Time:2024-02-21 21:16:01.165572]
+Initiating position close for AMD at 2024-02-21 21:16:01.362550
+Sell previous long position closed successfully
+        [Symbol:AMD
+        Time:2024-02-21 21:16:01.585033]
+No action on AMZN [2024-02-21 21:16:01.846486]
+No action on MSFT [2024-02-21 21:16:02.170854]
+Initiating long position for INTC at 2024-02-21 21:16:02.429535
+Buy order completed
+        [Symbol:INTC]
+        [Time:2024-02-21 21:16:02.609461]
+        [Quantity: 15.856191579760525]
+Initiating position close for WMT at 2024-02-21 21:16:02.874606
+Sell previous long position closed successfully
+        [Symbol:WMT
+        Time:2024-02-21 21:16:03.015107]
+No action on GOOG [2024-02-21 21:16:03.174605]
+No action on DFS [2024-02-21 21:16:03.332283]
+No action on COF [2024-02-21 21:16:03.552503]
+Initiating position close for KO at 2024-02-21 21:16:03.699924
+Sell previous long position closed successfully
+        [Symbol:KO
+        Time:2024-02-21 21:16:03.837573]
+Initiating long position for XOM at 2024-02-21 21:16:04.054352
+Buy order completed
+        [Symbol:XOM]
+        [Time:2024-02-21 21:16:04.175016]
+        [Quantity: 6.344028266801977]
+No action on AMAT [2024-02-21 21:16:04.389821]
+No action on PFE [2024-02-21 21:16:04.578825]
+No action on ADBE [2024-02-21 21:16:04.775901]
+No action on MU [2024-02-21 21:16:05.003304]
+Initiating long position for OXY at 2024-02-21 21:16:05.184359
+Buy order completed
+        [Symbol:OXY]
+        [Time:2024-02-21 21:16:05.369975]
+        [Quantity: 11.513806673317815]
+No action on LLY [2024-02-21 21:16:05.596301]
+No action on ORCL [2024-02-21 21:16:05.857379]
+Initiating long position for CSCO at 2024-02-21 21:16:06.019314
+Buy order completed
+        [Symbol:CSCO]
+        [Time:2024-02-21 21:16:06.144365]
+        [Quantity: 14.176809004824014]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:16:06
+New bar data received at: 2024-02-21 21:16:06
+New bar data received at: 2024-02-21 21:16:06
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:17:00
+New bar data received at: 2024-02-21 21:17:00
+New bar data received at: 2024-02-21 21:17:00
+New bar data received at: 2024-02-21 21:17:00
+New bar data received at: 2024-02-21 21:17:00
+New bar data received at: 2024-02-21 21:17:00
+New bar data received at: 2024-02-21 21:17:00
+New bar data received at: 2024-02-21 21:17:00
+No action on NVDA [2024-02-21 21:17:01.020680]
+No action on AAPL [2024-02-21 21:17:01.256199]
+Initiating long position for AMD at 2024-02-21 21:17:01.516810
+Buy order completed
+        [Symbol:AMD]
+        [Time:2024-02-21 21:17:01.690581]
+        [Quantity: 4.200086401992947]
+Initiating position close for AMZN at 2024-02-21 21:17:01.849120
+Sell previous long position closed successfully
+        [Symbol:AMZN
+        Time:2024-02-21 21:17:01.997807]
+No action on MSFT [2024-02-21 21:17:02.278108]
+Initiating position close for INTC at 2024-02-21 21:17:02.532741
+Sell previous long position closed successfully
+        [Symbol:INTC
+        Time:2024-02-21 21:17:02.715048]
+No action on WMT [2024-02-21 21:17:02.948083]
+Initiating position close for GOOG at 2024-02-21 21:17:03.147258
+Sell previous long position closed successfully
+        [Symbol:GOOG
+        Time:2024-02-21 21:17:03.329083]
+Initiating position close for DFS at 2024-02-21 21:17:03.552817
+Sell previous long position closed successfully
+        [Symbol:DFS
+        Time:2024-02-21 21:17:03.687550]
+No action on COF [2024-02-21 21:17:03.852040]
+Initiating long position for KO at 2024-02-21 21:17:04.065639
+Buy order completed
+        [Symbol:KO]
+        [Time:2024-02-21 21:17:04.254340]
+        [Quantity: 10.624426981008513]
+Initiating position close for XOM at 2024-02-21 21:17:04.478581
+Sell previous long position closed successfully
+        [Symbol:XOM
+        Time:2024-02-21 21:17:04.660222]
+Initiating long position for AMAT at 2024-02-21 21:17:04.812608
+Buy order completed
+        [Symbol:AMAT]
+        [Time:2024-02-21 21:17:04.966765]
+        [Quantity: 3.561627077874662]
+No action on PFE [2024-02-21 21:17:05.266903]
+No action on ADBE [2024-02-21 21:17:05.500496]
+No action on MU [2024-02-21 21:17:05.705370]
+Initiating position close for OXY at 2024-02-21 21:17:05.862379
+Sell previous long position closed successfully
+        [Symbol:OXY
+        Time:2024-02-21 21:17:05.991490]
+No action on LLY [2024-02-21 21:17:06.158847]
+No action on ORCL [2024-02-21 21:17:06.328542]
+No action on CSCO [2024-02-21 21:17:06.521761]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:17:06
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:18:00
+New bar data received at: 2024-02-21 21:18:00
+New bar data received at: 2024-02-21 21:18:00
+New bar data received at: 2024-02-21 21:18:00
+New bar data received at: 2024-02-21 21:18:00
+New bar data received at: 2024-02-21 21:18:00
+New bar data received at: 2024-02-21 21:18:00
+New bar data received at: 2024-02-21 21:18:00
+New bar data received at: 2024-02-21 21:18:00
+New bar data received at: 2024-02-21 21:18:00
+No action on NVDA [2024-02-21 21:18:00.996305]
+Initiating long position for AAPL at 2024-02-21 21:18:01.174682
+Buy order completed
+        [Symbol:AAPL]
+        [Time:2024-02-21 21:18:01.293972]
+        [Quantity: 3.7766438212138382]
+No action on AMD [2024-02-21 21:18:01.511783]
+No action on AMZN [2024-02-21 21:18:01.716438]
+No action on MSFT [2024-02-21 21:18:01.874251]
+Initiating long position for INTC at 2024-02-21 21:18:02.058725
+Buy order completed
+        [Symbol:INTC]
+        [Time:2024-02-21 21:18:02.209752]
+        [Quantity: 15.839473277726292]
+No action on WMT [2024-02-21 21:18:02.435058]
+No action on GOOG [2024-02-21 21:18:02.596818]
+No action on DFS [2024-02-21 21:18:02.761081]
+Initiating long position for COF at 2024-02-21 21:18:02.916291
+Buy order completed
+        [Symbol:COF]
+        [Time:2024-02-21 21:18:03.037923]
+        [Quantity: 5.061240276433931]
+Initiating position close for KO at 2024-02-21 21:18:03.187092
+Sell previous long position closed successfully
+        [Symbol:KO
+        Time:2024-02-21 21:18:03.302045]
+Initiating long position for XOM at 2024-02-21 21:18:03.457876
+Buy order completed
+        [Symbol:XOM]
+        [Time:2024-02-21 21:18:03.604961]
+        [Quantity: 6.56161370771158]
+No action on AMAT [2024-02-21 21:18:03.753299]
+No action on PFE [2024-02-21 21:18:03.905795]
+No action on ADBE [2024-02-21 21:18:04.060063]
+No action on MU [2024-02-21 21:18:04.207853]
+Initiating long position for OXY at 2024-02-21 21:18:04.379299
+Buy order completed
+        [Symbol:OXY]
+        [Time:2024-02-21 21:18:04.564487]
+        [Quantity: 11.035411370601791]
+No action on LLY [2024-02-21 21:18:04.719651]
+No action on ORCL [2024-02-21 21:18:04.882236]
+No action on CSCO [2024-02-21 21:18:05.033106]
+Data available, execute() called
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:19:00
+New bar data received at: 2024-02-21 21:19:00
+New bar data received at: 2024-02-21 21:19:00
+New bar data received at: 2024-02-21 21:19:00
+New bar data received at: 2024-02-21 21:19:00
+New bar data received at: 2024-02-21 21:19:00
+New bar data received at: 2024-02-21 21:19:00
+New bar data received at: 2024-02-21 21:19:00
+New bar data received at: 2024-02-21 21:19:00
+New bar data received at: 2024-02-21 21:19:00
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:20:00
+New bar data received at: 2024-02-21 21:20:00
+No action on NVDA [2024-02-21 21:20:00.870184]
+No action on AAPL [2024-02-21 21:20:01.126386]
+No action on AMD [2024-02-21 21:20:01.330591]
+No action on AMZN [2024-02-21 21:20:01.544009]
+No action on MSFT [2024-02-21 21:20:01.739429]
+Initiating position close for INTC at 2024-02-21 21:20:01.955121
+Sell previous long position closed successfully
+        [Symbol:INTC
+        Time:2024-02-21 21:20:02.071391]
+No action on WMT [2024-02-21 21:20:02.250656]
+Initiating long position for GOOG at 2024-02-21 21:20:02.453015
+Buy order completed
+        [Symbol:GOOG]
+        [Time:2024-02-21 21:20:02.632988]
+        [Quantity: 4.605321247534147]
+No action on DFS [2024-02-21 21:20:02.866686]
+No action on COF [2024-02-21 21:20:03.022587]
+Initiating long position for KO at 2024-02-21 21:20:03.301966
+Buy order completed
+        [Symbol:KO]
+        [Time:2024-02-21 21:20:03.452663]
+        [Quantity: 11.12585436263183]
+No action on XOM [2024-02-21 21:20:03.677192]
+No action on AMAT [2024-02-21 21:20:03.881912]
+No action on PFE [2024-02-21 21:20:04.047896]
+Initiating long position for ADBE at 2024-02-21 21:20:04.218705
+Buy order completed
+        [Symbol:ADBE]
+        [Time:2024-02-21 21:20:04.357464]
+        [Quantity: 1.2879373459641523]
+No action on MU [2024-02-21 21:20:04.571094]
+No action on OXY [2024-02-21 21:20:05.024914]
+No action on LLY [2024-02-21 21:20:05.370465]
+No action on ORCL [2024-02-21 21:20:05.623457]
+No action on CSCO [2024-02-21 21:20:05.829863]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:20:05
+New bar data received at: 2024-02-21 21:20:05
+New bar data received at: 2024-02-21 21:20:05
+New bar data received at: 2024-02-21 21:20:05
+New bar data received at: 2024-02-21 21:20:05
+New bar data received at: 2024-02-21 21:20:09
+New bar data received at: 2024-02-21 21:20:09
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:21:00
+New bar data received at: 2024-02-21 21:21:00
+New bar data received at: 2024-02-21 21:21:00
+New bar data received at: 2024-02-21 21:21:00
+New bar data received at: 2024-02-21 21:21:00
+New bar data received at: 2024-02-21 21:21:00
+No action on NVDA [2024-02-21 21:21:01.035793]
+No action on AAPL [2024-02-21 21:21:01.243260]
+No action on AMD [2024-02-21 21:21:01.432438]
+No action on AMZN [2024-02-21 21:21:01.645473]
+No action on MSFT [2024-02-21 21:21:01.860254]
+No action on INTC [2024-02-21 21:21:02.062681]
+Initiating long position for WMT at 2024-02-21 21:21:02.261515
+Buy order completed
+        [Symbol:WMT]
+        [Time:2024-02-21 21:21:02.435957]
+        [Quantity: 3.956585704371964]
+No action on GOOG [2024-02-21 21:21:02.658629]
+No action on DFS [2024-02-21 21:21:02.869091]
+No action on COF [2024-02-21 21:21:03.068380]
+Initiating position close for KO at 2024-02-21 21:21:03.277662
+Sell previous long position closed successfully
+        [Symbol:KO
+        Time:2024-02-21 21:21:03.459417]
+Initiating position close for XOM at 2024-02-21 21:21:03.710191
+Sell previous long position closed successfully
+        [Symbol:XOM
+        Time:2024-02-21 21:21:03.841474]
+No action on AMAT [2024-02-21 21:21:04.091903]
+No action on PFE [2024-02-21 21:21:04.308304]
+No action on ADBE [2024-02-21 21:21:04.508186]
+No action on MU [2024-02-21 21:21:04.704539]
+No action on OXY [2024-02-21 21:21:04.870099]
+No action on LLY [2024-02-21 21:21:05.113245]
+No action on ORCL [2024-02-21 21:21:05.338470]
+Initiating position close for CSCO at 2024-02-21 21:21:05.529846
+Sell previous long position closed successfully
+        [Symbol:CSCO
+        Time:2024-02-21 21:21:05.712330]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:21:05
+New bar data received at: 2024-02-21 21:21:05
+New bar data received at: 2024-02-21 21:21:05
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:22:00
+New bar data received at: 2024-02-21 21:22:00
+New bar data received at: 2024-02-21 21:22:00
+New bar data received at: 2024-02-21 21:22:00
+New bar data received at: 2024-02-21 21:22:00
+No action on NVDA [2024-02-21 21:22:01.434231]
+Initiating position close for AAPL at 2024-02-21 21:22:01.610537
+Sell previous long position closed successfully
+        [Symbol:AAPL
+        Time:2024-02-21 21:22:01.731879]
+No action on AMD [2024-02-21 21:22:01.898405]
+No action on AMZN [2024-02-21 21:22:02.163332]
+No action on MSFT [2024-02-21 21:22:02.364212]
+No action on INTC [2024-02-21 21:22:02.572957]
+Initiating position close for WMT at 2024-02-21 21:22:02.769191
+Sell previous long position closed successfully
+        [Symbol:WMT
+        Time:2024-02-21 21:22:02.958493]
+Initiating position close for GOOG at 2024-02-21 21:22:03.181181
+Sell previous long position closed successfully
+        [Symbol:GOOG
+        Time:2024-02-21 21:22:03.365652]
+No action on DFS [2024-02-21 21:22:03.570659]
+Initiating position close for COF at 2024-02-21 21:22:03.797122
+Sell previous long position closed successfully
+        [Symbol:COF
+        Time:2024-02-21 21:22:03.979461]
+Initiating long position for KO at 2024-02-21 21:22:04.177232
+Buy order completed
+        [Symbol:KO]
+        [Time:2024-02-21 21:22:04.297334]
+        [Quantity: 10.976910183946577]
+Initiating long position for XOM at 2024-02-21 21:22:04.511547
+Buy order completed
+        [Symbol:XOM]
+        [Time:2024-02-21 21:22:04.682602]
+        [Quantity: 6.640992914607425]
+No action on AMAT [2024-02-21 21:22:04.881081]
+No action on PFE [2024-02-21 21:22:05.125483]
+Initiating position close for ADBE at 2024-02-21 21:22:05.335493
+Sell previous long position closed successfully
+        [Symbol:ADBE
+        Time:2024-02-21 21:22:05.514673]
+Initiating position close for MU at 2024-02-21 21:22:05.678736
+Sell previous long position closed successfully
+        [Symbol:MU
+        Time:2024-02-21 21:22:05.826522]
+Initiating position close for OXY at 2024-02-21 21:22:06.027896
+Sell previous long position closed successfully
+        [Symbol:OXY
+        Time:2024-02-21 21:22:06.146889]
+No action on LLY [2024-02-21 21:22:06.304686]
+No action on ORCL [2024-02-21 21:22:06.561130]
+No action on CSCO [2024-02-21 21:22:06.774356]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:22:06
+New bar data received at: 2024-02-21 21:22:06
+New bar data received at: 2024-02-21 21:22:06
+New bar data received at: 2024-02-21 21:22:06
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:23:00
+New bar data received at: 2024-02-21 21:23:00
+New bar data received at: 2024-02-21 21:23:00
+New bar data received at: 2024-02-21 21:23:00
+New bar data received at: 2024-02-21 21:23:00
+New bar data received at: 2024-02-21 21:23:00
+New bar data received at: 2024-02-21 21:23:00
+New bar data received at: 2024-02-21 21:23:00
+New bar data received at: 2024-02-21 21:23:00
+Initiating position close for NVDA at 2024-02-21 21:23:00.930783
+Sell previous long position closed successfully
+        [Symbol:NVDA
+        Time:2024-02-21 21:23:01.118799]
+No action on AAPL [2024-02-21 21:23:01.351243]
+No action on AMD [2024-02-21 21:23:01.561290]
+No action on AMZN [2024-02-21 21:23:01.771564]
+No action on MSFT [2024-02-21 21:23:01.990426]
+No action on INTC [2024-02-21 21:23:02.163483]
+No action on WMT [2024-02-21 21:23:02.370256]
+No action on GOOG [2024-02-21 21:23:02.584246]
+No action on DFS [2024-02-21 21:23:02.780061]
+No action on COF [2024-02-21 21:23:02.984417]
+No action on KO [2024-02-21 21:23:03.155778]
+No action on XOM [2024-02-21 21:23:03.309922]
+No action on AMAT [2024-02-21 21:23:03.488268]
+No action on PFE [2024-02-21 21:23:03.701491]
+No action on ADBE [2024-02-21 21:23:03.862498]
+No action on MU [2024-02-21 21:23:04.042491]
+Initiating long position for OXY at 2024-02-21 21:23:04.216778
+Buy order completed
+        [Symbol:OXY]
+        [Time:2024-02-21 21:23:04.478375]
+        [Quantity: 11.33507126791143]
+No action on LLY [2024-02-21 21:23:04.688520]
+No action on ORCL [2024-02-21 21:23:04.912687]
+No action on CSCO [2024-02-21 21:23:05.213725]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:23:05
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:24:00
+New bar data received at: 2024-02-21 21:24:00
+New bar data received at: 2024-02-21 21:24:00
+New bar data received at: 2024-02-21 21:24:00
+New bar data received at: 2024-02-21 21:24:00
+New bar data received at: 2024-02-21 21:24:00
+Initiating long position for NVDA at 2024-02-21 21:24:01.081299
+Buy order completed
+        [Symbol:NVDA]
+        [Time:2024-02-21 21:24:01.228344]
+        [Quantity: 1.023147123478835]
+No action on AAPL [2024-02-21 21:24:01.504036]
+No action on AMD [2024-02-21 21:24:01.777238]
+No action on AMZN [2024-02-21 21:24:02.078015]
+No action on MSFT [2024-02-21 21:24:02.279463]
+Initiating long position for INTC at 2024-02-21 21:24:02.509081
+Buy order completed
+        [Symbol:INTC]
+        [Time:2024-02-21 21:24:02.663120]
+        [Quantity: 15.799724175047933]
+Initiating long position for WMT at 2024-02-21 21:24:02.903240
+Buy order completed
+        [Symbol:WMT]
+        [Time:2024-02-21 21:24:03.071809]
+        [Quantity: 4.074985540775015]
+Initiating long position for GOOG at 2024-02-21 21:24:03.307004
+Buy order completed
+        [Symbol:GOOG]
+        [Time:2024-02-21 21:24:03.481073]
+        [Quantity: 4.8078976212841225]
+No action on DFS [2024-02-21 21:24:03.742177]
+No action on COF [2024-02-21 21:24:04.071651]
+No action on KO [2024-02-21 21:24:04.356030]
+No action on XOM [2024-02-21 21:24:04.524587]
+No action on AMAT [2024-02-21 21:24:04.718666]
+Initiating long position for PFE at 2024-02-21 21:24:05.123587
+Buy order completed
+        [Symbol:PFE]
+        [Time:2024-02-21 21:24:05.274092]
+        [Quantity: 24.725427378142104]
+No action on ADBE [2024-02-21 21:24:05.569739]
+Initiating long position for MU at 2024-02-21 21:24:05.883103
+Buy order completed
+        [Symbol:MU]
+        [Time:2024-02-21 21:24:06.042191]
+        [Quantity: 8.600347093095328]
+No action on OXY [2024-02-21 21:24:06.251316]
+No action on LLY [2024-02-21 21:24:06.432969]
+No action on ORCL [2024-02-21 21:24:06.618168]
+No action on CSCO [2024-02-21 21:24:06.800872]
+Data available, execute() called
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:25:00
+New bar data received at: 2024-02-21 21:25:00
+New bar data received at: 2024-02-21 21:25:00
+New bar data received at: 2024-02-21 21:25:00
+New bar data received at: 2024-02-21 21:25:00
+New bar data received at: 2024-02-21 21:25:00
+New bar data received at: 2024-02-21 21:25:00
+New bar data received at: 2024-02-21 21:25:00
+New bar data received at: 2024-02-21 21:25:00
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:26:00
+New bar data received at: 2024-02-21 21:26:00
+No action on NVDA [2024-02-21 21:26:01.291916]
+Initiating long position for AAPL at 2024-02-21 21:26:01.453194
+Buy order completed
+        [Symbol:AAPL]
+        [Time:2024-02-21 21:26:01.571644]
+        [Quantity: 3.7559016828582044]
+No action on AMD [2024-02-21 21:26:01.725652]
+No action on AMZN [2024-02-21 21:26:01.912899]
+No action on MSFT [2024-02-21 21:26:02.083298]
+No action on INTC [2024-02-21 21:26:02.250320]
+No action on WMT [2024-02-21 21:26:02.416271]
+No action on GOOG [2024-02-21 21:26:02.579189]
+No action on DFS [2024-02-21 21:26:02.738677]
+No action on COF [2024-02-21 21:26:02.903218]
+Initiating position close for KO at 2024-02-21 21:26:03.060779
+Sell previous long position closed successfully
+        [Symbol:KO
+        Time:2024-02-21 21:26:03.177353]
+No action on XOM [2024-02-21 21:26:03.332390]
+No action on AMAT [2024-02-21 21:26:03.486400]
+No action on PFE [2024-02-21 21:26:03.752212]
+No action on ADBE [2024-02-21 21:26:03.919021]
+No action on MU [2024-02-21 21:26:04.071465]
+No action on OXY [2024-02-21 21:26:04.235350]
+No action on LLY [2024-02-21 21:26:04.427863]
+Initiating long position for ORCL at 2024-02-21 21:26:04.586486
+Buy order completed
+        [Symbol:ORCL]
+        [Time:2024-02-21 21:26:04.708233]
+        [Quantity: 6.343243572997258]
+No action on CSCO [2024-02-21 21:26:04.879447]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:26:04
+New bar data received at: 2024-02-21 21:26:04
+New bar data received at: 2024-02-21 21:26:04
+New bar data received at: 2024-02-21 21:26:04
+New bar data received at: 2024-02-21 21:26:04
+New bar data received at: 2024-02-21 21:26:04
+New bar data received at: 2024-02-21 21:26:04
+New bar data received at: 2024-02-21 21:26:04
+New bar data received at: 2024-02-21 21:26:04
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:27:00
+New bar data received at: 2024-02-21 21:27:00
+New bar data received at: 2024-02-21 21:27:00
+New bar data received at: 2024-02-21 21:27:00
+No action on NVDA [2024-02-21 21:27:00.923271]
+No action on AAPL [2024-02-21 21:27:01.079873]
+No action on AMD [2024-02-21 21:27:01.242866]
+No action on AMZN [2024-02-21 21:27:01.398547]
+No action on MSFT [2024-02-21 21:27:01.591413]
+No action on INTC [2024-02-21 21:27:01.741196]
+No action on WMT [2024-02-21 21:27:01.907323]
+No action on GOOG [2024-02-21 21:27:02.133240]
+Initiating long position for DFS at 2024-02-21 21:27:02.307287
+Buy order completed
+        [Symbol:DFS]
+        [Time:2024-02-21 21:27:02.430638]
+        [Quantity: 5.606158159478849]
+Initiating long position for COF at 2024-02-21 21:27:02.659156
+Buy order completed
+        [Symbol:COF]
+        [Time:2024-02-21 21:27:02.785785]
+        [Quantity: 5.257117140524089]
+Initiating long position for KO at 2024-02-21 21:27:02.998355
+Buy order completed
+        [Symbol:KO]
+        [Time:2024-02-21 21:27:03.201513]
+        [Quantity: 11.627019727864495]
+No action on XOM [2024-02-21 21:27:03.423052]
+No action on AMAT [2024-02-21 21:27:03.625854]
+No action on PFE [2024-02-21 21:27:03.780198]
+No action on ADBE [2024-02-21 21:27:04.035410]
+No action on MU [2024-02-21 21:27:04.236719]
+No action on OXY [2024-02-21 21:27:04.393640]
+Initiating position close for LLY at 2024-02-21 21:27:04.645055
+Sell previous long position closed successfully
+        [Symbol:LLY
+        Time:2024-02-21 21:27:04.761937]
+No action on ORCL [2024-02-21 21:27:04.969241]
+Initiating long position for CSCO at 2024-02-21 21:27:05.162661
+Buy order completed
+        [Symbol:CSCO]
+        [Time:2024-02-21 21:27:05.347778]
+        [Quantity: 14.006122301769066]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:27:05
+New bar data received at: 2024-02-21 21:27:05
+New bar data received at: 2024-02-21 21:27:05
+New bar data received at: 2024-02-21 21:27:05
+New bar data received at: 2024-02-21 21:27:05
+New bar data received at: 2024-02-21 21:27:05
+New bar data received at: 2024-02-21 21:27:05
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:28:00
+New bar data received at: 2024-02-21 21:28:00
+New bar data received at: 2024-02-21 21:28:00
+New bar data received at: 2024-02-21 21:28:00
+Initiating position close for NVDA at 2024-02-21 21:28:00.989146
+Sell previous long position closed successfully
+        [Symbol:NVDA
+        Time:2024-02-21 21:28:01.128634]
+Initiating position close for AAPL at 2024-02-21 21:28:01.307857
+Sell previous long position closed successfully
+        [Symbol:AAPL
+        Time:2024-02-21 21:28:01.521366]
+No action on AMD [2024-02-21 21:28:01.733412]
+Initiating long position for AMZN at 2024-02-21 21:28:01.942571
+Buy order completed
+        [Symbol:AMZN]
+        [Time:2024-02-21 21:28:02.082534]
+        [Quantity: 4.02943543579349]
+Initiating long position for MSFT at 2024-02-21 21:28:02.253175
+Buy order completed
+        [Symbol:MSFT]
+        [Time:2024-02-21 21:28:02.403714]
+        [Quantity: 1.7698922126680394]
+No action on INTC [2024-02-21 21:28:02.568442]
+No action on WMT [2024-02-21 21:28:02.764320]
+No action on GOOG [2024-02-21 21:28:02.963181]
+Initiating position close for DFS at 2024-02-21 21:28:03.152720
+Sell previous long position closed successfully
+        [Symbol:DFS
+        Time:2024-02-21 21:28:03.310804]
+No action on COF [2024-02-21 21:28:03.479903]
+No action on KO [2024-02-21 21:28:03.636618]
+No action on XOM [2024-02-21 21:28:03.793702]
+No action on AMAT [2024-02-21 21:28:04.037634]
+No action on PFE [2024-02-21 21:28:04.246777]
+Initiating long position for ADBE at 2024-02-21 21:28:04.460182
+Buy order completed
+        [Symbol:ADBE]
+        [Time:2024-02-21 21:28:04.636922]
+        [Quantity: 1.26862596433863]
+No action on MU [2024-02-21 21:28:04.794118]
+No action on OXY [2024-02-21 21:28:04.970170]
+No action on LLY [2024-02-21 21:28:05.182433]
+No action on ORCL [2024-02-21 21:28:05.334817]
+No action on CSCO [2024-02-21 21:28:05.523509]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:28:05
+New bar data received at: 2024-02-21 21:28:05
+New bar data received at: 2024-02-21 21:28:05
+New bar data received at: 2024-02-21 21:28:05
+New bar data received at: 2024-02-21 21:28:05
+New bar data received at: 2024-02-21 21:28:05
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:29:00
+New bar data received at: 2024-02-21 21:29:00
+New bar data received at: 2024-02-21 21:29:00
+New bar data received at: 2024-02-21 21:29:00
+Initiating long position for NVDA at 2024-02-21 21:29:00.880476
+Buy order completed
+        [Symbol:NVDA]
+        [Time:2024-02-21 21:29:00.999344]
+        [Quantity: 1.0099796026392742]
+Initiating long position for AAPL at 2024-02-21 21:29:01.191835
+Buy order completed
+        [Symbol:AAPL]
+        [Time:2024-02-21 21:29:01.369486]
+        [Quantity: 3.902658706059578]
+Initiating position close for AMD at 2024-02-21 21:29:01.616043
+Sell previous long position closed successfully
+        [Symbol:AMD
+        Time:2024-02-21 21:29:01.741715]
+No action on AMZN [2024-02-21 21:29:01.901099]
+No action on MSFT [2024-02-21 21:29:02.147791]
+No action on INTC [2024-02-21 21:29:02.409665]
+No action on WMT [2024-02-21 21:29:02.618631]
+No action on GOOG [2024-02-21 21:29:02.778042]
+Initiating long position for DFS at 2024-02-21 21:29:02.934074
+Buy order completed
+        [Symbol:DFS]
+        [Time:2024-02-21 21:29:03.055311]
+        [Quantity: 5.563065454073628]
+Initiating position close for COF at 2024-02-21 21:29:03.210365
+Sell previous long position closed successfully
+        [Symbol:COF
+        Time:2024-02-21 21:29:03.325524]
+No action on KO [2024-02-21 21:29:03.484581]
+No action on XOM [2024-02-21 21:29:03.636077]
+No action on AMAT [2024-02-21 21:29:03.840742]
+No action on PFE [2024-02-21 21:29:04.044865]
+No action on ADBE [2024-02-21 21:29:04.195081]
+No action on MU [2024-02-21 21:29:04.356876]
+No action on OXY [2024-02-21 21:29:04.559189]
+No action on LLY [2024-02-21 21:29:04.724740]
+No action on ORCL [2024-02-21 21:29:04.890946]
+No action on CSCO [2024-02-21 21:29:05.076272]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:29:05
+New bar data received at: 2024-02-21 21:29:05
+New bar data received at: 2024-02-21 21:29:05
+New bar data received at: 2024-02-21 21:29:05
+New bar data received at: 2024-02-21 21:29:05
+New bar data received at: 2024-02-21 21:29:05
+New bar data received at: 2024-02-21 21:29:05
+New bar data received at: 2024-02-21 21:29:05
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:30:00
+New bar data received at: 2024-02-21 21:30:00
+New bar data received at: 2024-02-21 21:30:00
+New bar data received at: 2024-02-21 21:30:00
+No action on NVDA [2024-02-21 21:30:00.982044]
+No action on AAPL [2024-02-21 21:30:01.183660]
+Initiating long position for AMD at 2024-02-21 21:30:01.393344
+Buy order completed
+        [Symbol:AMD]
+        [Time:2024-02-21 21:30:01.579205]
+        [Quantity: 4.1361585726825485]
+No action on AMZN [2024-02-21 21:30:01.805933]
+Initiating position close for MSFT at 2024-02-21 21:30:02.011527
+Sell previous long position closed successfully
+        [Symbol:MSFT
+        Time:2024-02-21 21:30:02.192519]
+No action on INTC [2024-02-21 21:30:02.416490]
+No action on WMT [2024-02-21 21:30:02.618535]
+Initiating position close for GOOG at 2024-02-21 21:30:02.928129
+Sell previous long position closed successfully
+        [Symbol:GOOG
+        Time:2024-02-21 21:30:03.115178]
+No action on DFS [2024-02-21 21:30:03.378445]
+Initiating long position for COF at 2024-02-21 21:30:03.555385
+Buy order completed
+        [Symbol:COF]
+        [Time:2024-02-21 21:30:03.729278]
+        [Quantity: 4.939839274508613]
+No action on KO [2024-02-21 21:30:03.956278]
+No action on XOM [2024-02-21 21:30:04.158468]
+No action on AMAT [2024-02-21 21:30:04.361686]
+Initiating position close for PFE at 2024-02-21 21:30:04.614433
+Sell previous long position closed successfully
+        [Symbol:PFE
+        Time:2024-02-21 21:30:04.740537]
+No action on ADBE [2024-02-21 21:30:04.906794]
+No action on MU [2024-02-21 21:30:05.185730]
+No action on OXY [2024-02-21 21:30:05.391358]
+No action on LLY [2024-02-21 21:30:05.601380]
+No action on ORCL [2024-02-21 21:30:05.793793]
+No action on CSCO [2024-02-21 21:30:05.964772]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:30:05
+New bar data received at: 2024-02-21 21:30:05
+New bar data received at: 2024-02-21 21:30:05
+New bar data received at: 2024-02-21 21:30:05
+New bar data received at: 2024-02-21 21:30:05
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:31:00
+New bar data received at: 2024-02-21 21:31:00
+New bar data received at: 2024-02-21 21:31:00
+New bar data received at: 2024-02-21 21:31:00
+New bar data received at: 2024-02-21 21:31:00
+No action on NVDA [2024-02-21 21:31:00.993491]
+No action on AAPL [2024-02-21 21:31:01.198632]
+No action on AMD [2024-02-21 21:31:01.403359]
+No action on AMZN [2024-02-21 21:31:01.605825]
+Initiating long position for MSFT at 2024-02-21 21:31:01.810191
+Buy order completed
+        [Symbol:MSFT]
+        [Time:2024-02-21 21:31:01.995597]
+        [Quantity: 1.70038964621765]
+No action on INTC [2024-02-21 21:31:02.257501]
+No action on WMT [2024-02-21 21:31:02.525529]
+Initiating long position for GOOG at 2024-02-21 21:31:02.741855
+Buy order completed
+        [Symbol:GOOG]
+        [Time:2024-02-21 21:31:02.917232]
+        [Quantity: 4.735575755761549]
+Initiating position close for DFS at 2024-02-21 21:31:03.145333
+Sell previous long position closed successfully
+        [Symbol:DFS
+        Time:2024-02-21 21:31:03.326695]
+Initiating position close for COF at 2024-02-21 21:31:03.569324
+Sell previous long position closed successfully
+        [Symbol:COF
+        Time:2024-02-21 21:31:03.686552]
+No action on KO [2024-02-21 21:31:03.846080]
+No action on XOM [2024-02-21 21:31:04.040157]
+No action on AMAT [2024-02-21 21:31:04.268965]
+No action on PFE [2024-02-21 21:31:04.481094]
+No action on ADBE [2024-02-21 21:31:04.678870]
+No action on MU [2024-02-21 21:31:04.849340]
+No action on OXY [2024-02-21 21:31:05.090617]
+No action on LLY [2024-02-21 21:31:05.300325]
+No action on ORCL [2024-02-21 21:31:05.527994]
+No action on CSCO [2024-02-21 21:31:05.730494]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:31:05
+New bar data received at: 2024-02-21 21:31:05
+New bar data received at: 2024-02-21 21:31:05
+New bar data received at: 2024-02-21 21:31:05
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:32:00
+New bar data received at: 2024-02-21 21:32:00
+New bar data received at: 2024-02-21 21:32:00
+New bar data received at: 2024-02-21 21:32:00
+New bar data received at: 2024-02-21 21:32:00
+New bar data received at: 2024-02-21 21:32:00
+New bar data received at: 2024-02-21 21:32:00
+New bar data received at: 2024-02-21 21:32:00
+New bar data received at: 2024-02-21 21:32:00
+No action on NVDA [2024-02-21 21:32:01.003735]
+No action on AAPL [2024-02-21 21:32:01.204330]
+No action on AMD [2024-02-21 21:32:01.410864]
+No action on AMZN [2024-02-21 21:32:01.617165]
+No action on MSFT [2024-02-21 21:32:01.815825]
+Initiating position close for INTC at 2024-02-21 21:32:02.020560
+Sell previous long position closed successfully
+        [Symbol:INTC
+        Time:2024-02-21 21:32:02.207669]
+No action on WMT [2024-02-21 21:32:02.369925]
+No action on GOOG [2024-02-21 21:32:02.532147]
+Initiating long position for DFS at 2024-02-21 21:32:02.742277
+Buy order completed
+        [Symbol:DFS]
+        [Time:2024-02-21 21:32:02.924518]
+        [Quantity: 5.552504659539397]
+Initiating long position for COF at 2024-02-21 21:32:03.122375
+Buy order completed
+        [Symbol:COF]
+        [Time:2024-02-21 21:32:03.240994]
+        [Quantity: 5.228608137911499]
+No action on KO [2024-02-21 21:32:03.399853]
+Initiating position close for XOM at 2024-02-21 21:32:03.567347
+Sell previous long position closed successfully
+        [Symbol:XOM
+        Time:2024-02-21 21:32:03.682276]
+No action on AMAT [2024-02-21 21:32:03.853534]
+Initiating long position for PFE at 2024-02-21 21:32:04.018790
+Buy order completed
+        [Symbol:PFE]
+        [Time:2024-02-21 21:32:04.139801]
+        [Quantity: 23.447019211725095]
+No action on ADBE [2024-02-21 21:32:04.299995]
+Initiating position close for MU at 2024-02-21 21:32:04.476180
+Sell previous long position closed successfully
+        [Symbol:MU
+        Time:2024-02-21 21:32:04.664613]
+No action on OXY [2024-02-21 21:32:04.917901]
+Initiating long position for LLY at 2024-02-21 21:32:05.104600
+Buy order completed
+        [Symbol:LLY]
+        [Time:2024-02-21 21:32:05.226354]
+        [Quantity: 0.9188499184239033]
+No action on ORCL [2024-02-21 21:32:05.380640]
+No action on CSCO [2024-02-21 21:32:05.534262]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:32:05
+New bar data received at: 2024-02-21 21:32:05
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:33:00
+New bar data received at: 2024-02-21 21:33:00
+New bar data received at: 2024-02-21 21:33:00
+New bar data received at: 2024-02-21 21:33:00
+New bar data received at: 2024-02-21 21:33:00
+New bar data received at: 2024-02-21 21:33:00
+New bar data received at: 2024-02-21 21:33:00
+New bar data received at: 2024-02-21 21:33:00
+New bar data received at: 2024-02-21 21:33:00
+New bar data received at: 2024-02-21 21:33:00
+No action on NVDA [2024-02-21 21:33:01.254238]
+No action on AAPL [2024-02-21 21:33:01.437872]
+No action on AMD [2024-02-21 21:33:01.628067]
+No action on AMZN [2024-02-21 21:33:01.836517]
+No action on MSFT [2024-02-21 21:33:02.070920]
+Initiating long position for INTC at 2024-02-21 21:33:02.300520
+Buy order completed
+        [Symbol:INTC]
+        [Time:2024-02-21 21:33:02.422386]
+        [Quantity: 15.699496575059833]
+No action on WMT [2024-02-21 21:33:02.639718]
+No action on GOOG [2024-02-21 21:33:02.843768]
+No action on DFS [2024-02-21 21:33:03.052409]
+No action on COF [2024-02-21 21:33:03.272659]
+No action on KO [2024-02-21 21:33:03.465737]
+Initiating long position for XOM at 2024-02-21 21:33:03.677420
+Buy order completed
+        [Symbol:XOM]
+        [Time:2024-02-21 21:33:03.852651]
+        [Quantity: 6.518046627650388]
+No action on AMAT [2024-02-21 21:33:04.214802]
+No action on PFE [2024-02-21 21:33:04.379214]
+No action on ADBE [2024-02-21 21:33:04.584127]
+No action on MU [2024-02-21 21:33:04.798228]
+No action on OXY [2024-02-21 21:33:05.007769]
+No action on LLY [2024-02-21 21:33:05.243777]
+No action on ORCL [2024-02-21 21:33:05.515990]
+No action on CSCO [2024-02-21 21:33:05.718155]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:33:05
+New bar data received at: 2024-02-21 21:33:05
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:34:00
+New bar data received at: 2024-02-21 21:34:00
+New bar data received at: 2024-02-21 21:34:00
+New bar data received at: 2024-02-21 21:34:00
+New bar data received at: 2024-02-21 21:34:00
+New bar data received at: 2024-02-21 21:34:00
+New bar data received at: 2024-02-21 21:34:00
+New bar data received at: 2024-02-21 21:34:00
+New bar data received at: 2024-02-21 21:34:00
+New bar data received at: 2024-02-21 21:34:00
+No action on NVDA [2024-02-21 21:34:00.907203]
+No action on AAPL [2024-02-21 21:34:01.118718]
+No action on AMD [2024-02-21 21:34:01.315082]
+No action on AMZN [2024-02-21 21:34:01.519444]
+No action on MSFT [2024-02-21 21:34:01.730780]
+No action on INTC [2024-02-21 21:34:01.929442]
+No action on WMT [2024-02-21 21:34:02.146866]
+No action on GOOG [2024-02-21 21:34:02.340942]
+No action on DFS [2024-02-21 21:34:02.544889]
+No action on COF [2024-02-21 21:34:02.758970]
+No action on KO [2024-02-21 21:34:02.963258]
+No action on XOM [2024-02-21 21:34:03.158055]
+No action on AMAT [2024-02-21 21:34:03.318692]
+No action on PFE [2024-02-21 21:34:03.615993]
+Initiating position close for ADBE at 2024-02-21 21:34:03.879091
+Sell previous long position closed successfully
+        [Symbol:ADBE
+        Time:2024-02-21 21:34:04.068814]
+No action on MU [2024-02-21 21:34:04.349563]
+No action on OXY [2024-02-21 21:34:04.593297]
+No action on LLY [2024-02-21 21:34:04.786706]
+No action on ORCL [2024-02-21 21:34:05.000295]
+No action on CSCO [2024-02-21 21:34:05.207775]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:34:05
+New bar data received at: 2024-02-21 21:34:05
+New bar data received at: 2024-02-21 21:34:05
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:35:00
+New bar data received at: 2024-02-21 21:35:00
+New bar data received at: 2024-02-21 21:35:00
+New bar data received at: 2024-02-21 21:35:00
+New bar data received at: 2024-02-21 21:35:00
+New bar data received at: 2024-02-21 21:35:00
+New bar data received at: 2024-02-21 21:35:00
+New bar data received at: 2024-02-21 21:35:00
+No action on NVDA [2024-02-21 21:35:00.920177]
+No action on AAPL [2024-02-21 21:35:01.074085]
+No action on AMD [2024-02-21 21:35:01.322163]
+No action on AMZN [2024-02-21 21:35:01.526918]
+No action on MSFT [2024-02-21 21:35:01.742099]
+No action on INTC [2024-02-21 21:35:01.938310]
+No action on WMT [2024-02-21 21:35:02.141431]
+No action on GOOG [2024-02-21 21:35:02.346184]
+No action on DFS [2024-02-21 21:35:02.550545]
+No action on COF [2024-02-21 21:35:02.755309]
+Initiating position close for KO at 2024-02-21 21:35:02.960853
+Sell previous long position closed successfully
+        [Symbol:KO
+        Time:2024-02-21 21:35:03.153701]
+No action on XOM [2024-02-21 21:35:03.372264]
+No action on AMAT [2024-02-21 21:35:03.575304]
+No action on PFE [2024-02-21 21:35:03.784864]
+Initiating long position for ADBE at 2024-02-21 21:35:03.988215
+Buy order completed
+        [Symbol:ADBE]
+        [Time:2024-02-21 21:35:04.173859]
+        [Quantity: 1.2637149420107527]
+Initiating long position for MU at 2024-02-21 21:35:04.399250
+Buy order completed
+        [Symbol:MU]
+        [Time:2024-02-21 21:35:04.520965]
+        [Quantity: 8.833669118101477]
+No action on OXY [2024-02-21 21:35:04.716952]
+No action on LLY [2024-02-21 21:35:04.880413]
+No action on ORCL [2024-02-21 21:35:05.076683]
+No action on CSCO [2024-02-21 21:35:05.226092]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:35:05
+Pong received: b''
+Pong received: b''
+New bar data received at: 2024-02-21 21:36:00
+New bar data received at: 2024-02-21 21:36:00
+New bar data received at: 2024-02-21 21:36:00
+New bar data received at: 2024-02-21 21:36:00
+New bar data received at: 2024-02-21 21:36:00
+New bar data received at: 2024-02-21 21:36:00
+New bar data received at: 2024-02-21 21:36:00
+New bar data received at: 2024-02-21 21:36:00
+New bar data received at: 2024-02-21 21:36:00
+New bar data received at: 2024-02-21 21:36:00
+New bar data received at: 2024-02-21 21:36:00
+New bar data received at: 2024-02-21 21:36:00
+No action on NVDA [2024-02-21 21:36:01.128477]
+No action on AAPL [2024-02-21 21:36:01.331373]
+No action on AMD [2024-02-21 21:36:01.536261]
+No action on AMZN [2024-02-21 21:36:01.743847]
+No action on MSFT [2024-02-21 21:36:01.951820]
+No action on INTC [2024-02-21 21:36:02.156560]
+No action on WMT [2024-02-21 21:36:02.360561]
+No action on GOOG [2024-02-21 21:36:02.566611]
+Initiating position close for DFS at 2024-02-21 21:36:02.772237
+Sell previous long position closed successfully
+        [Symbol:DFS
+        Time:2024-02-21 21:36:02.953239]
+No action on COF [2024-02-21 21:36:03.181078]
+Initiating long position for KO at 2024-02-21 21:36:03.396079
+Buy order completed
+        [Symbol:KO]
+        [Time:2024-02-21 21:36:03.566628]
+        [Quantity: 10.863784491934824]
+No action on XOM [2024-02-21 21:36:03.788449]
+No action on AMAT [2024-02-21 21:36:03.994197]
+No action on PFE [2024-02-21 21:36:04.232008]
+No action on ADBE [2024-02-21 21:36:04.433041]
+No action on MU [2024-02-21 21:36:04.636080]
+No action on OXY [2024-02-21 21:36:04.816629]
+No action on LLY [2024-02-21 21:36:05.050741]
+No action on ORCL [2024-02-21 21:36:05.267052]
+No action on CSCO [2024-02-21 21:36:05.536709]
+Data available, execute() called
+New bar data received at: 2024-02-21 21:36:05
+Pong received: b''
