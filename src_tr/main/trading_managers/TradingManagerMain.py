@@ -28,15 +28,21 @@ class TradingManagerMain():
 
     def handle_message(self, ws, message):
         try:
-            print(f"New bar data received at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
             minute_bars = self._parse_json(message)
+            print("\nData received")
+            print(f"\t[Time: {datetime.now()}]")
+            print(f"\t[Message: {minute_bars}]\n")
             if minute_bars[0]['T'] == 'b':
                 for item in minute_bars: #TODO: máshogy kell kezelni azt, hogy nem egyszerre érkezik be minden részvényhez az adat
                     self.minute_bars.append(item)
+                    print(f"\nBar data added to TradingManager.minute_bars")
+                    print(f"\t[Time: {datetime.now()}]")
+                    print(f"\t[TradingManager.minute_bars: {self.minute_bars}]\n")
                     if len(self.minute_bars) == len(self.data_generator.recommended_symbol_list):
+                        print(f"\nData available for all symbols")
+                        print(f"\t[Time: {datetime.now()}]\n \t[TradingManager.minute_bars: {self.minute_bars}]")                        
                         self.execute_all()
                         self.minute_bars = []
-                        print('Data available, execute() called')
             else:
                 print('Authentication and data initialization')
         except:
@@ -65,8 +71,13 @@ class TradingManagerMain():
         
     def execute_all(self):
         try:
+            print(f"\nUpdating DataGenerator.symbol_df\n \t[Time: {datetime.now()}]")
             self.data_generator.update_symbol_df(minute_bars=self.minute_bars)
+            print(f"\nUpdated DataGenerator.symbol_df\n \t[Time: {datetime.now()}]")
+            
+            print(f"\nCalling TradingManager.apply_trading_algorithm()\n \t[Time: {datetime.now()}]")
             self.apply_trading_algorithm()
+            print(f"\nFinished TradingManager.apply_trading_algorithm()\n \t[Time: {datetime.now()}]")
         except:
             traceback.print_exc()
             

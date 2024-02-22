@@ -14,10 +14,15 @@ def plot_daily_statistics(plot_df, db_path, daily_dir_name):
     fig.write_html(f"{db_path}/{daily_dir_name}/daily_statistics.html")
 
 def plot_daily_statistics_correlation_matrix(plot_df, db_path, daily_dir_name):
-    corr_df = plot_df[[c for c in plot_df.columns if c != 'symbol']].corr()
+    corr_cols = [c for c in plot_df.columns if c not in ['max_time_stamp_td', 'symbol']]
+    if 'max_time_stamp_td' in corr_cols:
+        corr_cols.remove('max_time_stamp')
+    print(corr_cols)
+    corr_df = plot_df[corr_cols].corr()
     fig = go.Figure(data=go.Heatmap(x=corr_df.columns,
                                     y=corr_df.index,
                                     z=corr_df))
+    corr_df.to_csv(f"{db_path}/{daily_dir_name}/correlation_matrix.csv")
     fig.write_html(f"{db_path}/{daily_dir_name}/daily_correlation_matrix.html")
 
 def get_marker_df(plot_df):

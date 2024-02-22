@@ -50,13 +50,24 @@ class DataManager:
 
             daily_stats = dict()
             daily_stats['symbol'] = symbol
+            daily_stats['last_capital_td'] = daily_df[(daily_df['current_capital'] >= 1.0) & (~daily_df['current_capital'].isna())]['current_capital'][-1]
+            daily_stats['basline_yield_td'] = (self.run_parameters['init_cash'] * (daily_df['o'][-1] / daily_df['o'][0]))
+            daily_stats['baseline_yield_perc_td'] = ((daily_stats['last_capital_td'] / (self.run_parameters['init_cash'] * (daily_df['o'][-1] / daily_df['o'][0]))) - 1) * 100
+            daily_stats['last_yield_perc_td'] = ((daily_df[(daily_df['current_capital'] >= 1.0) & \
+                                                        (~daily_df['current_capital'].isna())]['current_capital'][-1] / self.run_parameters['init_cash']) - 1) * 100
+            daily_stats['avg_yield_perc_td'] = ((daily_df[(daily_df['current_capital'] >= 1.0)]['current_capital'].mean() / self.run_parameters['init_cash']) - 1) * 100
+            daily_stats['max_yield_perc_td'] = ((daily_df['current_capital'].max() / self.run_parameters['init_cash']) - 1) * 100
+            daily_stats['min_yield_perc_td'] = ((daily_df[(daily_df['current_capital'] >= 1.0)]['current_capital'].min() / self.run_parameters['init_cash']) - 1) * 100
+
             daily_stats['avg_capital_td'] = daily_df[daily_df['current_capital'] > self.run_parameters['init_cash']*0.1]['current_capital'].mean()
-            daily_stats['min_capital_td'] = daily_df['current_capital'].min()
+            daily_stats['min_capital_td'] = daily_df[(daily_df['current_capital'] >= 1.0)]['current_capital'].min()
             daily_stats['max_capital_td'] = daily_df['current_capital'].max()
-            daily_stats['max_per_input_cap_ratio_td'] = daily_df['current_capital'].max() / self.run_parameters['init_cash']
+            daily_stats['max_time_stamp_td'] = daily_df['current_capital'].idxmax()
             daily_stats['in_position_percent_td'] = (len(daily_df[daily_df['position'] != 'out']) / len(daily_df)) * 100
-            daily_stats['bear_candle_ratio_td'] = len(daily_df[daily_df['c'] < daily_df['o']]) / len(daily_df)
+            # az alábbi néhánynak szerepelelnie kéne a scanner statisztikák között is
             daily_stats['bull_candle_ratio_td'] = len(daily_df[daily_df['c'] > daily_df['o']]) / len(daily_df)
+            daily_stats['bear_candle_ratio_td'] = len(daily_df[daily_df['c'] < daily_df['o']]) / len(daily_df)
+            daily_stats['bull_per_bear_ratio_td'] = daily_stats['bull_candle_ratio_td'] / daily_stats['bear_candle_ratio_td']
             daily_stats['daily_high_max_td'] = daily_df['h'].max()
             daily_stats['low_min_td'] = daily_df['l'].min()
 
@@ -65,7 +76,7 @@ class DataManager:
         daily_stats_for_all_symbols = pd.DataFrame(daily_stats_for_all_symbols)
 
         self.total_recommended_symbol_statistics = pd.merge(recommended_symbols, daily_stats_for_all_symbols, on='symbol', how='left')
-        self.total_recommended_symbol_statistics.sort_values(by=['max_per_input_cap_ratio_td'], inplace=True, ascending=False)
+        self.total_recommended_symbol_statistics.sort_values(by=['last_yield_perc_td'], inplace=True, ascending=False)
         plot_daily_statistics(plot_df=self.total_recommended_symbol_statistics, db_path=f"{config['output_stats']}/{self.run_id}", daily_dir_name=self.daily_dir_name)
         plot_daily_statistics_correlation_matrix(plot_df=self.total_recommended_symbol_statistics, db_path=f"{config['output_stats']}/{self.run_id}", daily_dir_name=self.daily_dir_name)
         self.total_recommended_symbol_statistics.to_csv(f"{config['output_stats']}/{self.run_id}/{self.daily_dir_name}/recommended_symbols_sd_td_market_stats.csv", index=False)
