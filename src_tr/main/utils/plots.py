@@ -3,13 +3,38 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-def plot_daily_statistics(plot_df, db_path, daily_dir_name):
+def get_stat_desricptions():
+    return \
+        {
+            'baseline_yield_perc_td': ' baseline_yield_perc ',
+            'last_yield_perc_td': 'last_yield_perc (hány szzalékot hozott)',
+            'avg_yield_perc_td': 'avg_yield_perc (mindenkori max capital és az init cash %-os aránya)',
+            'max_yield_perc_td': 'max_yield_perc (mindenkori max capital és az init cash %-os aránya)',
+            'min_yield_perc_td': 'min_yield_perc (mindenkori min capital és az init cash %-os aránya)',
+            'avg_capital_td': 'avg_capital_td (az átlagos capital nagysága a teljes napon',
+            'min_capital_td': 'min_capital_td (a minimális capital nagysága a teljes napon',
+            'max_capital_td': 'max_capital_td (a maximális capital nagysága a teljes napon',
+            'in_position_percent_td': 'azon percek aránya, amikor az algoritmus szerint pozícióban voltunk, a teljes napban',
+            'bull_candle_ratio_td': 'bull candle-ök aránya a teljes napban',
+            'bear_candle_ratio_td': 'bear candle-ök aránya a teljes napban',
+            'bull_per_bear_ratio': 'a bull és a bear candle-ök aránya'
+         }
+
+
+def plot_daily_statistics(plot_df,
+                          db_path,
+                          daily_dir_name):
     statistics_variables = [c for c in plot_df.columns if c != 'symbol']
-    fig = make_subplots(rows=len(statistics_variables), cols=1, subplot_titles=statistics_variables)
-    for i, stat in enumerate(statistics_variables):
+    excluded_stats = ['last_ts_capital', 'max_time_stamp_td']
+    desrcipted_names_dict = get_stat_desricptions()
+    fig = make_subplots(rows=len(statistics_variables),
+                        cols=1,
+                        subplot_titles=[desrcipted_names_dict[stat] if stat in desrcipted_names_dict.keys() else stat for stat in statistics_variables])
+    for i, stat in enumerate([stat_col for stat_col in statistics_variables if stat_col not in excluded_stats]):
         fig.add_trace(go.Bar(x=plot_df['symbol'],
                              y=plot_df[stat],
-                             name=stat), row=i+1, col=1)
+                             name=stat),
+                      row=i+1, col=1)
     fig.update_layout(height=len(statistics_variables) * 200)
     fig.write_html(f"{db_path}/{daily_dir_name}/daily_statistics.html")
 
@@ -48,7 +73,7 @@ def daily_time_series_charts(symbol_dict,
     epsilon_line_width = 0.5
     for symbol in symbol_dict.keys():
         plot_df = symbol_dict[symbol]['daily_price_data_df']
-        if mode == 'YF_DB':
+        if mode == 'YF_DB' and 'n' in plot_df.columns:
             plot_df.drop('n', inplace=True, axis=1)
         time_dimension = plot_df.index
         fig = make_subplots(rows=6, cols=1, shared_xaxes=True,
