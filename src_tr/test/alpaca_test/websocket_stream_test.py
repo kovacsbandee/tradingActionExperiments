@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 import websocket, json
+from datetime import datetime
 
 load_dotenv()
 
@@ -26,7 +27,9 @@ def on_open(ws):
 
 
 def on_message(ws, message):
-    print("received a message")
+    print("\nNew bar data received")
+    print(f"\t[Time: {datetime.now()}]")
+    print(f"\t[Message: {message}]\n")
     print(message)
 
 def on_close(ws):

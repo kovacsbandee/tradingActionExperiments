@@ -15,23 +15,24 @@ class TestTradingManagerDivided(TestTradingManager):
     #Override
     def apply_trading_algorithm(self):
         for symbol, value_dict in self.data_generator.symbol_dict.items():
-            # normalize open price
-            value_dict['daily_price_data_df'].loc[value_dict['daily_price_data_df'].index[-1], 'open_norm'] = \
-            (value_dict['daily_price_data_df'].loc[value_dict['daily_price_data_df'].index[-1], 'o'] - value_dict['prev_day_data']['avg_open']) / value_dict['prev_day_data']['std_open']
-            
-            SYMBOL_DF_length = len(value_dict['daily_price_data_df'])
-            ma_long_value = self.trading_algorithm.ma_long
-            if SYMBOL_DF_length > ma_long_value:
+            if self.algo_params["entry_signal"] == "default":
+                value_dict = self._normalize_open_price(value_dict)
+                
+            symbol_df_length = len(value_dict['daily_price_data_df'])
+            ma_long_value = self.algo_params["entry_windows"]["long"]
+            if symbol_df_length > ma_long_value:
                 current_capital = self.get_current_capital(symbol)
                 self.trading_algorithm.update_capital_amount(current_capital)
-                previous_position = self.get_previous_position(symbol)
-                self.data_generator.symbol_dict[symbol] = self.trading_algorithm.apply_long_trading_algorithm(previous_position=previous_position, 
-                                                                                                symbol=symbol,  
-                                                                                                symbol_dict=value_dict)
-                current_df: pd.DataFrame = value_dict['daily_price_data_df']
+                previous_position = self.get_previous_positions(symbol)
+                self.data_generator.symbol_dict[symbol] = \
+                    self.trading_algorithm.apply_long_trading_algorithm(previous_position=previous_position, 
+                                                                        symbol=symbol,  
+                                                                        symbol_dict=value_dict,
+                                                                        algo_params=self.algo_params)
+                current_df = value_dict['daily_price_data_df']
                 self.execute_trading_action(symbol, current_df)
             else:
-                print(f"Not enough data to apply trading_algorithm. Symbol: {symbol}")
+                print(f"Collecting data...[symbol: {symbol}, remaining: {ma_long_value-symbol_df_length}min]")
                 
     #Override
     def execute_trading_action(self, symbol, current_df):
@@ -45,4 +46,5 @@ class TestTradingManagerDivided(TestTradingManager):
         elif trading_action == 'sell_previous_long_position' and current_position == 'long':
             self.close_current_position(symbol=symbol, price=current_df.iloc[-1]['o'])
         else:
-            print('no_action')
+            None
+            #print('no_action')
