@@ -31,7 +31,7 @@ MODE='live'
 #scanner_symbols = get_nasdaq_symbols(file_path=SYMBOL_CSV_PATH)
 
 trading_client = TradingClient(ALPACA_KEY, ALPACA_SECRET_KEY, paper=True)
-trading_day = check_trading_day(date(2024, 2, 22))
+trading_day = check_trading_day(date(2024, 2, 27))
 scanning_day = calculate_scanning_day(trading_day)
 run_id = "eMACD16-6-3_cAVG_eRSI10_cRSI70"
 scanner_params = param_dict[run_id]['scanner_params']
@@ -69,7 +69,7 @@ data_loader = download_scanning_day_alpaca_data
 NOTE: ezt a részt csak egyszer kell, nap elején lefuttatni,
         a save_watchlist_bin() elmenti a változót egy binary-be,
         ahonnan visszatölthető a load_watchlist_bin-nel
-
+"""
 scanner = PreMarketScannerMain(trading_day=trading_day,
                            scanning_day=scanning_day,
                            symbols=sp500,
@@ -83,8 +83,8 @@ scanner = PreMarketScannerMain(trading_day=trading_day,
 # initialize symbol list:
 recommended_symbol_list: List[dict] = scanner.recommend_premarket_watchlist()
 save_watchlist_bin(recommended_symbol_list, trading_day)
-"""
-recommended_symbol_list = load_watchlist_bin(trading_day)
+
+#recommended_symbol_list = load_watchlist_bin(trading_day)
         
 data_manager.recommended_symbol_list = recommended_symbol_list
 
