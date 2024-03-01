@@ -6,27 +6,30 @@ from config import config
 from src_tr.main.data_sources.market_holidays import market_holidays
 
 def check_trading_day(trading_day: date) -> date:
-    if _check_market_holiday(trading_day):
-        raise ValueError(f"Trading day is a market holiday.")
-    if trading_day.strftime('%A') == 'Sunday' or trading_day.strftime('%A') == 'Saturday':
-        raise ValueError(f"Trading day is {trading_day}. Choose a weekday.")
+    if _check_market_holiday(trading_day) \
+        or trading_day.strftime('%A') == 'Sunday' \
+        or trading_day.strftime('%A') == 'Saturday':
+        return 'holiday'
     else:
         return trading_day
     
 def calculate_scanning_day(trading_day: date) -> date:
-    scanning_day = trading_day-timedelta(days=1)
-    if scanning_day.strftime('%A') == 'Sunday':
-        scanning_day = trading_day-timedelta(days=3)
+    if trading_day != 'holiday':
+        scanning_day = trading_day-timedelta(days=1)
+        if scanning_day.strftime('%A') == 'Sunday':
+            scanning_day = trading_day-timedelta(days=3)
+            if _check_market_holiday(scanning_day):
+                scanning_day = scanning_day-timedelta(days=1)
+        
         if _check_market_holiday(scanning_day):
-            scanning_day = scanning_day-timedelta(days=1)
-    
-    if _check_market_holiday(scanning_day):
-        if scanning_day.strftime('%A') == 'Monday':
-            scanning_day = trading_day-timedelta(days=4)
-        else:
-            scanning_day = trading_day-timedelta(days=2)
-            
-    return scanning_day
+            if scanning_day.strftime('%A') == 'Monday':
+                scanning_day = trading_day-timedelta(days=4)
+            else:
+                scanning_day = trading_day-timedelta(days=2)
+                
+        return scanning_day
+    else:
+        return "holiday"
 
 def _check_market_holiday(market_date: date):
     current_year = market_date.strftime("%Y")

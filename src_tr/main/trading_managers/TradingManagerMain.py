@@ -16,7 +16,8 @@ class TradingManagerMain():
                 algo_params: dict,
                 trading_client: TradingClient,
                 api_key: str,
-                secret_key: str
+                secret_key: str,
+                ws_close_func=None
                 ):
         self.data_generator = data_generator
         self.trading_algorithm = trading_algorithm
@@ -25,28 +26,32 @@ class TradingManagerMain():
         self.api_key = api_key
         self.secret_key = secret_key
         self.minute_bars = []
+        self.ws_close_func = ws_close_func
 
     def handle_message(self, ws, message):
-        try:
-            minute_bars = self._parse_json(message)
-            print("\nData received")
-            print(f"\t[Time: {datetime.now()}]")
-            print(f"\t[Message: {minute_bars}]\n")
-            if minute_bars[0]['T'] == 'b':
-                for item in minute_bars: #TODO: máshogy kell kezelni azt, hogy nem egyszerre érkezik be minden részvényhez az adat
-                    self.minute_bars.append(item)
-                    print(f"\nBar data added to TradingManager.minute_bars")
-                    print(f"\t[Time: {datetime.now()}]")
-                    print(f"\t[TradingManager.minute_bars: {self.minute_bars}]\n")
-                    if len(self.minute_bars) == len(self.data_generator.recommended_symbol_list):
-                        print(f"\nData available for all symbols")
-                        print(f"\t[Time: {datetime.now()}]\n \t[TradingManager.minute_bars: {self.minute_bars}]")                        
-                        self.execute_all()
-                        self.minute_bars = []
-            else:
-                print('Authentication and data initialization')
-        except:
-            traceback.print_exc()
+        if datetime.now().strftime("%H:%M") == "21:00":
+            self.ws_close_func()
+        else:
+            try:
+                minute_bars = self._parse_json(message)
+                print("\nData received")
+                print(f"\t[Time: {datetime.now()}]")
+                print(f"\t[Message: {minute_bars}]\n")
+                if minute_bars[0]['T'] == 'b':
+                    for item in minute_bars: #TODO: máshogy kell kezelni azt, hogy nem egyszerre érkezik be minden részvényhez az adat
+                        self.minute_bars.append(item)
+                        print(f"\nBar data added to TradingManager.minute_bars")
+                        print(f"\t[Time: {datetime.now()}]")
+                        print(f"\t[TradingManager.minute_bars: {self.minute_bars}]\n")
+                        if len(self.minute_bars) == len(self.data_generator.recommended_symbol_list):
+                            print(f"\nData available for all symbols")
+                            print(f"\t[Time: {datetime.now()}]\n \t[TradingManager.minute_bars: {self.minute_bars}]")                        
+                            self.execute_all()
+                            self.minute_bars = []
+                else:
+                    print('Authentication and data initialization')
+            except:
+                traceback.print_exc()
             
     def _parse_json(self, json_string):
         try:

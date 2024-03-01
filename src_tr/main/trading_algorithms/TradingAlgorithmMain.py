@@ -126,6 +126,8 @@ class TradingAlgorithmMain():
             "symbol_dict" : symbol_dict
         }
 
+    """
+    NOTE: deprecated
     def set_buy_action(self, symbol_df: pd.DataFrame, symbol_dict: dict):
         if symbol_df.iloc[-1]['position'] == symbol_df.iloc[-2]['position']:
             symbol_df.loc[symbol_df.index[-1], 'trading_action'] = 'no_action'
@@ -151,7 +153,9 @@ class TradingAlgorithmMain():
             "symbol_df" : symbol_df,
             "symbol_dict" : symbol_dict
         }
+    """
     
+    #NOTE: deprecated?
     def entry_signal_default(self, symbol_df: pd.DataFrame, ma_short: int, ma_long: int, epsilon: float, 
                              rsi: dict, weighted: bool, previous_position: str):
         expected_position = 'out'
