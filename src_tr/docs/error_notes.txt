@@ -1,0 +1,28 @@
+Bug-leírás:
+    Live paper-trading futtatáskor az output csv-k alapján az adott részvényhez tartozó pozíciók szinkronizálása,
+    és a kereskedési utasítások kiadása/végrehajtása nem az elvárt (illetve a batch_test.py futtatáskor helyes) működés
+    szerint történik. [Output csv-k e-mailen csatolva, error logok a ./errors_20240221.txt-ben]
+
+    Csv-k alapján előfordulnak a következők:
+    - Adott perc-sorhoz nem kerül be pozíció (out/long) és/vagy trading_action (no_action/sell_previous_long_position/buy_next_long_position)
+        pl.:
+        v2/AAPL - 2024-02-21T19:46:00Z, 2024-02-21T19:48:00Z
+    - Bár a csv-ben látszik, hogy a pozíció-zárás típusa meghatározásra kerül, a pozíció-zárás csak jóval később történik meg,
+      és a típus-meghatározás ellenére a trading_action sem lesz definiálva, vagy 'no_action' marad
+        pl.:
+        v1/AAPL - 2024-02-21T16:05:00Z és 2024-02-21T16:22:00Z között
+        v1/CSCO - 2024-02-21T16:39:00Z és 2024-02-21T17:10:00Z között
+    - Adott perc-sorhoz egyszerre két típus kerül be
+        pl.:
+        v1/AAPL - 2024-02-21T16:32:00Z, 2024-02-21T17:11:00Z
+
+Kutatandó:
+    TradingManagerMain.py / handle_message()
+    - A függvény minden esetben meghívódik, ha WebSocket-üzenet érkezik
+    - Egy üzenet nem feltétlenül (sőt általában nem) tartalmazza az összes feliratkozott részvény-percadatot,
+      tehát egy percen belül több message is érkezik
+    - Ha a mostani megoldással kezeljük azt, hogy adott percben minden részvényhez álljon rendelkezésre friss adat,
+      időbeli csúszáshoz, vagy duplikációhoz vezethet
+
+Megoldás lehetne az, hogy percenként API-hívással kérjünk le minden adatot, de ez az ingyenes accounttal nem működik,
+mivel egy 15 perces delay-t alkalmaz

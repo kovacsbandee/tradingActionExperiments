@@ -1,8 +1,11 @@
+import traceback
+
 from .TestTradingClient import TestTradingClient
 
 class TestTradingClientDivided(TestTradingClient):
     
     def initialize_positions(self):
+        symbol_free_cash = 0
         if self.mode == 'divide':
             symbol_free_cash = self.total_free_cash / len(self.symbol_list)
         if self.mode == 'same':
@@ -15,7 +18,10 @@ class TestTradingClientDivided(TestTradingClient):
             }
         
     def get_max_cash_by_symbol(self, symbol: str):
-        return self.positions[symbol]['symbol_free_cash']
+        try:
+            return self.positions[symbol]['symbol_free_cash']
+        except Exception:
+            traceback.print_exc()
     
     def submit_order(self, symbol: str, qty: int, price: float):
         qty = qty if qty * price <= self.positions[symbol]['symbol_free_cash'] else self.positions[symbol]['symbol_free_cash'] / price

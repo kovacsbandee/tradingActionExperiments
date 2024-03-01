@@ -41,14 +41,15 @@ class TradingManagerRSI(TradingManagerMain):
                 / value_dict['prev_day_data']['std_open']
             
             symbol_df_length = len(value_dict['daily_price_data_df'])
-            ma_long_value = self.trading_algorithm.ma_long
+            ma_long_value = self.algo_params["entry_windows"]["long"]
             if symbol_df_length > ma_long_value:
                 current_capital = self.get_current_capital()
                 self.trading_algorithm.update_capital_amount(current_capital)
-                previous_position = self.get_previous_position(symbol)
+                previous_position = self.get_previous_positions(symbol)
                 self.data_generator.symbol_dict[symbol] = self.trading_algorithm.apply_long_trading_algorithm(previous_position=previous_position, 
                                                                                                 symbol=symbol,  
-                                                                                                symbol_dict=value_dict)
+                                                                                                symbol_dict=value_dict,
+                                                                                                algo_params=self.algo_params)
                 current_df: pd.DataFrame = value_dict['daily_price_data_df']
                 if len(current_df) > self.minutes_before_trading_start:
                     if not self.rsi_filtered and current_df['rsi'].mean() < self.rsi_threshold: #NOTE: megfordítottam a >-t!

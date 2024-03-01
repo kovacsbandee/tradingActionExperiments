@@ -1,31 +1,60 @@
-from datetime import datetime, timedelta
+from datetime import date, timedelta
 import pandas as pd
+import pickle
 
-'''
- itt lehetne egy get_dates() metódus, ami visszadja a trading_day-t és a scanning_day-t a megfelelő ellenőrzésekkel,
-'''
+from config import config
+from src_tr.main.data_sources.market_holidays import market_holidays
 
-def calculate_scanning_day(trading_day: datetime) -> datetime:
-    '''
-    If the previous day is sunday it returns the date for friday as a scanning day
-    '''
-    previous_day = (trading_day - timedelta(days=1)).strftime('%A')
-    if previous_day == 'Sunday':
-        return trading_day - timedelta(days=3)
+def check_trading_day(trading_day: date) -> date:
+    if _check_market_holiday(trading_day):
+        raise ValueError(f"Trading day is a market holiday.")
+    if trading_day.strftime('%A') == 'Sunday' or trading_day.strftime('%A') == 'Saturday':
+        raise ValueError(f"Trading day is {trading_day}. Choose a weekday.")
     else:
-        return trading_day - timedelta(days=1)
+        return trading_day
+    
+def calculate_scanning_day(trading_day: date) -> date:
+    scanning_day = trading_day-timedelta(days=1)
+    if scanning_day.strftime('%A') == 'Sunday':
+        scanning_day = trading_day-timedelta(days=3)
+        if _check_market_holiday(scanning_day):
+            scanning_day = scanning_day-timedelta(days=1)
+    
+    if _check_market_holiday(scanning_day):
+        if scanning_day.strftime('%A') == 'Monday':
+            scanning_day = trading_day-timedelta(days=4)
+        else:
+            scanning_day = trading_day-timedelta(days=2)
+            
+    return scanning_day
 
-def get_nasdaq_symbols(file_path: str=None) -> list:
-    '''
-    Reads in a csv file downloaded from: https://www.nasdaq.com/market-activity/stocks/screener
-    and stored in the project directory in src_tr/main/data_sources. The file_path is an environmental variable.
-    returns: a list of the unique Symbols
-    '''
+def _check_market_holiday(market_date: date):
+    current_year = market_date.strftime("%Y")
+    return market_date in market_holidays[current_year]
+
+def get_nasdaq_symbols():
+    file_path = config["resource_paths"]["nasdaq_symbols_csv"]
     if not file_path:
         raise ValueError(f"No files found with path '{file_path}'")
     daily_nasdaq_symbols = pd.read_csv(file_path)
-    #daily_nasdaq_symbols['Last Sale'] = daily_nasdaq_symbols['Last Sale'].str.lstrip('$').astype(float)
-    # itt direkt van egy szűrés azokra a symbol-ekre, amiknek nincs vagy nulla a kapitalizációjuk
     daily_nasdaq_symbols = daily_nasdaq_symbols[(~daily_nasdaq_symbols['Market Cap'].isna()) & \
                                                  (daily_nasdaq_symbols['Market Cap'] != 0.0)]
-    return list(daily_nasdaq_symbols['Symbol'].unique())
+    symbol_list = list(daily_nasdaq_symbols['Symbol'].unique())
+    with open(f"src_tr/main/data_sources/nasdaq_symbols.py", "w") as output:
+        output.write("nasdaq_symbols = [\n")
+        for i, symbol in enumerate(symbol_list):
+            if i%10 == 0:
+                output.write("\n")
+            output.write(f"'{symbol}', ")
+        output.write("]")
+    return symbol_list
+
+def save_watchlist_bin(recommended_symbol_list: list, trading_day: date):
+    trading_day = trading_day.strftime(f"%Y-%m-%d")
+    with open(f"src_tr/main/data_sources/watchlist_{trading_day}.p", "wb") as daily_stats:
+        pickle.dump(recommended_symbol_list, daily_stats)
+        
+def load_watchlist_bin(trading_day: date):
+    trading_day = trading_day.strftime(f"%Y-%m-%d")
+    with open(f"src_tr/main/data_sources/watchlist_{trading_day}.p", "rb") as daily_stats:
+        return pickle.load(daily_stats)
