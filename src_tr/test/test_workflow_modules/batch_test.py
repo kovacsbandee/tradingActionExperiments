@@ -102,16 +102,19 @@ def run():
                 
                 data_generator = PriceDataGeneratorMain(recommended_symbol_list=recommended_symbol_list)
                         
-                trading_algorithm = TradingAlgorithmMain(trading_day=trading_day, daily_dir_name=daily_dir_name)
+                trading_algorithm = TradingAlgorithmMain(trading_day=trading_day, 
+                                                         daily_dir_name=daily_dir_name, 
+                                                         run_id=run_id)
                 
                 trading_manager = TestTradingManagerDivided(data_generator=data_generator,
-                                                    trading_algorithm=trading_algorithm,
-                                                    algo_params=algo_params,
-                                                    trading_client=trading_client,
-                                                    api_key='test_key',
-                                                    secret_key='test_secret')
+                                                            recommended_symbol_list=recommended_symbol_list,
+                                                            trading_algorithm=trading_algorithm,
+                                                            algo_params=algo_params,
+                                                            trading_client=trading_client,
+                                                            api_key='test_key',
+                                                            secret_key='test_secret')
                 
-                data_generator.initialize_symbol_dict()
+                trading_manager.initialize_symbol_dict()
 
                 # all_symbols_daily_data = get_all_symbols_daily_data(recommended_symbol_list=recommended_symbol_list,
                 #                                                     s=start,
@@ -133,8 +136,8 @@ def run():
 
             finally:
                 data_manager.save_daily_statistics_and_aggregated_plots(recommended_symbols=scanner.recommended_symbols,
-                                                                        symbol_dict=data_generator.symbol_dict)
-                data_manager.save_daily_charts(symbol_dict=data_generator.symbol_dict)
+                                                                        symbol_dict=trading_manager.symbol_dict)
+                data_manager.save_daily_charts(symbol_dict=trading_manager.symbol_dict)
                 print('Experiment ran successfully, with run id: ', data_manager.run_id, 'and run parameters', data_manager.run_parameters)
                 
                 del data_manager

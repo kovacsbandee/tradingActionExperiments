@@ -6,10 +6,11 @@ from config import config
 class TradingAlgorithmMain():
     def __init__(self,
                  trading_day,
-                 daily_dir_name):
+                 daily_dir_name,
+                 run_id):
         self.comission_ratio = 0.0
         self.trading_day = trading_day.strftime('%Y_%m_%d')
-        self.name = 'trading_algorithm_with_stoploss_prev_price'
+        self.run_id = run_id
         self.daily_dir_name = daily_dir_name
 
     def update_capital_amount(self, account_cash):
@@ -78,7 +79,7 @@ class TradingAlgorithmMain():
         symbol_df = eval_result["symbol_df"]
         symbol_dict = eval_result["symbol_dict"]
         
-        symbol_df.to_csv(f"{config['output_stats']}/{self.daily_dir_name}/daily_files/csvs/{symbol}_{self.trading_day}_{self.name}.csv")
+        symbol_df.to_csv(f"{config['output_stats']}/{self.daily_dir_name}/daily_files/csvs/{symbol}_{self.trading_day}_{self.run_id}.csv")
         
         # update the current symbol DataFrame
         symbol_dict['daily_price_data_df'] = symbol_df
@@ -246,7 +247,8 @@ class TradingAlgorithmMain():
             symbol_df.loc[symbol_df.index[-1], 'position'] = previous_position
             return symbol_df
 
-    def close_signal_atr(self, symbol_df: pd.DataFrame, symbol_dict: dict, rsi: dict, window_size: int, weighted: bool, previous_position: str):
+    def close_signal_atr(self, symbol_df: pd.DataFrame, rsi: dict, window_size: int,
+                         weighted: bool, previous_position: str):
         if (symbol_df.loc[symbol_df.index[-1], 'c'] < symbol_df.loc[symbol_df.index[-2], 'o']):
             if weighted:
                 symbol_df['atr_short'] = symbol_df['current_range'].ewm(span=window_size, adjust=False).mean()

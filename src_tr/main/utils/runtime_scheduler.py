@@ -114,7 +114,9 @@ def initialize_components():
         #recommended_symbol_list = load_watchlist_bin(trading_day=trading_day)
         data_manager.recommended_symbol_list = recommended_symbol_list
         data_generator = PriceDataGeneratorMain(recommended_symbol_list=recommended_symbol_list)
-        trading_algorithm = TradingAlgorithmMain(trading_day=trading_day, daily_dir_name=daily_dir_name)
+        trading_algorithm = TradingAlgorithmMain(trading_day=trading_day, 
+                                                 daily_dir_name=daily_dir_name, 
+                                                 run_id=RUN_ID)
         trading_manager = TradingManagerMain(data_generator=data_generator,
                                             trading_algorithm=trading_algorithm,
                                             algo_params=ALGO_PARAMS,
