@@ -26,7 +26,7 @@ ALPACA_KEY = os.environ["ALPACA_KEY"]
 ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
 SOCKET_URL = os.environ["SOCKET_URL"]
 TRADING_CLIENT = TradingClient(ALPACA_KEY, ALPACA_SECRET_KEY, paper=True)
-RUN_ID = "eMACD16-6-3_cAVG_eRSI10_cRSI70"
+RUN_ID = "adatkimaradas_paper_trading_live"
 SCANNER_PARAMS = param_dict[RUN_ID]['scanner_params']
 ALGO_PARAMS = param_dict[RUN_ID]['algo_params']
 MODE = "live"
@@ -118,6 +118,7 @@ def initialize_components():
                                                  daily_dir_name=daily_dir_name, 
                                                  run_id=RUN_ID)
         trading_manager = TradingManagerMain(data_generator=data_generator,
+                                             recommended_symbol_list=recommended_symbol_list,
                                             trading_algorithm=trading_algorithm,
                                             algo_params=ALGO_PARAMS,
                                             trading_client=TRADING_CLIENT,
@@ -151,7 +152,7 @@ def open_websocket_connection():
     global WEBSOCKET_APP
     if trading_day != 'holiday':
         print(f"Starting WebSocket app @ {datetime.now()}")
-        WEBSOCKET_APP.run_forever()
+        WEBSOCKET_APP.run_forever(reconnect=True)
     else:
         print("Holiday")
         return
@@ -173,8 +174,8 @@ def process_trading_day_data():
         print(f"Processing trading day data... {datetime.now()}")
         try:
             data_manager.save_daily_statistics_and_aggregated_plots(recommended_symbols=scanner.recommended_symbols,
-                                                                    symbol_dict=data_generator.symbol_dict)
-            data_manager.save_daily_charts(symbol_dict=data_generator.symbol_dict)
+                                                                    symbol_dict=trading_manager.symbol_dict)
+            data_manager.save_daily_charts(symbol_dict=trading_manager.symbol_dict)
             print('Experiment ran successfully, with run id: ', data_manager.run_id, 'and run parameters', data_manager.run_parameters)
         except:
             traceback.print_exc()
@@ -190,11 +191,21 @@ def close_websocket_connection():
 
 
 def run_scheduler():
+    """
     schedule.every().day.at("15:15:00").do(define_dates)
     schedule.every().day.at("15:15:05").do(reset_components)
     schedule.every().day.at("15:15:10").do(initialize_components)
     schedule.every().day.at("15:29:55").do(initialize_websocket)
     schedule.every().day.at("15:30:00").do(open_websocket_connection)
+    #NOTE: WS close a TradingManagerMain.handle_message()-ben
+    schedule.every().day.at("21:00:10").do(close_open_positions)
+    schedule.every().day.at("21:05:00").do(process_trading_day_data)
+    """
+    schedule.every().day.at("18:57:00").do(define_dates)
+    schedule.every().day.at("18:57:05").do(reset_components)
+    schedule.every().day.at("18:57:10").do(initialize_components)
+    schedule.every().day.at("19:00:15").do(initialize_websocket)
+    schedule.every().day.at("19:00:20").do(open_websocket_connection)
     #NOTE: WS close a TradingManagerMain.handle_message()-ben
     schedule.every().day.at("21:00:10").do(close_open_positions)
     schedule.every().day.at("21:05:00").do(process_trading_day_data)

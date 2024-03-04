@@ -108,18 +108,41 @@ class TradingManagerMain():
                             and self.symbol_dict[symbol]['daily_price_data_df'].index[-1].minute == (current_time-timedelta(minutes=2)).minute:
                             self.symbol_dict[symbol]['daily_price_data_df'] = pd.concat([self.symbol_dict[symbol]['daily_price_data_df'], current_bar_df])
                             self.apply_trading_algorithm(symbol, self.symbol_dict[symbol])
-                        #TODO!
-                        elif current_bar_df.index[-1].minute != (current_time-timedelta(minutes=1)).minute \
-                            and self.symbol_dict[symbol]['daily_price_data_df'].index[-1].minute > (current_time-timedelta(minutes=2)).minute:
-                            delay = current_bar_df.index[-1].minute - self.symbol_dict[symbol]['daily_price_data_df'].index[-1].minute - timedelta(minutes=1)
-                            while delay > 0:
-                                new_row = self.symbol_dict[symbol]['daily_price_data_df'].iloc[-1:].copy()
-                                new_row.index = new_row.index + timedelta(minutes=1)
-                                self.symbol_dict[symbol]['daily_price_data_df'] = pd.concat([self.symbol_dict[symbol]['daily_price_data_df'], new_row])
-                                self.symbol_dict[symbol]['daily_price_data_df'] = self.symbol_dict[symbol]['daily_price_data_df'].sort_index()
-                                delay-=1
-                            self.symbol_dict[symbol]['daily_price_data_df'] = pd.concat([self.symbol_dict[symbol]['daily_price_data_df'], current_bar_df])
-                            self.apply_trading_algorithm(symbol, self.symbol_dict[symbol])
+                        # ÉLŐ
+                        elif current_bar_df.index[-1].minute == (current_time-timedelta(minutes=1)).minute \
+                            and self.symbol_dict[symbol]['daily_price_data_df'].index[-1].minute < (current_time-timedelta(minutes=2)).minute:
+                            try:
+                                delay = (current_bar_df.index[-1] - timedelta(minutes=self.symbol_dict[symbol]['daily_price_data_df'].index[-1].minute)).minute
+                                while delay > 1:
+                                    new_row = self.symbol_dict[symbol]['daily_price_data_df'].iloc[-1:].copy()
+                                    new_row.index = new_row.index + timedelta(minutes=1)
+                                    new_row.loc[new_row.index[-1], 'trading_action'] = 'no_action'
+                                    new_row.loc[new_row.index[-1], 'entry_signal_type'] = None
+                                    new_row.loc[new_row.index[-1], 'close_signal_type'] = None
+                                    new_row.loc[new_row.index[-1], 'data_correction'] = 'corrected'
+                                    self.symbol_dict[symbol]['daily_price_data_df'] = pd.concat([self.symbol_dict[symbol]['daily_price_data_df'], new_row])
+                                    self.symbol_dict[symbol]['daily_price_data_df'] = self.symbol_dict[symbol]['daily_price_data_df'].sort_index()
+                                    delay-=1
+                                self.symbol_dict[symbol]['daily_price_data_df'] = pd.concat([self.symbol_dict[symbol]['daily_price_data_df'], current_bar_df])
+                                self.apply_trading_algorithm(symbol, self.symbol_dict[symbol])
+                            except:
+                                print(f"Exception while data correction at {datetime.now()}")
+                                traceback.print_exc()
+                        # TESZT
+                        #elif current_bar_df.index[-1].minute != (current_time-timedelta(minutes=1)).minute \
+                        #    and self.symbol_dict[symbol]['daily_price_data_df'].index[-1].minute < (current_time-timedelta(minutes=1)).minute:
+                        #    delay = (current_bar_df.index[-1] - timedelta(minutes=self.symbol_dict[symbol]['daily_price_data_df'].index[-1].minute)).minute
+                        #    while delay > 1:
+                        #        new_row = self.symbol_dict[symbol]['daily_price_data_df'].iloc[-1:].copy()
+                        #        new_row.index = new_row.index + timedelta(minutes=1)
+                        #        new_row.loc[new_row.index[-1], 'trading_action'] = 'no_action'
+                        #        new_row.loc[new_row.index[-1], 'entry_signal_type'] = None
+                        #        new_row.loc[new_row.index[-1], 'close_signal_type'] = None
+                        #        self.symbol_dict[symbol]['daily_price_data_df'] = pd.concat([self.symbol_dict[symbol]['daily_price_data_df'], new_row])
+                        #        self.symbol_dict[symbol]['daily_price_data_df'] = self.symbol_dict[symbol]['daily_price_data_df'].sort_index()
+                        #        delay-=1
+                        #    self.symbol_dict[symbol]['daily_price_data_df'] = pd.concat([self.symbol_dict[symbol]['daily_price_data_df'], current_bar_df])
+                        #    self.apply_trading_algorithm(symbol, self.symbol_dict[symbol])
                     else:
                         raise ValueError("Unexpected data structure for the symbol in current_data_window")
             else:
@@ -264,6 +287,7 @@ class TradingManagerMain():
             raise ValueError("Recommended symbol list is empty.")
         
     def initialize_additional_columns(self, symbol):
+        self.symbol_dict[symbol]['daily_price_data_df']['data_correction'] = None
         self.symbol_dict[symbol]['daily_price_data_df']['position'] = 'out'
         self.symbol_dict[symbol]['daily_price_data_df']['trading_action'] = 'no_action'
         self.symbol_dict[symbol]['daily_price_data_df']['current_capital'] = 0.0

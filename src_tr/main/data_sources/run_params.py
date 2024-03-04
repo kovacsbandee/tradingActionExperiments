@@ -1,5 +1,5 @@
 param_dict = {
-    "adatkimaradas_szimulacio" : {
+    "adatkimaradas_paper_trading_live" : {
             "scanner_params" : {
                 "windows" : {
                     "short" : 12,
