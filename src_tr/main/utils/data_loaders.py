@@ -38,8 +38,7 @@ def download_scanning_day_alpaca_data(symbol: str, alpaca_key: str, alpaca_secre
         start=start,
         symbol_or_symbols=symbol,
         timeframe=timeframe,
-        end=end,
-        feed=DataFeed.SIP
+        end=end
     )
     latest_bars = client.get_stock_bars(bars_request)
     if latest_bars.data:

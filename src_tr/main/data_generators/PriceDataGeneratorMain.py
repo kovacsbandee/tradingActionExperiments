@@ -1,6 +1,8 @@
 from typing import List
 import pandas as pd
 from pandas import DataFrame
+from datetime import datetime, timedelta
+import pytz
 
 class PriceDataGeneratorMain():
 
@@ -50,16 +52,31 @@ class PriceDataGeneratorMain():
                 
     def update_symbol_df(self, minute_bars: List[dict]):
         if minute_bars is not None and len(minute_bars) > 0:
+            current_time = datetime.now(pytz.timezone("UTC")) #NOTE: ez kívülről jöjjön, hogy a tesztek is működhessenek
             for bar in minute_bars:
                 symbol = bar['S']
-                bar_df = DataFrame([bar])
-                bar_df.set_index('t', inplace=True)
+                current_bar_df = DataFrame([bar])
+                current_bar_df.set_index('t', inplace=True)
 
                 if self.symbol_dict[symbol]['daily_price_data_df'] is None:
-                    self.symbol_dict[symbol]['daily_price_data_df'] = bar_df
+                    self.symbol_dict[symbol]['daily_price_data_df'] = current_bar_df
                     self.initialize_additional_columns(symbol)
                 elif isinstance(self.symbol_dict[symbol]['daily_price_data_df'], DataFrame):
-                    self.symbol_dict[symbol]['daily_price_data_df'] = pd.concat([self.symbol_dict[symbol]['daily_price_data_df'], bar_df])
+                    if current_bar_df.index[-1].minute == (current_time-timedelta(minutes=1)).minute \
+                        and self.symbol_dict[symbol]['daily_price_data_df'].index[-1].minute == (current_time-timedelta(minutes=2)).minute:
+                        self.symbol_dict[symbol]['daily_price_data_df'] = pd.concat([self.symbol_dict[symbol]['daily_price_data_df'], current_bar_df])
+                        #TODO: apply_algo()
+                    elif current_bar_df.index[-1].minute == (current_time-timedelta(minutes=1)).minute \
+                        and self.symbol_dict[symbol]['daily_price_data_df'].index[-1].minute > (current_time-timedelta(minutes=2)).minute:
+                        delay = current_bar_df.index[-1].minute - self.symbol_dict[symbol]['daily_price_data_df'].index[-1].minute - timedelta(minutes=1)
+                        while delay > 0:
+                            new_row = self.symbol_dict[symbol]['daily_price_data_df'].iloc[-1:].copy()
+                            new_row.index = new_row.index + timedelta(minutes=1)
+                            self.symbol_dict[symbol]['daily_price_data_df'] = pd.concat([self.symbol_dict[symbol]['daily_price_data_df'], new_row])
+                            self.symbol_dict[symbol]['daily_price_data_df'] = self.symbol_dict[symbol]['daily_price_data_df'].sort_index()
+                            delay-=1
+                        self.symbol_dict[symbol]['daily_price_data_df'] = pd.concat([self.symbol_dict[symbol]['daily_price_data_df'], current_bar_df])
+                        # TODO: apply_algo()
                 else:
                     raise ValueError("Unexpected data structure for the symbol in current_data_window")
         else:

@@ -1,5 +1,5 @@
 param_dict = {
-    "eMACD16-6-3_cAVG_eRSI10_cRSI70" : {
+    "adatkimaradas_paper_trading_live" : {
             "scanner_params" : {
                 "windows" : {
                     "short" : 12,

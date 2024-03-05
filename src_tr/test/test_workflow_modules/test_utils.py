@@ -3,10 +3,11 @@ from typing import List
 import pandas as pd
 import json
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 from alpaca.data.historical import StockHistoricalDataClient
 from alpaca.data.requests import StockBarsRequest
+import dateutil.parser as parser
 
 from config import config
 from src_tr.main.data_sources.sp500 import sp500
@@ -138,10 +139,12 @@ def get_polygon_trading_day_data(recommended_symbols: List[str], trading_day: st
 
 def run_test_experiment(all_symbols_daily_data, trading_manager):
     i = 0
+    current_time = parser.parse(all_symbols_daily_data[0][0]['t']) + timedelta(minutes=1)
     while i < len(all_symbols_daily_data[0])-1:
         minute_bars = []
         for symbol_daily_data in all_symbols_daily_data:
             minute_bars.append(symbol_daily_data[i])
-        trading_manager.handle_message(ws=None, message=minute_bars)
+        trading_manager.handle_message(ws=None, message=minute_bars, current_time=current_time)
         minute_bars = []
         i += 1
+        current_time += timedelta(minutes=1)

@@ -6,10 +6,11 @@ from config import config
 class TradingAlgorithmMain():
     def __init__(self,
                  trading_day,
-                 daily_dir_name):
+                 daily_dir_name,
+                 run_id):
         self.comission_ratio = 0.0
         self.trading_day = trading_day.strftime('%Y_%m_%d')
-        self.name = 'trading_algorithm_with_stoploss_prev_price'
+        self.run_id = run_id
         self.daily_dir_name = daily_dir_name
 
     def update_capital_amount(self, account_cash):
@@ -78,7 +79,7 @@ class TradingAlgorithmMain():
         symbol_df = eval_result["symbol_df"]
         symbol_dict = eval_result["symbol_dict"]
         
-        symbol_df.to_csv(f"{config['output_stats']}/{self.daily_dir_name}/daily_files/csvs/{symbol}_{self.trading_day}_{self.name}.csv")
+        symbol_df.to_csv(f"{config['output_stats']}/{self.daily_dir_name}/daily_files/csvs/{symbol}_{self.trading_day}_{self.run_id}.csv")
         
         # update the current symbol DataFrame
         symbol_dict['daily_price_data_df'] = symbol_df
@@ -125,36 +126,7 @@ class TradingAlgorithmMain():
             "symbol_df" : symbol_df,
             "symbol_dict" : symbol_dict
         }
-
-    """
-    NOTE: deprecated
-    def set_buy_action(self, symbol_df: pd.DataFrame, symbol_dict: dict):
-        if symbol_df.iloc[-1]['position'] == symbol_df.iloc[-2]['position']:
-            symbol_df.loc[symbol_df.index[-1], 'trading_action'] = 'no_action'
-
-        if symbol_df.iloc[-1]['position'] == 'long' and symbol_df.iloc[-2]['position'] != 'long':
-            symbol_df.loc[symbol_df.index[-1], 'trading_action'] = 'buy_next_long_position'
-            symbol_dict['previous_long_buy_position_index'] = symbol_df.index[-1]
-            
-        return {
-            "symbol_df" : symbol_df,
-            "symbol_dict" : symbol_dict
-        }
         
-    def set_close_action(self, symbol_df: pd.DataFrame, symbol_dict: dict):
-        if symbol_df.iloc[-1]['position'] == symbol_df.iloc[-2]['position']:
-            symbol_df.loc[symbol_df.index[-1], 'trading_action'] = 'no_action'
-            
-        if symbol_df.iloc[-2]['position'] == 'long' and symbol_df.iloc[-1]['position'] != 'long':
-            symbol_df.loc[symbol_df.index[-1], 'trading_action'] = 'sell_previous_long_position'
-            symbol_dict['previous_long_buy_position_index'] = None
-        
-        return {
-            "symbol_df" : symbol_df,
-            "symbol_dict" : symbol_dict
-        }
-    """
-    
     #NOTE: deprecated?
     def entry_signal_default(self, symbol_df: pd.DataFrame, ma_short: int, ma_long: int, epsilon: float, 
                              rsi: dict, weighted: bool, previous_position: str):
@@ -246,7 +218,8 @@ class TradingAlgorithmMain():
             symbol_df.loc[symbol_df.index[-1], 'position'] = previous_position
             return symbol_df
 
-    def close_signal_atr(self, symbol_df: pd.DataFrame, symbol_dict: dict, rsi: dict, window_size: int, weighted: bool, previous_position: str):
+    def close_signal_atr(self, symbol_df: pd.DataFrame, rsi: dict, window_size: int,
+                         weighted: bool, previous_position: str):
         if (symbol_df.loc[symbol_df.index[-1], 'c'] < symbol_df.loc[symbol_df.index[-2], 'o']):
             if weighted:
                 symbol_df['atr_short'] = symbol_df['current_range'].ewm(span=window_size, adjust=False).mean()

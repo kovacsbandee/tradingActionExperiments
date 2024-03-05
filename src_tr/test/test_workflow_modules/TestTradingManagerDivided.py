@@ -13,26 +13,25 @@ class TestTradingManagerDivided(TestTradingManager):
             raise Exception("trading_client is not instance of TestTradingClientDivided")
     
     #Override
-    def apply_trading_algorithm(self):
-        for symbol, value_dict in self.data_generator.symbol_dict.items():
-            if self.algo_params["entry_signal"] == "default":
-                value_dict = self._normalize_open_price(value_dict)
-                
-            symbol_df_length = len(value_dict['daily_price_data_df'])
-            ma_long_value = self.algo_params["entry_windows"]["long"]
-            if symbol_df_length > ma_long_value:
-                current_capital = self.get_current_capital(symbol)
-                self.trading_algorithm.update_capital_amount(current_capital)
-                previous_position = self.get_previous_positions(symbol)
-                self.data_generator.symbol_dict[symbol] = \
-                    self.trading_algorithm.apply_long_trading_algorithm(previous_position=previous_position, 
-                                                                        symbol=symbol,  
-                                                                        symbol_dict=value_dict,
-                                                                        algo_params=self.algo_params)
-                current_df = value_dict['daily_price_data_df']
-                self.execute_trading_action(symbol, current_df)
-            else:
-                print(f"Collecting data...[symbol: {symbol}, remaining: {ma_long_value-symbol_df_length}min]")
+    def apply_trading_algorithm(self, symbol, symbol_dict):
+        if self.algo_params["entry_signal"] == "default":
+            symbol_dict = self._normalize_open_price(symbol_dict)
+            
+        symbol_df_length = len(symbol_dict['daily_price_data_df'])
+        ma_long_value = self.algo_params["entry_windows"]["long"]
+        if symbol_df_length > ma_long_value:
+            current_capital = self.get_current_capital(symbol)
+            self.trading_algorithm.update_capital_amount(current_capital)
+            previous_position = self.get_previous_positions(symbol)
+            symbol_dict[symbol] = \
+                self.trading_algorithm.apply_long_trading_algorithm(previous_position=previous_position, 
+                                                                    symbol=symbol,  
+                                                                    symbol_dict=symbol_dict,
+                                                                    algo_params=self.algo_params)
+            current_df = symbol_dict['daily_price_data_df']
+            self.execute_trading_action(symbol, current_df)
+        else:
+            print(f"Collecting data...[symbol: {symbol}, remaining: {ma_long_value-symbol_df_length}min]")
                 
     #Override
     def execute_trading_action(self, symbol, current_df):
