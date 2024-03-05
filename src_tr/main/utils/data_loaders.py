@@ -6,6 +6,7 @@ import pandas as pd
 from alpaca.data.historical import StockHistoricalDataClient
 from alpaca.data.requests import StockBarsRequest
 from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
+from alpaca.data.enums import DataFeed
 
 from config import config
 
@@ -37,8 +38,8 @@ def download_scanning_day_alpaca_data(symbol: str, alpaca_key: str, alpaca_secre
         start=start,
         symbol_or_symbols=symbol,
         timeframe=timeframe,
-        end=end
-        #limit=12
+        end=end,
+        feed=DataFeed.SIP
     )
     latest_bars = client.get_stock_bars(bars_request)
     if latest_bars.data:
