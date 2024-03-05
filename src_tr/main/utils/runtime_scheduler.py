@@ -138,9 +138,9 @@ def initialize_websocket():
                                 on_open=trading_manager.on_open,
                                 on_message=trading_manager.handle_message,
                                 on_close=trading_manager.on_close,
-                                on_error=trading_manager.on_error,
-                                on_ping=trading_manager.on_ping,
-                                on_pong=trading_manager.on_pong)
+                                on_error=trading_manager.on_error)
+                                #on_ping=trading_manager.on_ping,
+                                #on_pong=trading_manager.on_pong)
     else:
         return
 
@@ -152,7 +152,7 @@ def open_websocket_connection():
     global WEBSOCKET_APP
     if trading_day != 'holiday':
         print(f"Starting WebSocket app @ {datetime.now()}")
-        WEBSOCKET_APP.run_forever(reconnect=True)
+        WEBSOCKET_APP.run_forever(reconnect=True, ping_timeout=None)
     else:
         print("Holiday")
         return
@@ -191,25 +191,16 @@ def close_websocket_connection():
 
 
 def run_scheduler():
-    """
-    schedule.every().day.at("15:15:00").do(define_dates)
-    schedule.every().day.at("15:15:05").do(reset_components)
-    schedule.every().day.at("15:15:10").do(initialize_components)
-    schedule.every().day.at("15:29:55").do(initialize_websocket)
-    schedule.every().day.at("15:30:00").do(open_websocket_connection)
+    schedule.every().day.at("17:43:00").do(define_dates)
+    schedule.every().day.at("17:43:05").do(reset_components)
+    schedule.every().day.at("17:43:10").do(initialize_components)
+    schedule.every().day.at("17:46:00").do(initialize_websocket)
+    schedule.every().day.at("17:46:05").do(open_websocket_connection)
     #NOTE: WS close a TradingManagerMain.handle_message()-ben
     schedule.every().day.at("21:00:10").do(close_open_positions)
     schedule.every().day.at("21:05:00").do(process_trading_day_data)
-    """
-    schedule.every().day.at("18:57:00").do(define_dates)
-    schedule.every().day.at("18:57:05").do(reset_components)
-    schedule.every().day.at("18:57:10").do(initialize_components)
-    schedule.every().day.at("19:00:15").do(initialize_websocket)
-    schedule.every().day.at("19:00:20").do(open_websocket_connection)
-    #NOTE: WS close a TradingManagerMain.handle_message()-ben
-    schedule.every().day.at("21:00:10").do(close_open_positions)
-    schedule.every().day.at("21:05:00").do(process_trading_day_data)
-    
+
+
     while True:
         try:
             schedule.run_pending()
