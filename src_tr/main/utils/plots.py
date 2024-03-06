@@ -54,8 +54,8 @@ def get_marker_df(plot_df):
     plot_df = plot_df.loc[(plot_df['trading_action'] != '')]
     marker_df = plot_df[plot_df['trading_action'] != 'no_action'].copy()
     marker_df['position_symbols'] = np.nan
-    marker_df.loc[marker_df['trading_action'] == 'buy_next_long_position', 'position_symbols'] = 'arrow-right'
-    marker_df.loc[marker_df['trading_action'] == 'sell_previous_long_position', 'position_symbols'] = 'arrow-left'
+    marker_df.loc[marker_df['trading_action'] == 'buy_next_long_position', 'position_symbols'] = 'triangle-down'
+    marker_df.loc[marker_df['trading_action'] == 'sell_previous_long_position', 'position_symbols'] = 'triangle-up'
     marker_df.loc[marker_df['trading_action'] == 'sell_previous_long_position_inner_stop_loss', 'position_symbols'] = 'arrow-left'
     marker_df.loc[marker_df['trading_action'] == 'sell_next_short_position', 'position_symbols'] = 'arrow-right'
     marker_df.loc[marker_df['trading_action'] == 'buy_previous_short_position', 'position_symbols'] = 'arrow-left'
@@ -108,9 +108,9 @@ def daily_time_series_charts(symbol_dict,
                                  mode='markers',
                                  name='in and out position markers',
                                  hovertext=marker_df['trading_action'],
-                                 marker_color='yellow',
+                                 marker_color='black',
                                  marker_symbol=marker_df['position_symbols'],
-                                 marker_size=4), row=2, col=1)
+                                 marker_size=8), row=2, col=1)
         
         #3 RSI
         fig.add_trace(go.Scatter(x=time_dimension,
@@ -194,25 +194,143 @@ def daily_time_series_charts(symbol_dict,
                                  marker_color='red',
                                  marker_size=6), row=6, col=1)
         fig.update_yaxes(title = 'Entry/close types', title_font=dict(color='green'), secondary_y=False, row=6, col=1)
-            
-        #5 Number of transactions, etc.
-        #fig.add_trace(go.Bar(x=time_dimension,
-        #                     y=plot_df['v'],
-        #                     showlegend=False,
-        #                     hovertext='volume',
-        #                     marker={'color': 'blue'}),
-        #              secondary_y=False, row=6, col=1)
-        #fig.update_yaxes(title='volume', title_font=dict(color='blue'), secondary_y=False, row=6, col=1)
-        #
-        #if 'n' in plot_df.columns:
-        #    fig.add_trace(go.Bar(x=time_dimension,
-        #                         y=plot_df['n'],
-        #                         hovertext='number of transactions',
-        #                         showlegend=False,
-        #                         marker={'color': 'red'}),
-        #                  secondary_y=True, row=6, col=1)
-        #    fig.update_yaxes(title = 'number of transactions', title_font=dict(color='red'), autorange = 'reversed', secondary_y=True, row=6, col=1)
-        
         fig.update_xaxes(showticklabels=True)
         fig.update_layout(title=f'{symbol} {date}.', title_font=dict(size=18), xaxis_rangeslider_visible=False, height=1500)
         fig.write_html(f'{db_path}/{daily_dir_name}/daily_files/plots/candle_plot_{symbol}_{date}.html')
+
+#TODO: összevonni a fentivel (opcionális paraméterek, stb.)
+def daily_time_series_charts_post_process(plot_df,
+                                          file,
+                                          epsilon,
+                                          mode,
+                                          db_path,
+                                          daily_dir_name):
+    epsilon_line_width = 0.5
+    splitted_file_name = file.split('_')
+    symbol = splitted_file_name[0]
+    date = splitted_file_name[1] + '_' + splitted_file_name[2] + '_' + splitted_file_name[3]
+    if mode == 'YF_DB' and 'n' in plot_df.columns:
+        plot_df.drop('n', inplace=True, axis=1)
+    time_dimension = plot_df.index
+    fig = make_subplots(rows=6, cols=1, shared_xaxes=True,
+                        specs=[[{"secondary_y": False}],
+                               [{"secondary_y": False}],
+                               [{"secondary_y": False}],
+                               [{"secondary_y": False}],
+                               [{"secondary_y": False}],
+                               [{"secondary_y": True if 'n' in plot_df.columns else False}]])
+    # 1 Capital
+    fig.add_trace(go.Scatter(x=time_dimension,
+                             y=np.where(plot_df['current_capital_post_calculation'] < plot_df['current_capital_post_calculation'].mean() * 0.05,
+                                        np.nan, plot_df['current_capital_post_calculation']),
+                             name='current_capital_post_calculation',
+                             mode='lines',
+                             marker=dict(color='blue'),
+                             connectgaps=True), row=1, col=1)
+    fig.update_yaxes(title='Capital post calculation', title_font=dict(color='blue'), secondary_y=False, row=1, col=1)
+
+    # 2 Price data chart
+    fig.add_trace(go.Candlestick(x=time_dimension,
+                                 open=plot_df['o'],
+                                 high=plot_df['h'],
+                                 low=plot_df['l'],
+                                 close=plot_df['c'],
+                                 name=symbol), row=2, col=1)
+
+    marker_df = get_marker_df(plot_df)
+
+    fig.add_trace(go.Scatter(x=marker_df.index,
+                             y=marker_df['o'],
+                             mode='markers',
+                             name='in and out position markers',
+                             hovertext=marker_df['trading_action'],
+                             marker_color='yellow',
+                             marker_symbol=marker_df['position_symbols'],
+                             marker_size=4), row=2, col=1)
+
+    # 3 RSI
+    fig.add_trace(go.Scatter(x=time_dimension,
+                             y=plot_df['rsi'],
+                             name='RSI',
+                             mode='lines',
+                             marker={'color': 'black'},
+                             connectgaps=True), row=4, col=1)
+    fig.update_yaxes(title='RSI', title_font=dict(color='black'), secondary_y=False, row=4, col=1)
+
+    # 4 algo indicators
+    if epsilon > 0.0:
+        fig.add_trace(go.Scatter(x=time_dimension,
+                                 y=plot_df['open_small_indicator'],
+                                 name='small_indicator',
+                                 mode='lines',
+                                 marker={'color': 'orange'},
+                                 connectgaps=True), row=5, col=1)
+        fig.add_trace(go.Scatter(x=time_dimension,
+                                 y=[epsilon for i in range(len(time_dimension))],
+                                 mode='lines',
+                                 showlegend=False,
+                                 line=dict(color='orange',
+                                           width=epsilon_line_width),
+                                 connectgaps=True), row=5, col=1)
+        fig.add_trace(go.Scatter(x=time_dimension,
+                                 y=[-epsilon for i in range(len(time_dimension))],
+                                 mode='lines',
+                                 showlegend=False,
+                                 line=dict(color='orange',
+                                           width=epsilon_line_width),
+                                 connectgaps=True), row=5, col=1)
+        fig.add_trace(go.Scatter(x=time_dimension,
+                                 y=plot_df['open_big_indicator'],
+                                 name='big_indicator',
+                                 mode='lines',
+                                 marker={'color': 'purple'},
+                                 connectgaps=True), row=5, col=1)
+        fig.add_trace(go.Scatter(x=time_dimension,
+                                 y=[epsilon for i in range(len(time_dimension))],
+                                 mode='lines',
+                                 showlegend=False,
+                                 line=dict(color='purple',
+                                           width=epsilon_line_width),
+                                 connectgaps=True), row=5, col=1)
+        fig.add_trace(go.Scatter(x=time_dimension,
+                                 y=[-epsilon for i in range(len(time_dimension))],
+                                 mode='lines',
+                                 showlegend=False,
+                                 line=dict(color='purple',
+                                           width=epsilon_line_width),
+                                 connectgaps=True), row=5, col=1)
+    else:
+        fig.add_trace(go.Scatter(x=time_dimension,
+                                 y=plot_df['MACD'],
+                                 name='MACD line',
+                                 mode='lines',
+                                 marker={'color': 'blue'},
+                                 connectgaps=True), row=5, col=1)
+        fig.add_trace(go.Scatter(x=time_dimension,
+                                 y=plot_df['signal_line'],
+                                 name='signal line',
+                                 mode='lines',
+                                 marker={'color': 'chocolate'},
+                                 connectgaps=True), row=5, col=1)
+        fig.update_yaxes(title='MACD', title_font=dict(color='blue'), secondary_y=False, row=5, col=1)
+
+    # 1 entry/close types
+    fig.add_trace(go.Scatter(x=plot_df.index,
+                             y=plot_df['entry_signal_type'],
+                             mode='markers',
+                             name='entry type',
+                             hovertext=plot_df['entry_signal_type'],
+                             marker_color='green',
+                             marker_size=6), row=6, col=1)
+    fig.add_trace(go.Scatter(x=plot_df.index,
+                             y=plot_df['close_signal_type'],
+                             mode='markers',
+                             name='close type',
+                             hovertext=plot_df['close_signal_type'],
+                             marker_color='red',
+                             marker_size=6), row=6, col=1)
+    fig.update_yaxes(title='Entry/close types', title_font=dict(color='green'), secondary_y=False, row=6, col=1)
+    fig.update_xaxes(showticklabels=True)
+    fig.update_layout(title=f'{symbol} {date}.', title_font=dict(size=18), xaxis_rangeslider_visible=False,
+                      height=1500)
+    fig.write_html(f'{db_path}/{daily_dir_name}/daily_files/plots/candle_plot_{symbol}_{date}_post_calculation.html')

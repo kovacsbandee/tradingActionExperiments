@@ -7,14 +7,21 @@ class TradingAlgorithmMain():
     def __init__(self,
                  trading_day,
                  daily_dir_name,
-                 run_id):
+                 run_id,
+                 start_cash=None,
+                 trade_cash=None):
         self.comission_ratio = 0.0
         self.trading_day = trading_day.strftime('%Y_%m_%d')
         self.run_id = run_id
         self.daily_dir_name = daily_dir_name
+        self.start_cash = start_cash
+        self.trade_cash = trade_cash
 
     def update_capital_amount(self, account_cash):
-        self.capital = account_cash
+        if self.start_cash is not None and self.trade_cash is not None:
+            self.capital = account_cash - (self.start_cash-self.trade_cash)
+        else:
+            self.capital = account_cash
         
     def apply_long_trading_algorithm(self, 
                                      previous_position: str, 
@@ -126,35 +133,6 @@ class TradingAlgorithmMain():
             "symbol_df" : symbol_df,
             "symbol_dict" : symbol_dict
         }
-
-    """
-    NOTE: deprecated
-    def set_buy_action(self, symbol_df: pd.DataFrame, symbol_dict: dict):
-        if symbol_df.iloc[-1]['position'] == symbol_df.iloc[-2]['position']:
-            symbol_df.loc[symbol_df.index[-1], 'trading_action'] = 'no_action'
-
-        if symbol_df.iloc[-1]['position'] == 'long' and symbol_df.iloc[-2]['position'] != 'long':
-            symbol_df.loc[symbol_df.index[-1], 'trading_action'] = 'buy_next_long_position'
-            symbol_dict['previous_long_buy_position_index'] = symbol_df.index[-1]
-            
-        return {
-            "symbol_df" : symbol_df,
-            "symbol_dict" : symbol_dict
-        }
-        
-    def set_close_action(self, symbol_df: pd.DataFrame, symbol_dict: dict):
-        if symbol_df.iloc[-1]['position'] == symbol_df.iloc[-2]['position']:
-            symbol_df.loc[symbol_df.index[-1], 'trading_action'] = 'no_action'
-            
-        if symbol_df.iloc[-2]['position'] == 'long' and symbol_df.iloc[-1]['position'] != 'long':
-            symbol_df.loc[symbol_df.index[-1], 'trading_action'] = 'sell_previous_long_position'
-            symbol_dict['previous_long_buy_position_index'] = None
-        
-        return {
-            "symbol_df" : symbol_df,
-            "symbol_dict" : symbol_dict
-        }
-    """
     
     #NOTE: deprecated?
     def entry_signal_default(self, symbol_df: pd.DataFrame, ma_short: int, ma_long: int, epsilon: float, 

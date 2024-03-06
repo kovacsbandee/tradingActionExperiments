@@ -188,7 +188,7 @@ class PreMarketScannerMain():
     def recommend_premarket_watchlist(self) -> List[dict]:
         self.calculate_filtering_stats()
         self.recommended_symbols = self.pre_market_stats.sort_values(by=['avg_transaction'], ascending=False)
-        self.recommended_symbols = self.recommended_symbols.head(20)
+        self.recommended_symbols = self.recommended_symbols.head(1)
 
         ##self.pre_market_stats['volatility_rank'] = self.pre_market_stats['volatility'].rank(ascending=False)
         ##self.pre_market_stats['transactions_rank'] = self.pre_market_stats['avg_transaction'].rank(ascending=False)

@@ -6,6 +6,7 @@ from alpaca.trading.enums import OrderSide, TimeInForce
 import traceback
 import pytz
 import pandas as pd
+import asyncio
 
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
 from src_tr.main.trading_algorithms.TradingAlgorithmMain import TradingAlgorithmMain
@@ -42,21 +43,12 @@ class TradingManagerMain():
         else:
             try:
                 minute_bars = self._parse_json(message)
-                #print("\nData received")
-                #print(f"\t[Time: {datetime.now()}]")
-                #print(f"\t[Message: {minute_bars}]\n")
                 if minute_bars[0]['T'] == 'b':
-                    for item in minute_bars: #TODO: máshogy kell kezelni azt, hogy nem egyszerre érkezik be minden részvényhez az adat
+                    #await self.process_minute_bars(minute_bars, current_time)
+                    for item in minute_bars:
                         self.minute_bars.append(item)
                     self.execute_all(current_time)
                     self.minute_bars = []
-                        #print(f"\nBar data added to TradingManager.minute_bars")
-                        #print(f"\t[Time: {datetime.now()}]")
-                        #print(f"\t[TradingManager.minute_bars: {self.minute_bars}]\n")
-                        #if len(self.minute_bars) == len(self.data_generator.recommended_symbol_list):
-                            #print(f"\nData available for all symbols")
-                            #print(f"\t[Time: {datetime.now()}]\n \t[TradingManager.minute_bars: {self.minute_bars}]")                        
-                            #self.execute_all()
                 else:
                     print('Authentication and data initialization')
             except:
@@ -82,6 +74,54 @@ class TradingManagerMain():
             }
 
         ws.send(json.dumps(listen_message))
+        
+    async def process_minute_bars(self, minute_bars, current_time):
+        if minute_bars is not None and len(minute_bars) > 0:
+            for bar in minute_bars:
+                symbol = bar['S']
+                current_bar_df = pd.DataFrame([bar])
+                current_bar_df['t'] = pd.DatetimeIndex(pd.to_datetime(current_bar_df['t']))
+                current_bar_df.set_index('t', inplace=True)
+                
+                current_bar_minute = current_bar_df.index[-1].minute
+                
+                if self.symbol_dict[symbol]['daily_price_data_df'] is None:
+                    self.symbol_dict[symbol]['daily_price_data_df'] = current_bar_df
+                    self.initialize_additional_columns(symbol)
+                elif isinstance(self.symbol_dict[symbol]['daily_price_data_df'], pd.DataFrame):
+                    latest_bar_minute = self.symbol_dict[symbol]['daily_price_data_df'].index[-1].minute
+                    case_consequent = current_bar_minute == (current_time-timedelta(minutes=1)).minute \
+                                        and latest_bar_minute == (current_time-timedelta(minutes=2)).minute
+                    case_non_consequent = current_bar_minute == (current_time-timedelta(minutes=1)).minute \
+                                            and latest_bar_minute < (current_time-timedelta(minutes=2)).minute
+                    if case_consequent:
+                        self.symbol_dict[symbol]['daily_price_data_df'] = \
+                            pd.concat([self.symbol_dict[symbol]['daily_price_data_df'], current_bar_df])
+                        await asyncio.gather(self.apply_trading_algorithm(symbol, self.symbol_dict[symbol]))
+                    elif case_non_consequent:
+                        await asyncio.gather(self.apply_trading_algorithm(symbol, self.symbol_dict[symbol]),
+                                             self.delayed_correction(symbol, current_bar_df, latest_bar_minute, current_time))
+                        
+                else:
+                    raise ValueError("Unexpected data structure for the symbol in current_data_window")
+        else:
+            raise ValueError("Minute bar list is empty.")
+        
+    async def delayed_correction(self, symbol, current_bar_df, latest_bar_minute, current_time):
+        delay = (current_bar_df.index[-1] - timedelta(minutes=latest_bar_minute)).minute                                
+        while delay > 1:
+            new_row: pd.DataFrame = self.symbol_dict[symbol]['daily_price_data_df'].iloc[-1:].copy()
+            new_row.index = new_row.index + timedelta(minutes=1)
+            new_row.loc[new_row.index[-1], 'trading_action'] = 'no_action'
+            new_row.loc[new_row.index[-1], 'entry_signal_type'] = None
+            new_row.loc[new_row.index[-1], 'close_signal_type'] = None
+            new_row.loc[new_row.index[-1], 'data_correction'] = 'corrected'
+            self.symbol_dict[symbol]['daily_price_data_df'] = \
+                pd.concat([self.symbol_dict[symbol]['daily_price_data_df'], new_row])
+            self.symbol_dict[symbol]['daily_price_data_df'] = \
+                self.symbol_dict[symbol]['daily_price_data_df'].sort_index()
+            delay-=1
+        self.symbol_dict[symbol]['daily_price_data_df'] = pd.concat([self.symbol_dict[symbol]['daily_price_data_df'], current_bar_df])
         
     def execute_all(self, current_time: datetime):
         try:
@@ -171,19 +211,19 @@ class TradingManagerMain():
         
     def execute_trading_action(self, symbol, current_df):
         trading_action = current_df.iloc[-1]['trading_action']
-        current_position = current_df.iloc[-2]['position']
-
-        # divide capital with amount of OUT positions:
         out_positions = self.get_out_positions()
         try:
-            quantity_buy_long = current_df.iloc[-1]['current_capital'] / out_positions / current_df.iloc[-1]['o']
+            if self.trading_algorithm.trade_cash is not None:
+                quantity_buy_long = current_df.iloc[-1]['current_capital'] / current_df.iloc[-1]['o']
+            else:
+                quantity_buy_long = current_df.iloc[-1]['current_capital'] / out_positions / current_df.iloc[-1]['o']
         except:
             traceback.print_exc()
             
-        if trading_action == 'buy_next_long_position': # and current_position == 'out':
+        if trading_action == 'buy_next_long_position':
             print(f"Initiating long position for {symbol} at {datetime.now()}")
             self.place_buy_order(quantity_buy_long, symbol)
-        elif trading_action == 'sell_previous_long_position': # and current_position == 'long':
+        elif trading_action == 'sell_previous_long_position':
             print(f"Initiating position close for {symbol} at {datetime.now()}")
             self.close_current_position(position="Sell previous long", symbol=symbol)
         else:
@@ -191,9 +231,6 @@ class TradingManagerMain():
             
     def place_buy_order(self, quantity, symbol, price=None):
         try:
-            # https://alpaca.markets/learn/13-order-types-you-should-know-about/
-            # a link szerint a time_in_force-nak inkább 'ioc'-nak kéne lennie szerintem.
-            # KT NOTE: az IOC-val nem lehet törtrészvényt vásárolni?
             market_order_data = MarketOrderRequest(
                             symbol=symbol,
                             qty=quantity,

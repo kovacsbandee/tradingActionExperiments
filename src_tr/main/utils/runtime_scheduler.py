@@ -80,7 +80,7 @@ def initialize_components():
                             'run_id': RUN_ID,
                             'trading_day': trading_day.strftime('%Y_%m_%d'),
                             'symbol_csvs': 'sp500',
-                            'init_cash': float(TRADING_CLIENT.get_account().cash),
+                            'init_cash': 10000, #float(TRADING_CLIENT.get_account().cash),
                             'lower_price_boundary': 10,
                             'upper_price_boundary': 400,
                             'price_range_perc_cond': 5,
@@ -108,15 +108,18 @@ def initialize_components():
                                 data_loader_func=data_loader,
                                 key=ALPACA_KEY,
                                 secret_key=ALPACA_SECRET_KEY)
-        recommended_symbol_list = scanner.recommend_premarket_watchlist()
+        #recommended_symbol_list = scanner.recommend_premarket_watchlist()
         #save_watchlist_bin(recommended_symbol_list, trading_day)
         # NOTE: teszteléshez:
-        #recommended_symbol_list = load_watchlist_bin(trading_day=trading_day)
+        recommended_symbol_list = load_watchlist_bin(trading_day=trading_day)
+        scanner.recommended_symbols = recommended_symbol_list
         data_manager.recommended_symbol_list = recommended_symbol_list
         data_generator = PriceDataGeneratorMain(recommended_symbol_list=recommended_symbol_list)
         trading_algorithm = TradingAlgorithmMain(trading_day=trading_day, 
                                                  daily_dir_name=daily_dir_name, 
-                                                 run_id=RUN_ID)
+                                                 run_id=RUN_ID,
+                                                 start_cash=float(TRADING_CLIENT.get_account().cash),
+                                                 trade_cash=run_parameters["init_cash"])
         trading_manager = TradingManagerMain(data_generator=data_generator,
                                              recommended_symbol_list=recommended_symbol_list,
                                             trading_algorithm=trading_algorithm,
@@ -173,7 +176,7 @@ def process_trading_day_data():
     if trading_day != 'holiday':
         print(f"Processing trading day data... {datetime.now()}")
         try:
-            data_manager.save_daily_statistics_and_aggregated_plots(recommended_symbols=scanner.recommended_symbols,
+            data_manager.save_daily_statistics_and_aggregated_plots(recommended_symbols=recommended_symbol_list,
                                                                     symbol_dict=trading_manager.symbol_dict)
             data_manager.save_daily_charts(symbol_dict=trading_manager.symbol_dict)
             print('Experiment ran successfully, with run id: ', data_manager.run_id, 'and run parameters', data_manager.run_parameters)
@@ -191,11 +194,11 @@ def close_websocket_connection():
 
 
 def run_scheduler():
-    schedule.every().day.at("17:43:00").do(define_dates)
-    schedule.every().day.at("17:43:05").do(reset_components)
-    schedule.every().day.at("17:43:10").do(initialize_components)
-    schedule.every().day.at("17:46:00").do(initialize_websocket)
-    schedule.every().day.at("17:46:05").do(open_websocket_connection)
+    schedule.every().day.at("15:25:00").do(define_dates)
+    schedule.every().day.at("15:25:05").do(reset_components)
+    schedule.every().day.at("15:25:10").do(initialize_components)
+    schedule.every().day.at("15:28:10").do(initialize_websocket)
+    schedule.every().day.at("15:28:15").do(open_websocket_connection)
     #NOTE: WS close a TradingManagerMain.handle_message()-ben
     schedule.every().day.at("21:00:10").do(close_open_positions)
     schedule.every().day.at("21:05:00").do(process_trading_day_data)
