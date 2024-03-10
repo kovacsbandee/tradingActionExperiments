@@ -44,7 +44,6 @@ class TradingManagerMain():
             try:
                 minute_bars = self._parse_json(message)
                 if minute_bars[0]['T'] == 'b':
-                    #await self.process_minute_bars(minute_bars, current_time)
                     for item in minute_bars:
                         self.minute_bars.append(item)
                     self.execute_all(current_time)
@@ -74,55 +73,7 @@ class TradingManagerMain():
             }
 
         ws.send(json.dumps(listen_message))
-        
-    async def process_minute_bars(self, minute_bars, current_time):
-        if minute_bars is not None and len(minute_bars) > 0:
-            for bar in minute_bars:
-                symbol = bar['S']
-                current_bar_df = pd.DataFrame([bar])
-                current_bar_df['t'] = pd.DatetimeIndex(pd.to_datetime(current_bar_df['t']))
-                current_bar_df.set_index('t', inplace=True)
-                
-                current_bar_minute = current_bar_df.index[-1].minute
-                
-                if self.symbol_dict[symbol]['daily_price_data_df'] is None:
-                    self.symbol_dict[symbol]['daily_price_data_df'] = current_bar_df
-                    self.initialize_additional_columns(symbol)
-                elif isinstance(self.symbol_dict[symbol]['daily_price_data_df'], pd.DataFrame):
-                    latest_bar_minute = self.symbol_dict[symbol]['daily_price_data_df'].index[-1].minute
-                    case_consequent = current_bar_minute == (current_time-timedelta(minutes=1)).minute \
-                                        and latest_bar_minute == (current_time-timedelta(minutes=2)).minute
-                    case_non_consequent = current_bar_minute == (current_time-timedelta(minutes=1)).minute \
-                                            and latest_bar_minute < (current_time-timedelta(minutes=2)).minute
-                    if case_consequent:
-                        self.symbol_dict[symbol]['daily_price_data_df'] = \
-                            pd.concat([self.symbol_dict[symbol]['daily_price_data_df'], current_bar_df])
-                        await asyncio.gather(self.apply_trading_algorithm(symbol, self.symbol_dict[symbol]))
-                    elif case_non_consequent:
-                        await asyncio.gather(self.apply_trading_algorithm(symbol, self.symbol_dict[symbol]),
-                                             self.delayed_correction(symbol, current_bar_df, latest_bar_minute, current_time))
-                        
-                else:
-                    raise ValueError("Unexpected data structure for the symbol in current_data_window")
-        else:
-            raise ValueError("Minute bar list is empty.")
-        
-    async def delayed_correction(self, symbol, current_bar_df, latest_bar_minute, current_time):
-        delay = (current_bar_df.index[-1] - timedelta(minutes=latest_bar_minute)).minute                                
-        while delay > 1:
-            new_row: pd.DataFrame = self.symbol_dict[symbol]['daily_price_data_df'].iloc[-1:].copy()
-            new_row.index = new_row.index + timedelta(minutes=1)
-            new_row.loc[new_row.index[-1], 'trading_action'] = 'no_action'
-            new_row.loc[new_row.index[-1], 'entry_signal_type'] = None
-            new_row.loc[new_row.index[-1], 'close_signal_type'] = None
-            new_row.loc[new_row.index[-1], 'data_correction'] = 'corrected'
-            self.symbol_dict[symbol]['daily_price_data_df'] = \
-                pd.concat([self.symbol_dict[symbol]['daily_price_data_df'], new_row])
-            self.symbol_dict[symbol]['daily_price_data_df'] = \
-                self.symbol_dict[symbol]['daily_price_data_df'].sort_index()
-            delay-=1
-        self.symbol_dict[symbol]['daily_price_data_df'] = pd.concat([self.symbol_dict[symbol]['daily_price_data_df'], current_bar_df])
-        
+
     def execute_all(self, current_time: datetime):
         try:
             if self.minute_bars is not None and len(self.minute_bars) > 0:

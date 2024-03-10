@@ -176,19 +176,14 @@ class TradingAlgorithmMain():
         symbol_df['signal_line'] = symbol_df['MACD'].ewm(span=signal_ema, adjust=False).mean()
         
         if rsi:
-            if symbol_df.iloc[-1]['rsi'] <= rsi["oversold"]:
-                expected_position = 'long'
-                symbol_df.loc[symbol_df.index[-1], 'entry_signal_type'] = 'entry_RSI'
-            elif symbol_df.iloc[-2]['MACD'] < symbol_df.iloc[-2]['signal_line'] \
-                    and symbol_df.iloc[-1]['MACD'] > symbol_df.iloc[-1]['signal_line']:
+            if symbol_df.iloc[-2]['MACD'] < symbol_df.iloc[-2]['signal_line'] \
+                and symbol_df.iloc[-1]['MACD'] > symbol_df.iloc[-1]['signal_line']:
                 expected_position = 'long'
                 symbol_df.loc[symbol_df.index[-1], 'entry_signal_type'] = 'entry_MACD_cross'
-            elif symbol_df.iloc[-1]['MACD'] > symbol_df.iloc[-1]['signal_line']:
-                expected_position = 'long'
-                symbol_df.loc[symbol_df.index[-1], 'entry_signal_type'] = 'entry_MACD_above_signal'
             else:
                 expected_position = previous_position
         else:
+        #NOTE: redundáns, RSI-megoldás kell
             if symbol_df.iloc[-2]['MACD'] < symbol_df.iloc[-2]['signal_line'] \
                 and symbol_df.iloc[-1]['MACD'] > symbol_df.iloc[-1]['signal_line']:
                 expected_position = 'long'
@@ -205,16 +200,16 @@ class TradingAlgorithmMain():
         if symbol_df.loc[symbol_df.index[-1], 'c'] < symbol_df.loc[symbol_df.index[-2], 'o']:                
             current_close_avg = symbol_df.loc[symbol_df.index[-1], 'close_signal_avg']
             if rsi:
-                if symbol_df.iloc[-1]['rsi'] >= rsi['overbought']:
+                if symbol_df.iloc[-1]['rsi'] > rsi['overbought']:
                     symbol_df.loc[symbol_df.index[-1], 'position'] = 'out'
                     symbol_df.loc[symbol_df.index[-1], 'close_signal_type'] = 'close_RSI'
-                elif symbol_df.loc[symbol_df.index[-1], 'c'] <= current_close_avg:
+                elif symbol_df.loc[symbol_df.index[-1], 'c'] < current_close_avg:
                     symbol_df.loc[symbol_df.index[-1], 'position'] = 'out'
                     symbol_df.loc[symbol_df.index[-1], 'close_signal_type'] = 'close_AVG'
                 else:
                     symbol_df.loc[symbol_df.index[-1], 'position'] = previous_position
             else:
-                if symbol_df.loc[symbol_df.index[-1], 'c'] <= current_close_avg:
+                if symbol_df.loc[symbol_df.index[-1], 'c'] < current_close_avg:
                     symbol_df.loc[symbol_df.index[-1], 'position'] = 'out'
                     symbol_df.loc[symbol_df.index[-1], 'close_signal_type'] = 'close_AVG'
                 else:

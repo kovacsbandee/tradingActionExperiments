@@ -1,5 +1,5 @@
 param_dict = {
-    "adatkimaradas_paper_trading_live" : {
+    "paper_trading_26-12-9_closeRSI70-10_noRSIentry" : {
             "scanner_params" : {
                 "windows" : {
                     "short" : 12,
@@ -11,13 +11,13 @@ param_dict = {
                 "entry_signal" : "MACD",
                 "rsi_length" : 12,
                 "entry_rsi" : {
-                    "overbought" : 70,
-                    "oversold" : 10
+                    "overbought" : 60,
+                    "oversold" : 20
                 },
                 "entry_windows" : {
-                    "short" : 6,
-                    "long" : 16,
-                    "signal" : 3
+                    "short" : 12,
+                    "long" : 26,
+                    "signal" : 9
                 },
                 "entry_weighted" : True,
                 "close_signal" : "AVG",
