@@ -60,4 +60,4 @@ class PriceDataGeneratorMain():
             self.symbol_dict[symbol]['daily_price_data_df'] = pd.concat([self.symbol_dict[symbol]['daily_price_data_df'], bar_df])
         else:
             raise ValueError("Unexpected data structure for the symbol in current_data_window")
-        
+    

@@ -31,15 +31,15 @@ class TradingManagerMain():
             minute_bars = self._parse_json(message)
             print("\nData received")
             print(f"\t[Time: {datetime.now()}]")
-            print(f"\t[Message: {minute_bars}]\n")
+            print(f"\t[Message: {minute_bars}]")
             for minute_bar in minute_bars:
                 if minute_bar['T'] != 'b':
-                    print('Authentication and data initialization')
+                    print('\n\tAuthentication and data initialization')
                     continue
                 symbol = minute_bar['S']
                 # print(f"\nBar data added to TradingManager.minute_bars")
                 # print(f"\t[Time: {datetime.now()}]")
-                print(f"\t[Bar data for {symbol}]:")
+                print(f"\n\t[Bar data for {symbol}]:")
                 print(f"\t{minute_bar}")                    
                 self.execute_symbol(minute_bar)
         except:
@@ -69,13 +69,13 @@ class TradingManagerMain():
     def execute_symbol(self, minute_bar):
         try:
             symbol = minute_bar['S']
-            print(f"\nUpdating DataGenerator.symbol_df of symbol {symbol}\n \t[Time: {datetime.now()}]")
+            print(f"\tUpdating DataGenerator.symbol_df of symbol {symbol}\n\t\t[Time: {datetime.now()}]")
             self.data_generator.update_symbol_df_of_symbol(minute_bar)
-            print(f"\nUpdated DataGenerator.symbol_df of symbol {symbol}\n \t[Time: {datetime.now()}]")
+            print(f"\tUpdated DataGenerator.symbol_df of symbol {symbol}\n\t\t[Time: {datetime.now()}]")
             
-            print(f"\nCalling TradingManager.apply_trading_algorithm_on_symbol({symbol})\n \t[Time: {datetime.now()}]")
+            print(f"\tCalling TradingManager.apply_trading_algorithm_on_symbol({symbol})\n\t\t[Time: {datetime.now()}]")
             self.apply_trading_algorithm_on_symbol(symbol)
-            print(f"\nFinished TradingManager.apply_trading_algorithm_on_symbol({symbol})\n \t[Time: {datetime.now()}]")
+            print(f"\tFinished TradingManager.apply_trading_algorithm_on_symbol({symbol})\n\t\t[Time: {datetime.now()}]")
         except:
             traceback.print_exc()
     
@@ -114,7 +114,7 @@ class TradingManagerMain():
                                                                     algo_params=self.algo_params)
             self.execute_trading_action(symbol=symbol, current_df=symbol_dict['daily_price_data_df'])
         else:
-            print(f"Collecting data...[symbol: {symbol}, remaining: {ma_long_value-symbol_df_length}min]")
+            print(f"\tCollecting data...[symbol: {symbol}, remaining: {ma_long_value-symbol_df_length}min]")
     
     def execute_trading_action(self, symbol, current_df):
         trading_action = current_df.iloc[-1]['trading_action']
@@ -128,13 +128,13 @@ class TradingManagerMain():
             traceback.print_exc()
             
         if trading_action == 'buy_next_long_position': # and current_position == 'out':
-            print(f"Initiating long position for {symbol} at {datetime.now()}")
+            print(f"\tInitiating long position for {symbol} at {datetime.now()}")
             self.place_buy_order(quantity_buy_long, symbol)
         elif trading_action == 'sell_previous_long_position': # and current_position == 'long':
-            print(f"Initiating position close for {symbol} at {datetime.now()}")
+            print(f"\tInitiating position close for {symbol} at {datetime.now()}")
             self.close_current_position(position="Sell previous long", symbol=symbol)
         else:
-            print(f'No action on {symbol} [{datetime.now()}]')
+            print(f'\tNo action on {symbol} [{datetime.now()}]')
             
     def place_buy_order(self, quantity, symbol, price=None):
         try:
