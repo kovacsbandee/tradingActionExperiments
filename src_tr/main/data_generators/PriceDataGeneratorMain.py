@@ -47,20 +47,17 @@ class PriceDataGeneratorMain():
         self.symbol_dict[symbol]['daily_price_data_df']['loss'] = None
         self.symbol_dict[symbol]['daily_price_data_df']['avg_gain'] = None
         self.symbol_dict[symbol]['daily_price_data_df']['avg_loss'] = None
-                
-    def update_symbol_df(self, minute_bars: List[dict]):
-        if minute_bars is not None and len(minute_bars) > 0:
-            for bar in minute_bars:
-                symbol = bar['S']
-                bar_df = DataFrame([bar])
-                bar_df.set_index('t', inplace=True)
 
-                if self.symbol_dict[symbol]['daily_price_data_df'] is None:
-                    self.symbol_dict[symbol]['daily_price_data_df'] = bar_df
-                    self.initialize_additional_columns(symbol)
-                elif isinstance(self.symbol_dict[symbol]['daily_price_data_df'], DataFrame):
-                    self.symbol_dict[symbol]['daily_price_data_df'] = pd.concat([self.symbol_dict[symbol]['daily_price_data_df'], bar_df])
-                else:
-                    raise ValueError("Unexpected data structure for the symbol in current_data_window")
+    def update_symbol_df_of_symbol(self, bar):
+        symbol = bar['S']
+        bar_df = DataFrame([bar])
+        bar_df.set_index('t', inplace=True)
+
+        if self.symbol_dict[symbol]['daily_price_data_df'] is None:
+            self.symbol_dict[symbol]['daily_price_data_df'] = bar_df
+            self.initialize_additional_columns(symbol)
+        elif isinstance(self.symbol_dict[symbol]['daily_price_data_df'], DataFrame):
+            self.symbol_dict[symbol]['daily_price_data_df'] = pd.concat([self.symbol_dict[symbol]['daily_price_data_df'], bar_df])
         else:
-            raise ValueError("Minute bar list is empty.")
+            raise ValueError("Unexpected data structure for the symbol in current_data_window")
+        
