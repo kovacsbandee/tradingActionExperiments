@@ -31,7 +31,7 @@ MODE='live'
 #scanner_symbols = get_nasdaq_symbols(file_path=SYMBOL_CSV_PATH)
 
 trading_client = TradingClient(ALPACA_KEY, ALPACA_SECRET_KEY, paper=True)
-trading_day = check_trading_day(date(2024, 2, 22))
+trading_day = check_trading_day(date(2024, 3, 13))
 scanning_day = calculate_scanning_day(trading_day)
 run_id = "eMACD16-6-3_cAVG_eRSI10_cRSI70"
 scanner_params = param_dict[run_id]['scanner_params']

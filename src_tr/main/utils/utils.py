@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 import pandas as pd
 import pickle
+import os
 
 from config import config
 from src_tr.main.data_sources.market_holidays import market_holidays
@@ -40,7 +41,7 @@ def get_nasdaq_symbols():
     daily_nasdaq_symbols = daily_nasdaq_symbols[(~daily_nasdaq_symbols['Market Cap'].isna()) & \
                                                  (daily_nasdaq_symbols['Market Cap'] != 0.0)]
     symbol_list = list(daily_nasdaq_symbols['Symbol'].unique())
-    with open(f"src_tr/main/data_sources/nasdaq_symbols.py", "w") as output:
+    with open(os.path.join(config["project_path"], f"src_tr/main/data_sources/nasdaq_symbols.py"), "w") as output:
         output.write("nasdaq_symbols = [\n")
         for i, symbol in enumerate(symbol_list):
             if i%10 == 0:
@@ -51,10 +52,10 @@ def get_nasdaq_symbols():
 
 def save_watchlist_bin(recommended_symbol_list: list, trading_day: date):
     trading_day = trading_day.strftime(f"%Y-%m-%d")
-    with open(f"src_tr/main/data_sources/watchlist_{trading_day}.p", "wb") as daily_stats:
+    with open(os.path.join(config["project_path"], f"src_tr/main/data_sources/watchlist_{trading_day}.p"), "wb") as daily_stats:
         pickle.dump(recommended_symbol_list, daily_stats)
         
 def load_watchlist_bin(trading_day: date):
     trading_day = trading_day.strftime(f"%Y-%m-%d")
-    with open(f"src_tr/main/data_sources/watchlist_{trading_day}.p", "rb") as daily_stats:
+    with open(os.path.join(config["project_path"], f"src_tr/main/data_sources/watchlist_{trading_day}.p"), "rb") as daily_stats:
         return pickle.load(daily_stats)

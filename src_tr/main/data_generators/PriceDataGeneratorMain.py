@@ -1,4 +1,5 @@
 from typing import List
+from datetime import datetime, timedelta
 import pandas as pd
 from pandas import DataFrame
 
@@ -47,20 +48,46 @@ class PriceDataGeneratorMain():
         self.symbol_dict[symbol]['daily_price_data_df']['loss'] = None
         self.symbol_dict[symbol]['daily_price_data_df']['avg_gain'] = None
         self.symbol_dict[symbol]['daily_price_data_df']['avg_loss'] = None
-                
-    def update_symbol_df(self, minute_bars: List[dict]):
-        if minute_bars is not None and len(minute_bars) > 0:
-            for bar in minute_bars:
-                symbol = bar['S']
-                bar_df = DataFrame([bar])
-                bar_df.set_index('t', inplace=True)
 
-                if self.symbol_dict[symbol]['daily_price_data_df'] is None:
-                    self.symbol_dict[symbol]['daily_price_data_df'] = bar_df
-                    self.initialize_additional_columns(symbol)
-                elif isinstance(self.symbol_dict[symbol]['daily_price_data_df'], DataFrame):
-                    self.symbol_dict[symbol]['daily_price_data_df'] = pd.concat([self.symbol_dict[symbol]['daily_price_data_df'], bar_df])
-                else:
-                    raise ValueError("Unexpected data structure for the symbol in current_data_window")
+    def update_symbol_df_of_symbol(self, bar):
+        symbol = bar['S']
+        bar_df = DataFrame([bar])
+        bar_df.set_index('t', inplace=True)
+
+        # padding
+        daily_df = self.symbol_dict[symbol]['daily_price_data_df']
+        if (isinstance(daily_df, DataFrame)):
+            previous_bar = daily_df.iloc[-1]
+            previous_datetime = datetime.strptime(daily_df.index[-1], "%Y-%m-%dT%H:%M:%SZ")
+            current_datetime = datetime.strptime(bar['t'], "%Y-%m-%dT%H:%M:%SZ")
+
+            while (current_datetime - previous_datetime).total_seconds() > 60:
+                previous_datetime = previous_datetime + timedelta(minutes=1) # step previous_datetime with 1min
+                padded_timestamp = previous_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+                padded_bar = previous_bar.copy()
+                padded_bar.rename(padded_timestamp, inplace=True)
+                
+                constant_price = padded_bar.c
+                padded_bar.o = constant_price
+                padded_bar.h = constant_price
+                padded_bar.l = constant_price
+                padded_bar.vw = constant_price
+
+                padded_bar.v = 1 # TODO - jó így?
+                padded_bar.n = 1 # TODO - jó így?
+                
+                self.symbol_dict[symbol]['daily_price_data_df'].loc[padded_timestamp] = padded_bar
+                print(f"\t\tPadded bar data for symbol {symbol} is added at timestamp {padded_timestamp}")
+                # print(padded_bar)
+
+                previous_bar = padded_bar
+
+        if daily_df is None:
+            self.symbol_dict[symbol]['daily_price_data_df'] = bar_df
+            self.initialize_additional_columns(symbol)
+        elif isinstance(daily_df, DataFrame):
+            self.symbol_dict[symbol]['daily_price_data_df'] = pd.concat([daily_df, bar_df])
         else:
-            raise ValueError("Minute bar list is empty.")
+            raise ValueError("Unexpected data structure for the symbol in current_data_window")
+    
