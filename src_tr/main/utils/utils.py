@@ -5,7 +5,7 @@ import pickle
 
 from config import config
 from src_tr.main.data_sources.market_holidays import market_holidays
-from src_tr.main.utils.plots import daily_time_series_charts_post_process
+
 
 def check_trading_day(trading_day: date) -> date:
     if _check_market_holiday(trading_day) \
@@ -65,41 +65,26 @@ def load_watchlist_bin(trading_day: date):
         return pickle.load(daily_stats)
 
 #TODO: refaktorálás, stb.
-def calculate_capital_from_in_out_positions_in_result_csvs():
-    dir = 'adatkimaradas_paper_trading_live/adatkimaradas_paper_trading_live_2024_03_05'
-    db_path = config['output_stats']
-    initial_capital = 10000
-    csvs_path = f'{db_path}/{dir}/daily_files/csvs'
-    daily_csvs = os.listdir(csvs_path)
-    corrected = list()
-    for file in daily_csvs:
-        daily_price_data_df = pd.read_csv(f'{csvs_path}/{file}')
-
-        prev_long_buy_position_index = daily_price_data_df[daily_price_data_df['trading_action'] == 'buy_next_long_position'].index[0]
-        prev_capital_index = prev_long_buy_position_index
-        daily_price_data_df['current_capital_post_calculation'] = 0
-        daily_price_data_df['gain_per_qty_per_position_post_calculation'] = 0
-        daily_price_data_df.loc[prev_capital_index, 'current_capital_post_calculation'] = initial_capital
-
-        for i, row in daily_price_data_df.iterrows():
-            if row['trading_action'] == 'sell_previous_long_position':
-                daily_price_data_df.loc[i, 'gain_per_qty_per_position_post_calculation'] = daily_price_data_df.loc[i, 'c'] - daily_price_data_df.loc[prev_long_buy_position_index, 'c']
-                daily_price_data_df.loc[i, 'current_capital_post_calculation'] = \
-                    (daily_price_data_df.loc[prev_capital_index, 'current_capital_post_calculation'] +
-                    (daily_price_data_df.loc[i, 'gain_per_qty_per_position_post_calculation'] *
-                     (daily_price_data_df.loc[prev_long_buy_position_index, 'current_capital_post_calculation'] / daily_price_data_df.loc[prev_long_buy_position_index, 'c'])))
-                prev_capital_index = i
-            if row['trading_action'] == 'buy_next_long_position':
-                prev_long_buy_position_index = i
-                daily_price_data_df.loc[i, 'current_capital_post_calculation'] = daily_price_data_df.loc[prev_capital_index, 'current_capital_post_calculation']
-        corrected.append({'file': file,
-                          'corrected_timestamp_num': len(daily_price_data_df[~daily_price_data_df['data_correction'].isna()]),
-                          'max_cap': daily_price_data_df['current_capital_post_calculation'].max(),
-                          'min_cap': daily_price_data_df[daily_price_data_df['current_capital_post_calculation'] != 0.0]['current_capital_post_calculation'].min()})
-        print(file, daily_price_data_df[daily_price_data_df['current_capital_post_calculation'] != 0.0]['current_capital_post_calculation'])
-        out_file = file.split('.')[0] + 'post_calculation' + '.csv'
-        daily_price_data_df.to_csv(f'{csvs_path}/{out_file}', index=False)
-        daily_time_series_charts_post_process(daily_price_data_df, file=file, epsilon=0.0, mode=None, db_path=db_path, daily_dir_name=dir)
-    df = pd.DataFrame.from_records(corrected)
-    print('Correlation between missing data and capital')
-    print(df[['corrected_timestamp_num', 'max_cap', 'min_cap']].corr())
+def calculate_capital_from_in_out_positions_in_result_daily_price_data_df(daily_price_data_df, initial_capital):
+    # TODO: van olyan eset, amikor nincsen benne buy_next_long_position a trading_action-ben lsd.: CMSCS 2024_03_12,
+    # viszont ebben csak sell_previous_position van!!!
+    prev_long_buy_position_index = daily_price_data_df[daily_price_data_df['trading_action'] == 'buy_next_long_position'].index[0]
+    prev_capital_index = prev_long_buy_position_index
+    daily_price_data_df['current_capital_post_calculation'] = None
+    daily_price_data_df['gain_per_qty_per_position_post_calculation'] = None
+    daily_price_data_df.loc[prev_capital_index, 'current_capital_post_calculation'] = initial_capital
+    prev_position = None
+    for i, row in daily_price_data_df.iterrows():
+        if row['trading_action'] == 'sell_previous_long_position':
+            daily_price_data_df.loc[i, 'gain_per_qty_per_position_post_calculation'] = daily_price_data_df.loc[i, 'o'] - daily_price_data_df.loc[prev_long_buy_position_index, 'o']
+            daily_price_data_df.loc[i, 'current_capital_post_calculation'] = \
+                (daily_price_data_df.loc[prev_capital_index, 'current_capital_post_calculation'] +
+                (daily_price_data_df.loc[i, 'gain_per_qty_per_position_post_calculation'] *
+                 (daily_price_data_df.loc[prev_long_buy_position_index, 'current_capital_post_calculation'] / daily_price_data_df.loc[prev_long_buy_position_index, 'o'])))
+            prev_capital_index = i
+            prev_position = 'sell_previous_long_position'
+        if row['trading_action'] == 'buy_next_long_position':
+            prev_long_buy_position_index = i
+            daily_price_data_df.loc[i, 'current_capital_post_calculation'] = daily_price_data_df.loc[prev_capital_index, 'current_capital_post_calculation']
+            prev_position = 'buy_next_long_position'
+    return daily_price_data_df

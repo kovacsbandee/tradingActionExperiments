@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import schedule
 import time
 import websocket
@@ -14,6 +14,7 @@ from src_tr.main.scanners.PreMarketScannerMain import PreMarketScannerMain
 from src_tr.main.data_generators.PriceDataGeneratorMain import PriceDataGeneratorMain
 from src_tr.main.trading_algorithms.TradingAlgorithmMain import TradingAlgorithmMain
 from src_tr.main.trading_managers.TradingManagerMain import TradingManagerMain
+from src_tr.main.trading_managers.TradingResponseManagerMain import TradeResponseManager
 from src_tr.main.utils.DataManager import DataManager
 from src_tr.main.utils.utils import save_watchlist_bin, load_watchlist_bin
 from src_tr.main.utils.data_loaders import download_scanning_day_alpaca_data
@@ -25,12 +26,14 @@ load_dotenv()
 ALPACA_KEY = os.environ["ALPACA_KEY"]
 ALPACA_SECRET_KEY = os.environ["ALPACA_SECRET_KEY"]
 SOCKET_URL = os.environ["SOCKET_URL"]
+TRADE_SOCKET_URL = os.environ["TRADE_SOCKET_URL"]
 TRADING_CLIENT = TradingClient(ALPACA_KEY, ALPACA_SECRET_KEY, paper=True)
 RUN_ID = "E-RSI_10-MACD16_6_3--C-AVG_5-RSI_70"#"paper_trading_26-12-9_closeRSI70-10_noRSIentry"
 SCANNER_PARAMS = param_dict[RUN_ID]['scanner_params']
 ALGO_PARAMS = param_dict[RUN_ID]['algo_params']
 MODE = "paper"
-WEBSOCKET_APP = None
+WEBSOCKET_APP_BASE = None
+WEBSOCKET_APP_TRADES = None
 
 # daily components
 trading_day = None
@@ -71,8 +74,8 @@ def reset_components():
 
 def initialize_components():
     global data_manager, run_parameters, scanner, recommended_symbol_list, \
-        data_generator, trading_algorithm, trading_manager, \
-        ALPACA_KEY, ALPACA_SECRET_KEY, SOCKET_URL, TRADING_CLIENT, RUN_ID, SCANNER_PARAMS, ALGO_PARAMS, MODE
+        data_generator, trading_algorithm, trading_manager, trade_response_manager, \
+        ALPACA_KEY, ALPACA_SECRET_KEY, SOCKET_URL, TRADE_SOCKET_URL, TRADING_CLIENT, RUN_ID, SCANNER_PARAMS, ALGO_PARAMS, MODE
     if trading_day != 'holiday':
         print(f"Initializing new trading components... {datetime.now()}")
         data_manager = DataManager(mode=MODE, trading_day=trading_day, scanning_day=scanning_day, run_id=RUN_ID)
@@ -109,14 +112,14 @@ def initialize_components():
                                        key=ALPACA_KEY,
                                        secret_key=ALPACA_SECRET_KEY)
         recommended_symbol_list = scanner.recommend_premarket_watchlist()
-        # save_watchlist_bin(recommended_symbol_list, trading_day)
+        #save_watchlist_bin(recommended_symbol_list, trading_day)
         # NOTE: teszteléshez:
         #recommended_symbol_list = load_watchlist_bin(trading_day=trading_day)
         #scanner.recommended_symbols = recommended_symbol_list
         data_manager.recommended_symbol_list = recommended_symbol_list
         data_generator = PriceDataGeneratorMain(recommended_symbol_list=recommended_symbol_list)
-        trading_algorithm = TradingAlgorithmMain(trading_day=trading_day, 
-                                                 daily_dir_name=daily_dir_name, 
+        trading_algorithm = TradingAlgorithmMain(trading_day=trading_day,
+                                                 daily_dir_name=daily_dir_name,
                                                  run_id=RUN_ID,
                                                  start_cash=float(TRADING_CLIENT.get_account().cash),
                                                  trade_cash=run_parameters["init_cash"])
@@ -129,37 +132,66 @@ def initialize_components():
                                              api_key=ALPACA_KEY,
                                              secret_key=ALPACA_SECRET_KEY,
                                              ws_close_func=close_websocket_connection)
+        trade_response_manager = TradeResponseManager(recommended_symbol_list=recommended_symbol_list,
+                                                      run_id=RUN_ID,
+                                                      trading_day=trading_day,
+                                                      api_key=ALPACA_KEY,
+                                                      secret_key=ALPACA_SECRET_KEY,
+                                                      ws_close_function=close_websocket_connection)
         print(f"Finished initializing new trading components @ {datetime.now()}")
     else:
         print("Holiday")
         return
 
 def initialize_websocket():
-    global WEBSOCKET_APP
-    if WEBSOCKET_APP is None and trading_day != 'holiday':
+    global WEBSOCKET_APP_BASE
+    if WEBSOCKET_APP_BASE is None and trading_day != 'holiday':
         print(f"Initializing WebSocket app @ {datetime.now()}")
-        WEBSOCKET_APP = websocket.WebSocketApp(url=SOCKET_URL,
-                                               on_open=trading_manager.on_open,
-                                               on_message=trading_manager.handle_message,
-                                               on_close=trading_manager.on_close,
-                                               on_error=trading_manager.on_error)
-                                               #on_ping=trading_manager.on_ping,
-                                               #on_pong=trading_manager.on_pong)
+        WEBSOCKET_APP_BASE = websocket.WebSocketApp(url=SOCKET_URL,
+                                                    on_open=trading_manager.on_open,
+                                                    on_message=trading_manager.handle_message,
+                                                    on_close=trading_manager.on_close,
+                                                    on_error=trading_manager.on_error)
+                                                    #on_ping=trading_manager.on_ping,
+                                                    #on_pong=trading_manager.on_pong)
     else:
         return
+
+def initialize_trade_websocket():
+    global WEBSOCKET_APP_TRADES
+    if WEBSOCKET_APP_TRADES is None and trading_day != 'holiday':
+        print(f"Initializing trade WebSocket app @ {datetime.now()}")
+        WEBSOCKET_APP_TRADES = websocket.WebSocketApp(url=TRADE_SOCKET_URL,
+                                                      on_open=trade_response_manager.init_ws,
+                                                      on_message=trade_response_manager.handle_trade_update,
+                                                      on_close=trade_response_manager.on_close,
+                                                      on_error=trade_response_manager.on_error)
+    else:
+        return
+
 
 def reload_watchlist():
     global recommended_symbol_list
     recommended_symbol_list = load_watchlist_bin(trading_day)
 
 def open_websocket_connection():
-    global WEBSOCKET_APP
+    global WEBSOCKET_APP_BASE
     if trading_day != 'holiday':
         print(f"Starting WebSocket app @ {datetime.now()}")
-        WEBSOCKET_APP.run_forever(reconnect=True, ping_timeout=None)
+        WEBSOCKET_APP_BASE.run_forever(reconnect=True, ping_timeout=None)
     else:
         print("Holiday")
         return
+
+def open_trade_websocket_connection():
+    global WEBSOCKET_APP_TRADES
+    if trading_day != 'holiday':
+        print(f"Starting WebSocket app @ {datetime.now()}")
+        WEBSOCKET_APP_TRADES.run_forever(reconnect=True, ping_timeout=None)
+    else:
+        print("Holiday")
+        return
+
 
 # nap végén
 def close_open_positions():
@@ -188,18 +220,33 @@ def process_trading_day_data():
         return
 
 def close_websocket_connection():
-    global WEBSOCKET_APP
-    if WEBSOCKET_APP is not None:
-        WEBSOCKET_APP.close()
-    print(f"WebSocket connection closed @ {datetime.now()}")
+    global WEBSOCKET_APP_BASE
+    if WEBSOCKET_APP_BASE is not None:
+        WEBSOCKET_APP_BASE.close()
+        print(f"Bar data WebSocket connection closed @ {datetime.now()}")
+
+def close_trade_websocket_connection():
+    global WEBSOCKET_APP_TRADES, trade_response_manager, config, json, trading_day
+    if WEBSOCKET_APP_TRADES is not None:
+        td = trading_day.strftime("%Y_%m_%d")
+        file_path = f"{config['output_stats']}/{RUN_ID}/{RUN_ID}_{td}"
+        file_name = f"trade_message_list.json"
+        with open(f"{file_path}/{file_name}", 'w') as fout:
+            json.dump(trade_response_manager.all_messages, fout)
+        WEBSOCKET_APP_TRADES.close()
+        print(f"Trade response WebSocket connection closed @ {datetime.now()}")
+
 
 
 def run_scheduler():
-    schedule.every().day.at("18:25:00").do(define_dates)
-    schedule.every().day.at("18:25:05").do(reset_components)
-    schedule.every().day.at("18:25:10").do(initialize_components)
-    schedule.every().day.at("18:25:10").do(initialize_websocket)
-    schedule.every().day.at("18:25:15").do(open_websocket_connection)
+    now = datetime.now() + timedelta(minutes=1)
+    schedule.every().day.at((now + timedelta(seconds=0)).strftime("%H:%M:%S")).do(define_dates)
+    schedule.every().day.at((now + timedelta(seconds=5)).strftime("%H:%M:%S")).do(reset_components)
+    schedule.every().day.at((now + timedelta(seconds=10)).strftime("%H:%M:%S")).do(initialize_components)
+    schedule.every().day.at((now + timedelta(seconds=15)).strftime("%H:%M:%S")).do(initialize_websocket)
+    schedule.every().day.at((now + timedelta(seconds=20)).strftime("%H:%M:%S")).do(initialize_trade_websocket)
+    #schedule.every().day.at((now + timedelta(seconds=25)).strftime("%H:%M:%S")).do(open_trade_websocket_connection)
+    schedule.every().day.at((now + timedelta(seconds=30)).strftime("%H:%M:%S")).do(open_websocket_connection)
     #NOTE: WS close a TradingManagerMain.handle_message()-ben
     schedule.every().day.at("21:00:10").do(close_open_positions)
     schedule.every().day.at("21:05:00").do(process_trading_day_data)
@@ -212,4 +259,5 @@ def run_scheduler():
         except KeyboardInterrupt:
             print("Received KeyboardInterrupt, closing...")
             close_websocket_connection()
+            close_trade_websocket_connection()
             break

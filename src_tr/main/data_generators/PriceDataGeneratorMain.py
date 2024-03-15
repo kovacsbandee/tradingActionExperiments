@@ -40,6 +40,7 @@ class PriceDataGeneratorMain():
         self.symbol_dict[symbol]['daily_price_data_df']['position'] = 'out'
         self.symbol_dict[symbol]['daily_price_data_df']['trading_action'] = 'no_action'
         self.symbol_dict[symbol]['daily_price_data_df']['current_capital'] = 0.0
+        self.symbol_dict[symbol]['daily_price_data_df']['prev_position_monetary_yield_per_symbol'] = None
         self.symbol_dict[symbol]['daily_price_data_df']['entry_signal_type'] = None
         self.symbol_dict[symbol]['daily_price_data_df']['close_signal_type'] = None
         self.symbol_dict[symbol]['daily_price_data_df']['rsi'] = None

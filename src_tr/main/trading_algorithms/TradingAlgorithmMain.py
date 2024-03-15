@@ -127,6 +127,9 @@ class TradingAlgorithmMain():
             
         if symbol_df.iloc[-1]['position'] == 'out' and previous_position == 'long':
             symbol_df.loc[symbol_df.index[-1], 'trading_action'] = 'sell_previous_long_position'
+            # TODO: itt a záró ár, nem igazán pontos!
+            symbol_df.loc[symbol_df.index[-1], 'prev_position_monetary_yield_per_symbol'] = \
+                symbol_df.loc[symbol_df.index[-1], 'o'] - symbol_df.loc[symbol_dict['previous_long_buy_position_index'], 'o']
             symbol_dict['previous_long_buy_position_index'] = None
             
         return {
@@ -170,6 +173,7 @@ class TradingAlgorithmMain():
         ema_short = macd_windows["short"]
         ema_long = macd_windows["long"]
         signal_ema = macd_windows["signal"]
+        # TODO itt miért a záró ár van?
         symbol_df[f"EMA{ema_short}"] = symbol_df['c'].ewm(span=ema_short, adjust=False).mean()
         symbol_df[f"EMA{ema_long}"] = symbol_df['c'].ewm(span=ema_long, adjust=False).mean()
         symbol_df['MACD'] = symbol_df[f"EMA{ema_short}"] - symbol_df[f"EMA{ema_long}"]
@@ -197,6 +201,7 @@ class TradingAlgorithmMain():
         return symbol_df
     
     def close_signal_avg(self, symbol_df: pd.DataFrame, rsi: dict, previous_position: str):
+        # TODO itt miért ezek az árak vannak?
         if symbol_df.loc[symbol_df.index[-1], 'c'] < symbol_df.loc[symbol_df.index[-2], 'o']:                
             current_close_avg = symbol_df.loc[symbol_df.index[-1], 'close_signal_avg']
             if rsi:
@@ -222,6 +227,7 @@ class TradingAlgorithmMain():
 
     def close_signal_atr(self, symbol_df: pd.DataFrame, rsi: dict, window_size: int,
                          weighted: bool, previous_position: str):
+        # TODO itt miért ezek az árak vannak?
         if (symbol_df.loc[symbol_df.index[-1], 'c'] < symbol_df.loc[symbol_df.index[-2], 'o']):
             if weighted:
                 symbol_df['atr_short'] = symbol_df['current_range'].ewm(span=window_size, adjust=False).mean()

@@ -17,6 +17,7 @@ class TradingManagerMain():
                 data_generator: PriceDataGeneratorMain,
                 recommended_symbol_list,
                 trading_algorithm: TradingAlgorithmMain,
+                run_params,
                 algo_params: dict,
                 trading_client: TradingClient,
                 api_key: str,
@@ -25,6 +26,7 @@ class TradingManagerMain():
                 ):
         self.data_generator = data_generator
         self.recommended_symbol_list = recommended_symbol_list
+        self.run_params = run_params
         self.out_positions = len(recommended_symbol_list)
         self.symbol_dict = dict()
         self.trading_algorithm = trading_algorithm
@@ -41,6 +43,8 @@ class TradingManagerMain():
         if datetime.now().strftime("%H:%M") == "21:00":
             self.ws_close_func()
         else:
+            current_message = self._parse_json(message)
+            print(current_message)
             try:
                 minute_bars = self._parse_json(message)
                 if minute_bars[0]['T'] == 'b':
@@ -73,6 +77,18 @@ class TradingManagerMain():
             }
 
         ws.send(json.dumps(listen_message))
+
+        auth_data = {"action": "auth", "key": f"{self.api_key}", "secret": f"{self.secret_key}"}
+        ws.send(json.dumps(auth_data))
+        trade_updates_listen_message = \
+            {
+                "action": "listen",
+                "data": {
+                    "streams": ["trade_updates"]
+                }
+            }
+        ws.send(json.dumps(trade_updates_listen_message))
+        print('listen message was sent')
 
     def execute_all(self, current_time: datetime):
         try:
@@ -165,9 +181,11 @@ class TradingManagerMain():
         out_positions = self.get_out_positions()
         try:
             if self.trading_algorithm.trade_cash is not None:
-                quantity_buy_long = current_df.iloc[-1]['current_capital'] / current_df.iloc[-1]['o']
+                #quantity_buy_long = int(current_df.iloc[-1]['current_capital'] / current_df.iloc[-1]['o'])
+                quantity_buy_long = int(self.run_params['init_cash'] / current_df.iloc[-1]['o'])
             else:
-                quantity_buy_long = current_df.iloc[-1]['current_capital'] / out_positions / current_df.iloc[-1]['o']
+                #quantity_buy_long = int(current_df.iloc[-1]['current_capital'] / out_positions / current_df.iloc[-1]['o'])
+                quantity_buy_long = int(self.run_params['init_cash'] / out_positions / current_df.iloc[-1]['o'])
         except:
             traceback.print_exc()
             
@@ -186,7 +204,7 @@ class TradingManagerMain():
                             symbol=symbol,
                             qty=quantity,
                             side=OrderSide.BUY,
-                            time_in_force=TimeInForce.DAY
+                            time_in_force=TimeInForce.IOC
                             )
             self.trading_client.submit_order(order_data=market_order_data)
             self.decrease_out_positions()

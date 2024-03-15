@@ -1,7 +1,8 @@
 import threading
 import traceback
 
-from src_tr.main.utils.runtime_scheduler import run_scheduler, close_websocket_connection
+#from src_tr.main.utils.runtime_scheduler import run_scheduler, close_websocket_connection
+from src_tr.main.utils.runtime_scheduler_w_stream import run_scheduler, close_websocket_connection
 
 if __name__ == "__main__":
     scheduler_thread = threading.Thread(target=run_scheduler)

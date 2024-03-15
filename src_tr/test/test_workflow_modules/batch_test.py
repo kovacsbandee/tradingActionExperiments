@@ -31,8 +31,9 @@ MODE = 'POLYGON_LOCAL_DB'
 def run():
     for id, params in param_dict.items():
         daily_folder_dates = os.listdir(config["resource_paths"]["polygon"]["daily_data_output_folder"])
-        trading_dates = [date.fromisoformat(d.replace("_","-")) for d in daily_folder_dates]
+        trading_dates = [date.fromisoformat(d.replace("_","-")) for d in daily_folder_dates][-40:]
         trading_dates.sort()
+        print(trading_dates)
         run_id = id
         algo_params = params["algo_params"]
         scanner_params = params["scanner_params"]
@@ -135,11 +136,14 @@ def run():
                 traceback.print_exc()
 
             finally:
-                data_manager.save_daily_statistics_and_aggregated_plots(recommended_symbols=scanner.recommended_symbols,
-                                                                        symbol_dict=trading_manager.symbol_dict)
-                data_manager.save_daily_charts(symbol_dict=trading_manager.symbol_dict)
-                print('Experiment ran successfully, with run id: ', data_manager.run_id, 'and run parameters', data_manager.run_parameters)
-                
+                try:
+                    data_manager.save_daily_statistics_and_aggregated_plots(recommended_symbols=scanner.recommended_symbols,
+                                                                            symbol_dict=trading_manager.symbol_dict)
+                    data_manager.save_daily_charts(symbol_dict=trading_manager.symbol_dict)
+                    print('Experiment ran successfully, with run id: ', data_manager.run_id, 'and run parameters', data_manager.run_parameters)
+                except Exception:
+                    traceback.print_exc()
+
                 del data_manager
                 del scanner
                 del trading_client

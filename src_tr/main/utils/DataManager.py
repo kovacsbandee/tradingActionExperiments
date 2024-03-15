@@ -3,6 +3,7 @@ import pandas as pd
 import json
 import shutil
 from src_tr.main.utils.plots import plot_daily_statistics_correlation_matrix, plot_daily_statistics, daily_time_series_charts
+from src_tr.main.utils.utils import calculate_capital_from_in_out_positions_in_result_daily_price_data_df
 import logging
 
 from config import config
@@ -45,9 +46,12 @@ class DataManager:
 
     def save_daily_statistics_and_aggregated_plots(self, recommended_symbols, symbol_dict):
         daily_stats_for_all_symbols = list()
+        print('capital post calculation is based on open prices')
         for symbol in symbol_dict.keys():
             daily_df = symbol_dict[symbol]['daily_price_data_df']
-
+            daily_df = calculate_capital_from_in_out_positions_in_result_daily_price_data_df(daily_price_data_df = daily_df,
+                                                                                             initial_capital = self.run_parameters['init_cash'])
+            daily_df.to_csv(f"{config['output_stats']}/{self.run_id}/{self.daily_dir_name}/daily_files/csvs/{symbol}_{self.run_parameters['trading_day']}_{self.run_id}.csv")
             daily_stats = dict()
             daily_stats['symbol'] = symbol
             daily_stats['last_capital_td'] = daily_df[(daily_df['current_capital'] >= 1.0) & (~daily_df['current_capital'].isna())]['current_capital'][-1]
@@ -62,6 +66,8 @@ class DataManager:
             daily_stats['avg_capital_td'] = daily_df[daily_df['current_capital'] > self.run_parameters['init_cash']*0.1]['current_capital'].mean()
             daily_stats['min_capital_td'] = daily_df[(daily_df['current_capital'] >= 1.0)]['current_capital'].min()
             daily_stats['max_capital_td'] = daily_df['current_capital'].max()
+            daily_stats['buy_signal_cnt'] = daily_df[daily_df['trading_action'] == 'buy_next_long_position'].shape[0]
+            daily_stats['sell_signal_cnt'] = daily_df[daily_df['trading_action'] == 'sell_previous_long_position'].shape[0]
             daily_stats['max_time_stamp_td'] = daily_df['current_capital'].idxmax()
             daily_stats['in_position_percent_td'] = (len(daily_df[daily_df['position'] != 'out']) / len(daily_df)) * 100
             # az alábbi néhánynak szerepelelnie kéne a scanner statisztikák között is
@@ -75,7 +81,7 @@ class DataManager:
 
         daily_stats_for_all_symbols = pd.DataFrame(daily_stats_for_all_symbols)
 
-        self.total_recommended_symbol_statistics = pd.merge(recommended_symbols, daily_stats_for_all_symbols, on='symbol', how='left')
+        self.total_recommended_symbol_statistics = pd.merge(daily_stats_for_all_symbols, recommended_symbols, on='symbol', how='left')
         self.total_recommended_symbol_statistics.sort_values(by=['last_yield_perc_td'], inplace=True, ascending=False)
         plot_daily_statistics(plot_df=self.total_recommended_symbol_statistics, db_path=f"{config['output_stats']}/{self.run_id}", daily_dir_name=self.daily_dir_name)
         plot_daily_statistics_correlation_matrix(plot_df=self.total_recommended_symbol_statistics, db_path=f"{config['output_stats']}/{self.run_id}", daily_dir_name=self.daily_dir_name)
