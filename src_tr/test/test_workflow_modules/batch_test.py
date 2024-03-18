@@ -127,7 +127,7 @@ def run():
                 #                                                          s=trading_day)
                 
                 all_symbols_daily_data = get_polygon_trading_day_data(recommended_symbols=recommended_symbol_list,
-                                                                    trading_day=trading_day.strftime("%Y_%m_%d"))
+                                                                      trading_day=trading_day.strftime("%Y_%m_%d"))
                                                                     #limit=240
                 
                 run_test_experiment(all_symbols_daily_data=all_symbols_daily_data, trading_manager=trading_manager)

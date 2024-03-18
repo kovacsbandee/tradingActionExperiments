@@ -80,8 +80,8 @@ class DataManager:
             daily_stats_for_all_symbols.append(daily_stats)
 
         daily_stats_for_all_symbols = pd.DataFrame(daily_stats_for_all_symbols)
-
-        self.total_recommended_symbol_statistics = pd.merge(daily_stats_for_all_symbols, recommended_symbols, on='symbol', how='left')
+        self.total_recommended_symbol_statistics = daily_stats_for_all_symbols
+        #self.total_recommended_symbol_statistics = pd.merge(daily_stats_for_all_symbols, recommended_symbols, on='symbol', how='left')
         self.total_recommended_symbol_statistics.sort_values(by=['last_yield_perc_td'], inplace=True, ascending=False)
         plot_daily_statistics(plot_df=self.total_recommended_symbol_statistics, db_path=f"{config['output_stats']}/{self.run_id}", daily_dir_name=self.daily_dir_name)
         plot_daily_statistics_correlation_matrix(plot_df=self.total_recommended_symbol_statistics, db_path=f"{config['output_stats']}/{self.run_id}", daily_dir_name=self.daily_dir_name)

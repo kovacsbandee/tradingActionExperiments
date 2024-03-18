@@ -122,6 +122,11 @@ def _convert_polygon_data(latest_bars: dict, symbol: str):
     })
     return bar_list
 
+# TODO ezt át kéne írni pandas-ra!!!
+
+symbols = [f.split('_')[0] for f in os.listdir('F:/tradingActionExperiments_database/output/archived_experiments/E-MACD16_6_3--C-AVG_5-RSI_70/E-MACD16_6_3--C-AVG_5-RSI_70_2023_06_14/daily_files/csvs')]
+trading_day = '2023_01_26'
+
 def get_polygon_trading_day_data(recommended_symbols: List[str], trading_day: str, limit=None):
     all_symbols_daily_data = []
     for symbol in recommended_symbols:
@@ -136,6 +141,25 @@ def get_polygon_trading_day_data(recommended_symbols: List[str], trading_day: st
                 converted_list = converted_list[:limit]
             all_symbols_daily_data.append(converted_list)
     return all_symbols_daily_data
+
+
+def get_adhoc_alpaca_trading_day_data(recommended_symbols, trading_day):
+    all_symbols_daily_data = []
+    source_path = config['resource_paths']['alpaca']
+    trading_day =  datetime.strftime(trading_day, '%Y_%m_%d')
+    for symbol in [d['symbol'] for d in recommended_symbols]:
+        symbol_data_list = []
+        bar_df = pd.read_csv(f'{source_path}/{trading_day}/{symbol}_bar.csv')
+        symbol = symbol
+        bar_df['S'] = symbol
+        bar_df['T'] = 'b'
+        bar_df.rename({'timestamp': 't', 'close': 'c', 'high': 'h', 'low': 'l', 'trade_count': 'n', 'open': 'o', 'volume': 'v'}, axis=1, inplace=True)
+        for i, row in bar_df.iterrows():
+            symbol_data_list.append(row)
+        all_symbols_daily_data.append(symbol_data_list)
+    return all_symbols_daily_data
+
+
 
 def run_test_experiment(all_symbols_daily_data, trading_manager):
     i = 0

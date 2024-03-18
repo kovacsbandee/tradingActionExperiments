@@ -85,8 +85,8 @@ class TradingAlgorithmMain():
                                       previous_position=previous_position)
         symbol_df = eval_result["symbol_df"]
         symbol_dict = eval_result["symbol_dict"]
-        
-        symbol_df.to_csv(f"{config['output_stats']}/{self.daily_dir_name}/daily_files/csvs/{symbol}_{self.trading_day}_{self.run_id}.csv")
+        symbol_df.to_csv(f"{config['output_stats']}/{self.run_id}/{self.daily_dir_name}/daily_files/csvs/{symbol}_{self.trading_day}_{self.run_id}.csv")
+        #symbol_df.to_csv(f"{config['output_stats']}/{self.daily_dir_name}/daily_files/csvs/{symbol}_{self.trading_day}_{self.run_id}.csv")
         
         # update the current symbol DataFrame
         symbol_dict['daily_price_data_df'] = symbol_df
