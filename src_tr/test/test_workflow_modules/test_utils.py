@@ -124,9 +124,6 @@ def _convert_polygon_data(latest_bars: dict, symbol: str):
 
 # TODO ezt át kéne írni pandas-ra!!!
 
-symbols = [f.split('_')[0] for f in os.listdir('F:/tradingActionExperiments_database/output/archived_experiments/E-MACD16_6_3--C-AVG_5-RSI_70/E-MACD16_6_3--C-AVG_5-RSI_70_2023_06_14/daily_files/csvs')]
-trading_day = '2023_01_26'
-
 def get_polygon_trading_day_data(recommended_symbols: List[str], trading_day: str, limit=None):
     all_symbols_daily_data = []
     for symbol in recommended_symbols:

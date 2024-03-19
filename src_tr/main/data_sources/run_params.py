@@ -91,7 +91,7 @@ param_dict = {
 #             }
 #         }
 # }
-    "E-RSI_10-MACD16_6_3--C-AVG_5-RSI_70_adhoc_alpaca": {
+    "E-RSI_10-MACD16_6_3--C-AVG_5-RSI_70": {
         "scanner_params": {
             "windows": {
                 "short": 12,
